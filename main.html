@@ -32,9 +32,21 @@
         let group = new THREE.Group(); // used for the body
         let clock = new THREE.Clock();
 
+
+        let movementSpeeds = 40;
+        let totalObjects = 500;
+        let objectSize = 10;
+        let colors = [0xFF0FFF, 0xCCFF00, 0xFF000F, 0x996600, 0xFFFFFF, 0xcbbeb5, 0x9003ff, 0x6d9bc3,
+            0x87a96b, 0x520520, 0xeaa315, 0x327572, 0xb8888d, 0xcc77dd, 0xbcd4e6, 0xfe6f5e, 0x318ce7, 0xa2a2d0];
+        let dirs = [];
+        let parts = [];
+
+
+
+
         // used in terrain generation
-        let peak = 50; 
-        let smoothing = 300;
+        let peak = 30;
+        let smoothing = 200;
 
         // used for movement and rotation management
         let speed = 2;
@@ -51,12 +63,16 @@
         // used in movement and collision
         let hit = false;
         let moving = false;
+        let starHit = -1;
 
         let intersection = null;
+
 
         let trees = [];
         let spheres = [];
         let worldItems = [];
+        let stars =[];
+        let movingStars = [];
 
         // used in movement and collision
         let movement;
@@ -142,9 +158,9 @@
             this.bulbLight = new THREE.PointLight(hexCode, intensity, 20000); //Creates point light
 
             this.bulbMat = new THREE.MeshPhongMaterial({ //Creates bulb material for the light and customizes it
-                emissive: hexCode,
+                emissive: 0x880808,
                 emissiveIntensity: 1,
-                color: 0xffff00
+                color: 0x880808
             });
 
             this.bulbLight.add(new THREE.Mesh(this.bulbGeometry, this.bulbMat)); //Adds bulb geometry & bulb light to the point light
@@ -180,6 +196,7 @@
 
             terrainGeom = new THREE.PlaneBufferGeometry(800, 800, 256, 256); //Creates terrain geometry
             terrainMat = new THREE.MeshPhysicalMaterial({
+                color: 0x1a2e18,
                 map: loader.load('land/sand3.jpg'), //Loads in terrain texture
                 side: THREE.DoubleSide
             }); //Makes terrain doublesided
@@ -220,7 +237,7 @@
         function createMoon() {
             moon = new makeLights(moonColor[0], 0, 280, 0, .1);
             //Creates both lights and geometries
-         
+
             worldItems.push(moon.bulbLight);
         }
 
@@ -260,7 +277,7 @@
                 //Set the materials properites for the branches and leaves
                 let tree = new THREE.Object3D();
                 let branchMaterial = this.texture;
-             
+
 
                 // Create a random number to determine if the tree has leaves or not and what 
                 //shape leaf it will be
@@ -367,7 +384,7 @@
 
         }
 
-       
+
 
         //src: https://github.com/NekoStark/lsystem-threejs-unifi
         // A function that clones the current state
@@ -460,11 +477,45 @@
             return rules[choice];
         }
 
+        //https://codepen.io/Xanmia/pen/nqyMgJ
+        //This link helped us identify how to create particle explosions in our code
+        //This function actually creates the particles that will explode whenever the camera collides with an object
+        function ExplodeAnimation(x, y, z) {
+            var geometry = new THREE.Geometry(); //Create a geometry
+ 
+            for (let i = 0; i < totalObjects; i++) { //Iterates a set number of times. Creates another particle each time
+                var vertex = new THREE.Vector3(x, y, z); //Creates a new vector 3 with the given x y z values
+                geometry.vertices.push(vertex);//Adds the vector as vertices to the geomety
+                //Creates different directions the particles will explode off into based on the particles position
+                dirs.push({ x: (Math.random() * movementSpeeds) - (movementSpeeds / 2), y: (Math.random() * movementSpeeds) - (movementSpeeds / 2), z: (Math.random() * movementSpeeds) - (movementSpeeds / 2) });
+            }
+ 
+            var colorsRand = Math.round(Math.random() * 17) //Generates a random number that will be used to randomly
+            //select a color from the color array
+            var material = new THREE.PointsMaterial({ size: objectSize, color: 0xFFFF00 }); //Create point material
+            //with random color
+            this.object = new THREE.Points(geometry, material);; //make a mesh as the object of this function
+            scene.add(this.object); //Adds the particle object to the scene
+ 
+            this.update = function () { //Function which adds all of these particles to the scene and sends them off in random
+                //directions
+                var pCount = totalObjects; //Set pcount equal to the number of total particles we want
+                while (pCount--) { //decrement pcount
+                    var particle = this.object.geometry.vertices[pCount] //Creates a particle using the vertices of the object
+                    //Continuously increments the x,y,z position of the particle
+                    particle.y += dirs[pCount].y;
+                    particle.x += dirs[pCount].x;
+                    particle.z += dirs[pCount].z;
+                }
+                this.object.geometry.verticesNeedUpdate = true;
+            }
+        }
+
         //This function checks the position of the sun and moon and changes the colors/intensity of either of the two
         //objects based on height
-        function checkPositions( moon) {
+        function checkPositions(moon) {
             let moonLight = moon.bulbLight;
-          
+
             //If the moon is a specific height then modify the color of the renderer, the world (sphere surrounding the terrain),
             // & change the intensity of the moon
             if (moonLight.position.y > 300) {
@@ -541,6 +592,27 @@
             return treePos;
         }
 
+        function makeStars(numStars) {
+
+     
+
+            for (let i = 0; i < numStars; i++) {
+                let position = randomizePositions();
+
+                const geometry = new THREE.SphereGeometry(5, 32, 16);
+                const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+                const sphere = new THREE.Mesh(geometry, material);
+                sphere.position.set(position.x, position.y, position.z);
+                stars.push(sphere);
+                worldItems.push(sphere);
+                scene.add(sphere);
+
+            }
+
+
+
+        }
+
         // A function that makes the trees for the scene. There are 3 types of wood and 3 grammars
         function makeTrees() {
             //Iterates for 30 times
@@ -549,17 +621,17 @@
                 let rules;
                 //Make oak trees for 10 iterations
                 if (i < 10) {
-                    params = new Params("F", 2, 22.5, 25, 2);
+                    params = new Params("F", 2, 22.5, 25, Math.round(Math.random() * 2));
                     rules = parseRules("F=F[+F]F[F>>][<F]\nF=F[+F]F[+<<F][F>]");
                 }
                 //Make red wood trees for the next 10 iterations
                 else if (i >= 20) {
-                    params = new Params("F", 3, 15, 15, 2);
+                    params = new Params("F", 3, 15, 15, Math.round(Math.random() * 2));
                     rules = parseRules("F=F>[<+F]F[+F>]<F\nF=F>[+F^>^]F\nF=F[+F>]F>");
                 }
                 //Make birch trees for the last 10 iterations
                 else {
-                    params = new Params("F", 2, 30, 20, 2);
+                    params = new Params("F", 2, 30, 20, Math.round(Math.random() * 2));
                     rules = parseRules("F=F[+F]F[F>>][<F]\nF=F[+F]F[+<<F][F>]");
                 }
                 let rewriter = new Rewriter(rules); //Choose which rule to use based on some probability out of the rules 
@@ -655,8 +727,33 @@
 
         //The animate function is a function which is continuously called for every frame of the program
         function animate() {
+
+            if (movingStars.length!=0){
+                for (let i = 0; i < movingStars.length; i ++){
+                    if (movingStars[i].position.y <= 450){
+                        movingStars[i].translateY(5);
+
+                    }
+                    else  {
+                        parts.push(new ExplodeAnimation(movingStars[i].position.x,  movingStars[i].position.y,  movingStars[i].position.z));
+                        scene.remove(movingStars[i]);
+                        movingStars[i].material.dispose();
+                        movingStars[i].geometry.dispose();
+                        movingStars.splice(i, 1);
+                        //parts.pop();
+                        
+                    }
+                  
+                }
+            }
+
+            var pCount = parts.length;
+            while (pCount--) {
+                parts[pCount].update(); //Keeps exploding the particles
+            }
+
             //Adds .2 to the change variable and then gets the sin of that value
-            change += .2;
+            change += .1;
             sinwave = Math.sin(change);
 
             //Creates a raycaster at the camera position that casts in the -y direction
@@ -702,18 +799,11 @@
 
         // a function that is called continuously in animate that handles the cursor, hightlighting, and sun/moon rotation
         function render() {
-            //for every child of every tree, set the emissive back to normal
-            for (let i = 0; i < trees.length; i++) {
-                for (let n = 0; n < trees[i].children.length; n++) {
-                    trees[i].children[n].material.emissive.setHex(0x000000);
-                }
-            }
             // raycast from the camera position in the direction of the camera lookat
             raycaster.set(camera.getWorldPosition(new THREE.Vector3), camera.getWorldDirection(new THREE.Vector3));
             // record the intersection point of the raycaster with any world item
             const intersections = raycaster.intersectObjects(worldItems, true);
             // record the intersection point of the raycaster with any tree
-            const lightTrees = raycaster.intersectObjects(trees, true);
             // set intersections to the first item in itself if it is not null
             intersection = (intersections.length) > 0 ? intersections[0] : null;
             // if toggle is greater than .001 and intersections is not null 
@@ -722,25 +812,8 @@
                 // update the position of the sphere to be at the point of the raycaster intersection
                 spheres[0].position.copy(intersection.point);
                 // scale the sphere so that the size is consistant 
-                cursor.scale.set(intersection.distance*.5,intersection.distance*.5,intersection.distance*.5 )
+                cursor.scale.set(intersection.distance * .5, intersection.distance * .5, intersection.distance * .5)
                 toggle = 0;
-            }
-            // if the tree intersection array contains anything
-            if (lightTrees.length > 0) {
-                let indexT;
-                // for each child of each tree
-                for (let i = 0; i < trees.length; i++) {
-                    for (let n = 0; n < trees[i].children.length; n++) {
-                        // if any of the children's id matches the id of the intersected mesh, record the tree index
-                        if (trees[i].children[n].id == lightTrees[0].object.id) {
-                            indexT = i;
-                        }
-                    }
-                }
-                // for every child of the tree at the recorded index, set the emissive to indicate highlighting
-                for (let g = 0; g < trees[indexT].children.length; g++) {
-                    trees[indexT].children[g].material.emissive.setHex(0xECDBEF);
-                }
             }
             //increase toggle by delta
             toggle += clock.getDelta();
@@ -748,9 +821,9 @@
             updateSize();
             requestAnimationFrame(render);
             // Rotate the sun and moon around the world 
-        
-         
-            checkPositions( moon);
+
+
+            checkPositions(moon);
             renderer.render(scene, camera);
         }
 
@@ -794,6 +867,12 @@
                     hit = true; //Sets boolean "hit" to true
                 }
             }
+            for (let t = 0; t < stars.length; t++) { //For the length of the array containing all of the trees
+                if (calcPointDistance(camera.position, stars[t].position) <= 2) { //Calcs whether the camera and a
+                    //certain tree are too close together
+                    starHit = t; //Sets boolean "hit" to true
+                }
+            }
             //Src: https://github.com/TovAqulic/threejs_collision_issue
             if (hit == true) { //If the user has collided with a tree then move the user in the opposite direction that
                 //the tree they collided with is in
@@ -802,6 +881,12 @@
                 if (movement == "backward") camera.translateZ(-speed);
                 if (movement == "right") camera.translateX(-speed);
                 hit = false; //Sets the "hit" boolean to false
+            }
+             //Src: https://github.com/TovAqulic/threejs_collision_issue
+             if (starHit != -1) { 
+                movingStars.push(stars[starHit]);
+                stars.splice(starHit, 1);
+                starHit = -1; //Sets the "hit" boolean to false
             }
             //If the user is out of bounds then move them in the opposite direction of the way they are trying to walk
             else if (camera.position.x < -380 || camera.position.x > 380 || camera.position.z < -380 || camera.position.z > 380) {
@@ -828,6 +913,7 @@
         createMoon();
 
         makeTrees();
+        makeStars(5);
         makeBody();
 
         animate();
