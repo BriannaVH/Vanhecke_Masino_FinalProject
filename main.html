@@ -15,8 +15,8 @@
         //Imports
         import * as THREE from "http://cs.merrimack.edu/~stuetzlec/three.js-master/build/three.module.js";
         import { PointerLockControls } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/controls/PointerLockControls.js';
-
-
+        import { LightningStrike } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/geometries/LightningStrike.js';
+        import { LightningStorm } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/objects/LightningStorm.js';
         //Variable Declaration
         let scene = new THREE.Scene();
         let windowWidth = window.innerWidth;
@@ -42,8 +42,12 @@
         let parts = [];
 
 
+        let smokeParticles;
+        let smokeTexture;
+        let smokeMaterial;
+        let smokeGeo
 
-
+        let delta;
         // used in terrain generation
         let peak = 30;
         let smoothing = 200;
@@ -64,6 +68,8 @@
         let hit = false;
         let moving = false;
         let starHit = -1;
+        let starsCollected = 0;
+        let lives = 3;
 
         let intersection = null;
 
@@ -71,7 +77,7 @@
         let trees = [];
         let spheres = [];
         let worldItems = [];
-        let stars =[];
+        let stars = [];
         let movingStars = [];
 
         // used in movement and collision
@@ -97,6 +103,7 @@
         let cursorGeom;
         let cursorMat;
         let cursor;
+
 
         let moon;
         let wood = new THREE.MeshPhongMaterial({ color: 0x80471C, map: loader.load("trees/oakwood.jpg") });
@@ -482,21 +489,21 @@
         //This function actually creates the particles that will explode whenever the camera collides with an object
         function ExplodeAnimation(x, y, z) {
             var geometry = new THREE.Geometry(); //Create a geometry
- 
+
             for (let i = 0; i < totalObjects; i++) { //Iterates a set number of times. Creates another particle each time
                 var vertex = new THREE.Vector3(x, y, z); //Creates a new vector 3 with the given x y z values
                 geometry.vertices.push(vertex);//Adds the vector as vertices to the geomety
                 //Creates different directions the particles will explode off into based on the particles position
                 dirs.push({ x: (Math.random() * movementSpeeds) - (movementSpeeds / 2), y: (Math.random() * movementSpeeds) - (movementSpeeds / 2), z: (Math.random() * movementSpeeds) - (movementSpeeds / 2) });
             }
- 
+
             var colorsRand = Math.round(Math.random() * 17) //Generates a random number that will be used to randomly
             //select a color from the color array
             var material = new THREE.PointsMaterial({ size: objectSize, color: 0xFFFF00 }); //Create point material
             //with random color
             this.object = new THREE.Points(geometry, material);; //make a mesh as the object of this function
             scene.add(this.object); //Adds the particle object to the scene
- 
+
             this.update = function () { //Function which adds all of these particles to the scene and sends them off in random
                 //directions
                 var pCount = totalObjects; //Set pcount equal to the number of total particles we want
@@ -592,9 +599,38 @@
             return treePos;
         }
 
+        function makeSmoke() {
+            smokeTexture = loader.load('skies/smoke.jpg');
+            smokeMaterial = new THREE.MeshLambertMaterial({ color: 0x00FFFF, map: smokeTexture, transparent: false });
+            smokeGeo = new THREE.PlaneGeometry(300, 300);
+            smokeParticles = [];
+
+
+
+
+
+
+            for (let p = 0; p < 150; p++) {
+                var particle = new THREE.Mesh(smokeGeo, smokeMaterial);
+                particle.position.set(Math.random() * 500 - 250, Math.random() * 500 - 250, Math.random() * 1000 - 100);
+                particle.rotation.z = Math.random() * 360;
+                scene.add(particle);
+                smokeParticles.push(particle);
+            }
+        }
+
+        function evolveSmoke() {
+            var sp = smokeParticles.length;
+            while (sp--) {
+                smokeParticles[sp].rotation.z += (delta * 0.2);
+            }
+        }
+
+        //makeSmoke();
+
         function makeStars(numStars) {
 
-     
+
 
             for (let i = 0; i < numStars; i++) {
                 let position = randomizePositions();
@@ -728,22 +764,26 @@
         //The animate function is a function which is continuously called for every frame of the program
         function animate() {
 
-            if (movingStars.length!=0){
-                for (let i = 0; i < movingStars.length; i ++){
-                    if (movingStars[i].position.y <= 450){
+            delta = clock.getDelta();
+
+            //evolveSmoke();
+
+            if (movingStars.length != 0) {
+                for (let i = 0; i < movingStars.length; i++) {
+                    if (movingStars[i].position.y <= 450) {
                         movingStars[i].translateY(5);
 
                     }
-                    else  {
-                        parts.push(new ExplodeAnimation(movingStars[i].position.x,  movingStars[i].position.y,  movingStars[i].position.z));
+                    else {
+                        parts.push(new ExplodeAnimation(movingStars[i].position.x, movingStars[i].position.y, movingStars[i].position.z));
                         scene.remove(movingStars[i]);
                         movingStars[i].material.dispose();
                         movingStars[i].geometry.dispose();
                         movingStars.splice(i, 1);
                         //parts.pop();
-                        
+
                     }
-                  
+
                 }
             }
 
@@ -865,6 +905,10 @@
                 if (calcPointDistance(camera.position, trees[t].position) <= 2) { //Calcs whether the camera and a
                     //certain tree are too close together
                     hit = true; //Sets boolean "hit" to true
+                    lives -= 1;
+                    if (lives == 0) {
+                        gameOver(0);
+                    }
                 }
             }
             for (let t = 0; t < stars.length; t++) { //For the length of the array containing all of the trees
@@ -882,11 +926,15 @@
                 if (movement == "right") camera.translateX(-speed);
                 hit = false; //Sets the "hit" boolean to false
             }
-             //Src: https://github.com/TovAqulic/threejs_collision_issue
-             if (starHit != -1) { 
+            //Src: https://github.com/TovAqulic/threejs_collision_issue
+            if (starHit != -1) {
                 movingStars.push(stars[starHit]);
                 stars.splice(starHit, 1);
                 starHit = -1; //Sets the "hit" boolean to false
+                starsCollected += 1;
+                if (starsCollected == 5) {
+                    gameOver(1);
+                }
             }
             //If the user is out of bounds then move them in the opposite direction of the way they are trying to walk
             else if (camera.position.x < -380 || camera.position.x > 380 || camera.position.z < -380 || camera.position.z > 380) {
@@ -897,6 +945,17 @@
 
             }
         };
+
+        function gameOver(state) {
+            if (state == 1) {
+                console.log("YOU WON BITCHES!");
+            }
+            else {
+                console.log("wahh wahh wahhh");
+            }
+
+
+        }
 
         document.addEventListener('keydown', onDocumentKeyDown, false); //Adds key handler to the document
 
