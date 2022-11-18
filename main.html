@@ -1,0 +1,838 @@
+<html>
+
+<head>
+    <title>Forest Walk</title>
+</head>
+
+<!-- Zara Masino & Brianna Van Hecke -->
+<!-- We did the head bob & made the user casts a shadow  -->
+
+<body>
+    <canvas id="myCanvas" width="800" height="800"></canvas>
+    <script src="Perlin.js"></script>
+    <script type="module">
+
+        //Imports
+        import * as THREE from "http://cs.merrimack.edu/~stuetzlec/three.js-master/build/three.module.js";
+        import { PointerLockControls } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/controls/PointerLockControls.js';
+
+
+        //Variable Declaration
+        let scene = new THREE.Scene();
+        let windowWidth = window.innerWidth;
+        let windowHeight = window.innerHeight;
+        var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+        camera.lookAt(new THREE.Vector3(0.0, 0.0, 0.0));
+        camera.position.set(0, 80, 10);
+        scene.add(camera);
+
+        let perlin = new Perlin(); // used for terrain generation
+        let loader = new THREE.TextureLoader(); //Texture loader
+        let raycaster = new THREE.Raycaster();
+        let group = new THREE.Group(); // used for the body
+        let clock = new THREE.Clock();
+
+        // used in terrain generation
+        let peak = 50; 
+        let smoothing = 300;
+
+        // used for movement and rotation management
+        let speed = 2;
+        let turnSpeed = .2;
+
+        // used for the head bobbing effect
+        let change = 0;
+        let sinwave = 0;
+        let displacement = 0;
+
+        // used for the cursor placement
+        let toggle = 0;
+
+        // used in movement and collision
+        let hit = false;
+        let moving = false;
+
+        let intersection = null;
+
+        let trees = [];
+        let spheres = [];
+        let worldItems = [];
+
+        // used in movement and collision
+        let movement;
+        let oldCamera;
+
+        // geometries, materials, and meshes
+        let worldGeom;
+        let worldMat;
+        let world;
+
+        let waterGeom;
+        let waterMat;
+        let water;
+
+        let terrainGeom;
+        let terrainMat;
+        let terrain;
+
+        let terrainShadowMat;
+        let terrainShadow;
+
+        let cursorGeom;
+        let cursorMat;
+        let cursor;
+
+        let moon;
+        let wood = new THREE.MeshPhongMaterial({ color: 0x80471C, map: loader.load("trees/oakwood.jpg") });
+
+        //Colors for sky/sun/moon
+        let moonColor = [0xdde2e5];
+        let skyColors = [0x000608, 0x072f41, 0x094f6d, 0x436e91, 0x5e88b8, 0x7998bb];
+
+        let renderer = new THREE.WebGLRenderer({ canvas: myCanvas, antialias: true });
+        renderer.setClearColor(0xADD8E6);//Sets color of renderer
+        renderer.setPixelRatio(document.getElementById('myCanvas').devicePixelRatio); //Sets renderer to the canvas
+        renderer.setSize(window.innerWidth, window.innerHeight); //Specifies how much of screen will be rendererd
+
+        renderer.shadowMap.enabled = true; //Enables shadow map
+        renderer.shadowMapSoft = true; //Specifies type of shadow
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+        // pointer lock controls for first person camera movement 
+        let controls = new PointerLockControls(camera, document.body); //Enables pointerlock controls
+        document.addEventListener('click', function () {
+            controls.lock(); //Locks pointerlock controls upon the user clicking
+        });
+
+        //Initializes Cursor
+        function initCursor() {
+            cursorGeom = new THREE.SphereGeometry(0.02, 16, 16); //Creates a cursor geom
+            cursorMat = new THREE.MeshBasicMaterial({ color: 0xff0000 }); //Cursor material with color
+            cursor = new THREE.Mesh(cursorGeom, cursorMat); //Creates mesh
+            scene.add(cursor); //Adds cursor to the scene
+            spheres.push(cursor); //Adds cursor to the spheres array
+        }
+
+        //Initializes the sphere surrounding our "world"
+        function initWorld() {
+            worldGeom = new THREE.SphereGeometry(550, 32, 32); //Creates world Geometry (is a sphere)
+            worldMat = new THREE.MeshBasicMaterial({
+                color: 0xADD8E6, //Gives specific color
+                wireframe: false,
+                side: THREE.DoubleSide, //Gives the sphere two sides so it is visible from inside and outside
+                map: loader.load("skies/cloud3.jpg")
+            }); //Textures the sphere with clouds
+
+            worldMat.transparent = true; //Makes the world material halfway transparent in order to make the sky look
+            //more realistic
+            worldMat.opacity = .5;
+            world = new THREE.Mesh(worldGeom, worldMat); //Creates world mesh
+            world.rotateZ(1.4708); //Rotates world specific amount to avoid the ""
+            scene.add(world);
+            worldItems.push(world);
+
+        }
+
+        //Creates the sun/moon and their corresponding point lights
+        function makeLights(hexCode, x, y, z, intensity) {
+            renderer.setClearColor(0x000608);//Changes the color of the world to teh 
+            //Creates a sphere (sun/moon) and corresponding pointlight and adds them both to the scene
+
+            this.bulbGeometry = new THREE.SphereGeometry(10, 32, 16); //Creates sphere geometry
+            this.bulbLight = new THREE.PointLight(hexCode, intensity, 20000); //Creates point light
+
+            this.bulbMat = new THREE.MeshPhongMaterial({ //Creates bulb material for the light and customizes it
+                emissive: hexCode,
+                emissiveIntensity: 1,
+                color: 0xffff00
+            });
+
+            this.bulbLight.add(new THREE.Mesh(this.bulbGeometry, this.bulbMat)); //Adds bulb geometry & bulb light to the point light
+            this.bulbLight.position.set(x, y, z); //Positions the light 
+            this.bulbLight.castShadow = true; //Casts shadow from the light
+            this.bulbLight.shadow.bias = - 0.0005; // Reduces self-shadowing on double-sided objects
+            this.bulbLight.shadow.radius = 8; //Increases smoothness of the shadows
+            this.bulbLight.shadow.mapSize.width = 2048; //Increases resolution of shadows
+            this.bulbLight.shadow.mapSize.height = 2048;
+            scene.add(this.bulbLight); //Adds point light to the scene
+        }
+
+        //Creates terrain and water that will appear in the scene
+        function createLandAndWater() {
+
+            waterGeom = new THREE.PlaneBufferGeometry(800, 800, 256, 256); //Creates water geom
+            waterMat = new THREE.MeshPhysicalMaterial({
+                color: 0xffffff, //Sets color to white
+                map: loader.load('water/water.jpg'), //Loads in water texture
+                side: THREE.DoubleSide//Makes doublesided
+            });
+
+            waterMat.opacity = .7; //Makes the opacity to 70%
+            waterMat.transparent = true;
+            water = new THREE.Mesh(waterGeom, waterMat);//Creates water mesh
+
+            water.rotation.x = -Math.PI / 2; //Rotates water so that it appears on the ground surface
+            water.position.y = -25;//Positions the water so that only some water will appear to the user depending on
+            //how hilly a certain part is
+            water.receiveShadow = true; //Water can receive shadows
+            scene.add(water); //Adds water to scene
+            worldItems.push(water); //Adds water to worldItems so that the cursor will recognize the water and not disappear
+
+            terrainGeom = new THREE.PlaneBufferGeometry(800, 800, 256, 256); //Creates terrain geometry
+            terrainMat = new THREE.MeshPhysicalMaterial({
+                map: loader.load('land/sand3.jpg'), //Loads in terrain texture
+                side: THREE.DoubleSide
+            }); //Makes terrain doublesided
+            terrain = new THREE.Mesh(terrainGeom, terrainMat); //Creates terrain mesh
+            terrain.rotation.x = -Math.PI / 2;//Rotates terrain so that it appears on the ground surface
+
+            scene.add(terrain);
+
+            //Makes shadows not completely opaque on the terrain.
+            terrainShadowMat = new THREE.ShadowMaterial(); //Creates shadow material
+            terrainShadowMat.opacity = 0.5; //The terrain shadow is 50% opaque which allows individuals to see the terrain
+            //underneath
+            terrainShadow = new THREE.Mesh(terrainGeom, terrainShadowMat); //Creates shadow mesh
+            terrainShadow.receiveShadow = true;//Shadow mesh receives the shadow
+            terrainShadow.castShadow = true;//Shadow mesh casts shadow
+            terrainShadow.position.copy(terrain.position);//Copies terrains position
+            terrainShadow.rotation.copy(terrain.rotation);//Copies terrains rotation
+            scene.add(terrainShadow);
+
+
+            //src: http://www.stephanbaker.com/post/perlinterrain/
+            var vertices = terrain.geometry.attributes.position.array;
+            for (var i = 0; i <= vertices.length; i += 3) {
+                vertices[i + 2] = peak * perlin.noise(
+                    vertices[i] / smoothing,
+                    vertices[i + 1] / smoothing
+                );
+            }
+            terrain.geometry.attributes.position.needsUpdate = true;
+            terrain.geometry.computeVertexNormals();
+
+
+            terrain.castShadow = true;
+            worldItems.push(terrain);
+        }
+
+        //Creates sun and moon bulblights
+        function createMoon() {
+            moon = new makeLights(moonColor[0], 0, 280, 0, .1);
+            //Creates both lights and geometries
+         
+            worldItems.push(moon.bulbLight);
+        }
+
+        //This function randomly returns a true or false value or a number between 0 and 10 in order to help randomize certain customizations
+        function random() {
+            let randomNumber = Math.round(Math.random() * 10); //Creates a random number between 0 and 10
+            if (randomNumber % 2 == 0) { //If the random number is even
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+
+        //src: https://github.com/NekoStark/lsystem-threejs-unifi
+        // A function that creates a tree
+        function TreeBuilder(string, params, texture) {
+            // The characteristics of the tree
+            this.string = string;
+            this.params = params;
+            this.texture = texture;
+
+            //Function that builds the tree
+            this.build = function () {
+                //Init params for the tree
+                let state = {
+                    bRadius: this.params.branchRadius,
+                    bLength: this.params.branchLength,
+                    bReduction: this.params.branchReduction,
+                    bMinRadius: this.params.branchMinRadius,
+                    position: new THREE.Vector3(0, 0, 0),
+                    rotation: new THREE.Quaternion()
+                }
+                // The stack used to keep track of where elements go 
+                let stateStack = [];
+
+                //Set the materials properites for the branches and leaves
+                let tree = new THREE.Object3D();
+                let branchMaterial = this.texture;
+             
+
+                // Create a random number to determine if the tree has leaves or not and what 
+                //shape leaf it will be
+                let random = Math.random();
+
+                // For the length of the grammar string
+                for (let i = 0; i < this.string.length; i++) {
+                    // Get the character and create a random number
+                    let char = this.string.charAt(i);
+
+                    let rand = Math.random();
+                    // If the character is F, build 0, 1, or 2 branches depending on rand
+                    if (char == "F") {
+                        if (rand < .75) {
+                            tree.add(buildBranch(state, branchMaterial));
+                        }
+                        else if (rand > .95) {
+                            tree.add(buildBranch(state, branchMaterial));
+                            tree.add(buildBranch(state, branchMaterial));
+                        }
+                    }
+
+                    //Reassign rand
+                    rand = Math.random();
+                    // For the z axis
+                    // If the character is +, rotate the branch 180 or -180 degrees depending on rand
+                    if (char == "+") {
+                        if (rand > .5) {
+                            state.rotation.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), this.params.delta * Math.PI / 180));
+                        }
+                        else {
+                            state.rotation.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), -this.params.delta * Math.PI / 180));
+                        }
+                    }
+
+                    // Reassign rand
+                    rand = Math.random();
+                    // For the y axis
+                    // If the character is >, rotate the branch 180 or -180 degrees depending on rand
+                    if (char == ">") {
+                        if (rand > .5) {
+                            state.rotation.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -this.params.delta * Math.PI / 180));
+                        }
+                        else {
+                            state.rotation.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), this.params.delta * Math.PI / 180));
+                        }
+                    }
+                    // Reassing rand
+                    rand = Math.random();
+                    // For the x axis
+                    // If the character is <, rotate the branch 180 or -180 degrees depending on rand
+                    if (char == "<") {
+                        if (rand > .5) {
+                            state.rotation.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -this.params.delta * Math.PI / 180));
+                        }
+                        else {
+                            state.rotation.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), this.params.delta * Math.PI / 180));
+                        }
+                    }
+                    // If the characters are [ or ], pop or push a clone of the state respectively 
+                    if (char == "[") {
+                        stateStack.push(cloneState(state));
+                        state.bRadius = (state.bRadius - state.bReduction) > state.bMinRadius ? (state.bRadius - state.bReduction) : state.bRadius;
+                    }
+                    if (char == "]") {
+                        state = cloneState(stateStack.pop());
+                    }
+
+                }
+                // Turn on shadows for the tree
+                tree.castShadow = true;
+                // Return the tree
+                return tree;
+            }
+        }
+
+        //src: https://github.com/NekoStark/lsystem-threejs-unifi
+        // A function that builds a branch 
+        function buildBranch(state, material) {
+            // Set the rotation to state rotation
+            var transform = new THREE.Quaternion();
+            transform.multiply(state.rotation);
+
+            // Set the position to be appropriate for the tree
+            var position = new THREE.Vector3(0.0, state.bLength / 2, 0.0);
+            // Apply the rotation of the state
+            position.applyQuaternion(state.rotation);
+            // Add the branch position to the tree position
+            state.position.add(position);
+
+            // Create the branch geometry and mesh
+            var geometry = new THREE.CylinderBufferGeometry(state.bRadius, state.bRadius, state.bLength, 16);
+            var branch = new THREE.Mesh(geometry, material);
+            // Copy the rotation and position of the state
+            branch.quaternion.copy(state.rotation);
+            branch.position.copy(state.position);
+
+            // Add the position to the state
+            state.position.add(position);
+            //Turn on shadows for the branch
+            branch.castShadow = true;
+            //Return the branch
+            return branch;
+
+        }
+
+       
+
+        //src: https://github.com/NekoStark/lsystem-threejs-unifi
+        // A function that clones the current state
+        function cloneState(state) {
+            // Return the clone
+            return {
+                bRadius: state.bRadius,
+                bLength: state.bLength,
+                bReduction: state.bReduction,
+                bMinRadius: state.bMinRadius,
+                position: new THREE.Vector3().copy(state.position),
+                rotation: new THREE.Quaternion().copy(state.rotation)
+            }
+        }
+
+        //src: https://github.com/NekoStark/lsystem-threejs-unifi
+        // A function that creates parameters for a tree
+        function Params(axiom, iterations, delta, branchLength,
+            branchRadius, branchReduction, branchMinRadius) {
+            this.axiom = axiom ? axiom : "F";
+            this.iterations = iterations ? iterations : 4;
+            this.delta = delta ? delta : 25;
+            this.branchLength = branchLength ? branchLength : 3;
+            this.branchRadius = branchRadius ? branchRadius : 0.4;
+            this.branchReduction = branchReduction ? branchReduction : 0.1;
+            this.branchMinRadius = branchMinRadius ? branchMinRadius : 0.1;
+        }
+
+        //src: https://github.com/NekoStark/lsystem-threejs-unifi
+        // A function that reads through the rules and reformats them for use
+        function parseRules(rules) {
+            var result = {};
+            // Split on the new line
+            rules.split("\n").forEach(function (a) {
+                // For each line, split at the = sign
+                var line = a.split("=");
+                // If the result is not the first thing in line
+                if (!result[line[0]]) {
+                    // Empty out result at that index
+                    result[line[0]] = [];
+                }
+                // Push the line to result
+                result[line[0]].push(line[1])
+            });
+            // Return the result
+            return result;
+        }
+
+        //src: https://github.com/NekoStark/lsystem-threejs-unifi
+        // A function that rewrites the rules
+        function Rewriter(rules) {
+
+            this.rules = rules;
+
+            this.rewrite = function (params) {
+                // Get the axiom of the params
+                let result = params.axiom;
+                // For each param
+                for (let i = 0; i < params.iterations; i++) {
+                    let localResult = "";
+                    // For each axiom
+                    for (let j = 0; j < result.length; j++) {
+                        // Get that character and set it to the rule of that character
+                        let char = result.charAt(j);
+                        let rule = this.rules[char];
+                        // If the rule is undefined, add the result of getrule 
+                        if (rule !== undefined) {
+                            localResult += getRule(rule);
+                            // Else add the character
+                        } else {
+                            localResult += char;
+                        }
+                    }
+                    // Set result to localresult
+                    result = localResult;
+                }
+                //Return result
+                return result;
+            };
+        }
+
+        //src: https://github.com/NekoStark/lsystem-threejs-unifi
+        // A function that chooses which portion of the rule to use based on probability
+        function getRule(rules) {
+            var probability = rules.length;
+            var choice = probability > 1 ?
+                parseInt((((Math.random() * probability) + 1) * 1000) / 1000) - 1 : 0;
+
+            // Return which rule to use
+            return rules[choice];
+        }
+
+        //This function checks the position of the sun and moon and changes the colors/intensity of either of the two
+        //objects based on height
+        function checkPositions( moon) {
+            let moonLight = moon.bulbLight;
+          
+            //If the moon is a specific height then modify the color of the renderer, the world (sphere surrounding the terrain),
+            // & change the intensity of the moon
+            if (moonLight.position.y > 300) {
+                renderer.setClearColor(skyColors[0]);
+                world.material.color.setHex(skyColors[0]);
+                moonLight.intensity = .8;
+            }
+            else if (240 <= moonLight.position.y && moonLight.position.y < 300) {
+                renderer.setClearColor(skyColors[1]);
+                world.material.color.setHex(skyColors[1]);
+                moonLight.intensity = .7;
+            }
+            else if (180 <= moonLight.position.y && moonLight.position.y < 240) {
+                moonLight.intensity = .6;
+            }
+            else if (120 <= moonLight.position.y && moonLight.position.y < 180) {
+                renderer.setClearColor(skyColors[2]);
+                world.material.color.setHex(skyColors[2]);
+                moonLight.intensity = .5;
+            }
+            else if (moonLight.position.y < 120 && moonLight.position.y > -.5) {
+                moonLight.intensity = .4;
+            }
+            //Turn off the moon point light completely if it is below the terrain
+            else if (moonLight.position.y < -.5) {
+                moonLight.intensity = 0;
+            }
+        }
+
+        //src:https://developer.mozilla.org/en-US/docs/Games/Techniques/3D_collision_detection
+        function calcPointDistance(point, point2) {
+            //This calculates the distance of two points based on the distance formula
+            const distance = Math.sqrt(
+                (point.x - point2.x) * (point.x - point2.x) +
+                (point.y - point2.y) * (point.y - point.y) +
+                (point.z - point2.z) * (point.z - point2.z)
+            )
+            return distance; //Returns distance
+        }
+
+        //Function that randomizes a position (x,y,z) coordinate in the terrain
+        function randomizePositions() {
+
+            let rayHeight = new THREE.Raycaster();
+            let rayDirection = new THREE.Vector3(0, -1, 0);//Gives direction for raycaster
+            //Below recalculates the world matrix of the objects and their descendants on the current frame
+            terrain.updateMatrixWorld(true);
+            scene.updateMatrixWorld(true);
+
+            let treePos = new THREE.Vector3();
+
+            //Gives x and z a random position within the bounds of the terrain
+            let xPos = Math.random() * (380 - 5) + 5;
+            let zPos = Math.random() * (380 - 5) + 5;
+            let yPos = 100;//Gives the y pos a set point above the terrain
+
+            //Randomizes whether the x and z position were negative
+            if (random() == true) {
+                xPos *= -1;
+            }
+            if (random() == true) {
+                zPos *= -1;
+            }
+
+            treePos.set(xPos, yPos, zPos);//Sets treePosition to the randomized x,y and z coordinates
+            rayHeight.ray.set(treePos, rayDirection.normalize()); //Has ray cast downwards from the treePos
+            let intersectHeight = rayHeight.intersectObject(terrainShadow); //Finds where the ray intersects with the 
+            //terrain
+            if (intersectHeight.length != 0) {
+                yPos = intersectHeight[0].point.y; //Sets the yPos to where the ray intersected with the terrain
+            }
+            treePos.set(xPos, yPos, zPos);//Sets treePosition to the randomized x,y and z coordinates
+
+            return treePos;
+        }
+
+        // A function that makes the trees for the scene. There are 3 types of wood and 3 grammars
+        function makeTrees() {
+            //Iterates for 30 times
+            for (let i = 0; i < 30; i++) {
+                let params;
+                let rules;
+                //Make oak trees for 10 iterations
+                if (i < 10) {
+                    params = new Params("F", 2, 22.5, 25, 2);
+                    rules = parseRules("F=F[+F]F[F>>][<F]\nF=F[+F]F[+<<F][F>]");
+                }
+                //Make red wood trees for the next 10 iterations
+                else if (i >= 20) {
+                    params = new Params("F", 3, 15, 15, 2);
+                    rules = parseRules("F=F>[<+F]F[+F>]<F\nF=F>[+F^>^]F\nF=F[+F>]F>");
+                }
+                //Make birch trees for the last 10 iterations
+                else {
+                    params = new Params("F", 2, 30, 20, 2);
+                    rules = parseRules("F=F[+F]F[F>>][<F]\nF=F[+F]F[+<<F][F>]");
+                }
+                let rewriter = new Rewriter(rules); //Choose which rule to use based on some probability out of the rules 
+                //written in the string
+                let string = rewriter.rewrite(params); //Returns which rules were selected
+                let positionTree = randomizePositions(); //Randomizes position of the tree
+                let newTree = new TreeBuilder(string, params, wood).build(); //Builds tree with rules, params, and specific texture
+                newTree.position.set(positionTree.x, positionTree.y, positionTree.z);//Sets position of tree
+
+                //Enables shadows for tree
+                newTree.castShadow = true;
+                newTree.receiveShadow = true;
+                //Pushes tree created onto the worldItems array and trees array
+                worldItems.push(newTree);
+                trees.push(newTree);
+
+                scene.add(newTree);
+            }
+        }
+
+        //Function to make the body of the body that casts a shadow
+        function makeBody() {
+
+            //Creates material that will be used for each body part
+            let wholeBodyMaterial = new THREE.MeshPhongMaterial({
+                colorWrite: false, //Makes the material invisible
+                depthWrite: false
+            });
+
+            //Creates head mesh, positions it, and adds it to the group for the body
+            let headGeometry = new THREE.SphereGeometry(4, 32, 32);
+            let headMaterial = wholeBodyMaterial;
+            let head = new THREE.Mesh(headGeometry, wholeBodyMaterial);
+            head.castShadow = true;
+            head.receiveShadow = true;
+            group.add(head);
+            head.position.set(0, 2, 0);
+
+            //Creates body mesh, positions it relative to the rest of the body, and adds it to the group for the body
+            let bodyGeometry = new THREE.BoxGeometry(3, 8, 3)
+            let bodyMaterial = wholeBodyMaterial;
+            let body = new THREE.Mesh(bodyGeometry, wholeBodyMaterial)
+            body.castShadow = true;
+            body.receiveShadow = true;
+            body.position.set(0, -4, 0);
+            group.add(body)
+
+            //Creates the left arm mesh, positions it relative to the rest of the body, and adds it to the group for the body
+            let leftArmGeometry = new THREE.BoxGeometry(1.2, 10, 1.2)
+            let leftArmMaterial = wholeBodyMaterial;
+            let leftArm = new THREE.Mesh(leftArmGeometry, wholeBodyMaterial)
+            leftArm.castShadow = true;
+            leftArm.receiveShadow = true;
+            leftArm.rotateZ(-Math.PI / 3);
+            leftArm.position.set(-3.3, -3.5, 0);
+            group.add(leftArm);
+
+            //Creates the right arm mesh, positions it relative to the rest of the body, and adds it to the group for the body
+            let rightArmGeometry = new THREE.BoxGeometry(1.2, 10, 1.2)
+            let rightArmMaterial = wholeBodyMaterial;
+            let rightArm = new THREE.Mesh(rightArmGeometry, wholeBodyMaterial)
+            rightArm.castShadow = true;
+            rightArm.receiveShadow = true;
+            rightArm.rotateZ(Math.PI / 3);
+            rightArm.position.set(3.3, -3.5, 0);
+            group.add(rightArm);
+
+            //Creates the right leg mesh, positions it relative to the rest of the body, and adds it to the group for the body
+            let rightLegGeometry = new THREE.BoxGeometry(2, 10, 2)
+            let rightLegMaterial = wholeBodyMaterial;
+            let rightLeg = new THREE.Mesh(rightLegGeometry, wholeBodyMaterial)
+            rightLeg.castShadow = true;
+            rightLeg.receiveShadow = true;
+            rightLeg.rotateZ(Math.PI / 6);
+            rightLeg.position.set(3.3, -12, 0);
+            group.add(rightLeg);
+
+            //Creates the left arm mesh, positions it relative to the rest of the body, and adds it to the group for the body
+            let leftLegGeometry = new THREE.BoxGeometry(2, 10, 2)
+            let leftLegMaterial = wholeBodyMaterial;
+            let leftLeg = new THREE.Mesh(leftLegGeometry, wholeBodyMaterial)
+            leftLeg.castShadow = true;
+            leftLeg.receiveShadow = true;
+            leftLeg.rotateZ(-Math.PI / 6);
+            leftLeg.position.set(-3.3, -12, 0);
+            group.add(leftLeg);
+
+
+            scene.add(group);
+
+        }
+
+
+        //The animate function is a function which is continuously called for every frame of the program
+        function animate() {
+            //Adds .2 to the change variable and then gets the sin of that value
+            change += .2;
+            sinwave = Math.sin(change);
+
+            //Creates a raycaster at the camera position that casts in the -y direction
+            let ray = new THREE.Raycaster();
+            var rayPos = new THREE.Vector3();
+            rayPos.set(camera.position.x, camera.position.y, camera.position.z);
+            var rayDir = new THREE.Vector3(0, -1, 0);
+            ray.set(rayPos, rayDir);
+            // keeps track of where the ray intersects the terrain
+            let intersect = ray.intersectObject(terrain);
+            // if the raycaster is intersecting the terrain
+            if (intersect.length != 0) {
+                // if the person is moving
+                if (moving == true) {
+                    // set displacement to our sin*.2 and set the camera y to the intersection y value plus 20 and the displacement
+                    displacement = sinwave * .2;
+                    camera.position.y = (intersect[0].point.y + 20) + displacement * camera.position.y;
+                }
+                //otherwise the camera is just 20 above the terrain y so the camera should not bob
+                else {
+                    camera.position.y = (intersect[0].point.y + 20)
+                }
+            }
+            // in an edge case where the camera cannot find the terrain during loading, set the camera height to 50
+            else {
+                camera.position.y = 50;
+            }
+
+            requestAnimationFrame(animate);
+            // if the camera is locked in 
+            if (controls.isLocked === true) {
+                // set yPos to the camera y minus 5 then set the group to the camera x z and yPos
+                let yPos = camera.position.y - 5;
+                group.position.y = (yPos);
+                group.position.z = (camera.position.z);
+                group.position.x = (camera.position.x);
+                // make the group rotation match the camera rotation
+                group.setRotationFromMatrix(camera.matrix);
+
+            }
+            renderer.render(scene, camera);
+        }
+
+        // a function that is called continuously in animate that handles the cursor, hightlighting, and sun/moon rotation
+        function render() {
+            //for every child of every tree, set the emissive back to normal
+            for (let i = 0; i < trees.length; i++) {
+                for (let n = 0; n < trees[i].children.length; n++) {
+                    trees[i].children[n].material.emissive.setHex(0x000000);
+                }
+            }
+            // raycast from the camera position in the direction of the camera lookat
+            raycaster.set(camera.getWorldPosition(new THREE.Vector3), camera.getWorldDirection(new THREE.Vector3));
+            // record the intersection point of the raycaster with any world item
+            const intersections = raycaster.intersectObjects(worldItems, true);
+            // record the intersection point of the raycaster with any tree
+            const lightTrees = raycaster.intersectObjects(trees, true);
+            // set intersections to the first item in itself if it is not null
+            intersection = (intersections.length) > 0 ? intersections[0] : null;
+            // if toggle is greater than .001 and intersections is not null 
+            // toggle detects when the cursor has moved too far from the mouse
+            if (toggle > 0.001 && intersection !== null) {
+                // update the position of the sphere to be at the point of the raycaster intersection
+                spheres[0].position.copy(intersection.point);
+                // scale the sphere so that the size is consistant 
+                cursor.scale.set(intersection.distance*.5,intersection.distance*.5,intersection.distance*.5 )
+                toggle = 0;
+            }
+            // if the tree intersection array contains anything
+            if (lightTrees.length > 0) {
+                let indexT;
+                // for each child of each tree
+                for (let i = 0; i < trees.length; i++) {
+                    for (let n = 0; n < trees[i].children.length; n++) {
+                        // if any of the children's id matches the id of the intersected mesh, record the tree index
+                        if (trees[i].children[n].id == lightTrees[0].object.id) {
+                            indexT = i;
+                        }
+                    }
+                }
+                // for every child of the tree at the recorded index, set the emissive to indicate highlighting
+                for (let g = 0; g < trees[indexT].children.length; g++) {
+                    trees[indexT].children[g].material.emissive.setHex(0xECDBEF);
+                }
+            }
+            //increase toggle by delta
+            toggle += clock.getDelta();
+            // update the size of the window if needed
+            updateSize();
+            requestAnimationFrame(render);
+            // Rotate the sun and moon around the world 
+        
+         
+            checkPositions( moon);
+            renderer.render(scene, camera);
+        }
+
+        //source: https://threejs.org/examples/webgl_multiple_views.html
+        //This function updates the window width and height variables to the actual width and height of the computer
+        //regardless of whether the console has been opened or not
+        function updateSize() {
+            if (windowWidth != window.innerWidth || windowHeight != window.innerHeight) { //If the window width or height has
+                //actually been changed than this if statement is triggered
+                windowWidth = window.innerWidth;
+                windowHeight = window.innerHeight;
+                renderer.setSize(windowWidth, windowHeight);
+            }
+        }
+
+        //A function which determines which way the user is moving
+        function onDocumentKeyDown(e) {
+            movement = 0;
+            var keyCode = e.which || e.keyCode; //Gets the key code
+            //Sets the direction the user is moving based on which key the user pressed
+            if (keyCode == 87) movement = "forward";
+            else if (keyCode == 65) movement = "left";
+            else if (keyCode == 68) movement = "right";
+            else if (keyCode == 83) movement = "backward";
+            if (movement != 0) moveAround(); //If the user is moving then call the moveAround function
+        }
+
+        //Function which moves the user & handles collision
+        function moveAround() {
+            moving = true; //Sets the boolean whether the user was moving or not to true
+            oldCamera = camera.clone(); //Create a clone of the camera
+            //Translates the user using a specific speed based on which movement has been triggered
+            if (movement == "forward") camera.translateZ(-speed);
+            if (movement == "left") camera.translateX(-speed);
+            if (movement == "backward") camera.translateZ(speed);
+            if (movement == "right") camera.translateX(speed);
+
+            for (let t = 0; t < trees.length; t++) { //For the length of the array containing all of the trees
+                if (calcPointDistance(camera.position, trees[t].position) <= 2) { //Calcs whether the camera and a
+                    //certain tree are too close together
+                    hit = true; //Sets boolean "hit" to true
+                }
+            }
+            //Src: https://github.com/TovAqulic/threejs_collision_issue
+            if (hit == true) { //If the user has collided with a tree then move the user in the opposite direction that
+                //the tree they collided with is in
+                if (movement == "forward") camera.translateZ(speed);
+                if (movement == "left") camera.translateX(speed);
+                if (movement == "backward") camera.translateZ(-speed);
+                if (movement == "right") camera.translateX(-speed);
+                hit = false; //Sets the "hit" boolean to false
+            }
+            //If the user is out of bounds then move them in the opposite direction of the way they are trying to walk
+            else if (camera.position.x < -380 || camera.position.x > 380 || camera.position.z < -380 || camera.position.z > 380) {
+                if (movement == "forward") camera.translateZ(speed);
+                if (movement == "left") camera.translateX(speed);
+                if (movement == "backward") camera.translateZ(-speed);
+                if (movement == "right") camera.translateX(-speed);
+
+            }
+        };
+
+        document.addEventListener('keydown', onDocumentKeyDown, false); //Adds key handler to the document
+
+        //If the user has not pressed any keys then the boolean determining whether the user is moving should be turned to false
+        document.addEventListener('keyup', (event) => {
+            moving = false;
+        });
+
+
+        // function calls
+        initCursor();
+        initWorld();
+        createLandAndWater();
+        createMoon();
+
+        makeTrees();
+        makeBody();
+
+        animate();
+        render();
+    </script>
+</body>
+
+</html>
