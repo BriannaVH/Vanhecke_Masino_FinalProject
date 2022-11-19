@@ -599,26 +599,25 @@
             return treePos;
         }
 
+       
         function makeSmoke() {
-            smokeTexture = loader.load('skies/smoke.jpg');
-            smokeMaterial = new THREE.MeshLambertMaterial({ color: 0x00FFFF, map: smokeTexture, transparent: false });
-            smokeGeo = new THREE.PlaneGeometry(300, 300);
+            smokeTexture = loader.load('skies/smoke.png');
+            smokeMaterial = new THREE.MeshLambertMaterial({ color: 0x808080, map: smokeTexture, transparent: true, side: THREE.DoubleSide });
+            smokeGeo = new THREE.PlaneGeometry(150, 150);
             smokeParticles = [];
-
-
-
-
-
 
             for (let p = 0; p < 150; p++) {
                 var particle = new THREE.Mesh(smokeGeo, smokeMaterial);
-                particle.position.set(Math.random() * 500 - 250, Math.random() * 500 - 250, Math.random() * 1000 - 100);
-                particle.rotation.z = Math.random() * 360;
+                particle.position.set(0,0,0);
+                particle.rotation.z = Math.random() * 180;
                 scene.add(particle);
                 smokeParticles.push(particle);
             }
         }
 
+        makeSmoke();
+
+      
         function evolveSmoke() {
             var sp = smokeParticles.length;
             while (sp--) {
@@ -766,7 +765,7 @@
 
             delta = clock.getDelta();
 
-            //evolveSmoke();
+            evolveSmoke();
 
             if (movingStars.length != 0) {
                 for (let i = 0; i < movingStars.length; i++) {
