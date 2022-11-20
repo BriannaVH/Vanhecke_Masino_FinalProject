@@ -2,12 +2,52 @@
 
 <head>
     <title>Forest Walk</title>
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link type="text/css" rel="stylesheet" href="main.css">
+    <style>
+        #blocker {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(14, 1, 38, 0.789);
+            color: white;
+        }
+
+        #instructions {
+            width: 100%;
+            height: 100%;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+
+            text-align: center;
+            font-size: 25px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 
 <!-- Zara Masino & Brianna Van Hecke -->
 <!-- We did the head bob & made the user casts a shadow  -->
 
 <body>
+
+    <div id="blocker">
+        <div id="instructions">
+            <p style="font-size:60px">
+                Click to play
+            </p>
+            <p>
+                Move: WASD<br />
+                <br />
+                Look: MOUSE
+            </p>
+        </div>
+    </div>
+
+
     <canvas id="myCanvas" width="800" height="800"></canvas>
     <script src="Perlin.js"></script>
     <script type="module">
@@ -24,6 +64,7 @@
         var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
         camera.lookAt(new THREE.Vector3(0.0, 0.0, 0.0));
         camera.position.set(0, 80, 10);
+
         scene.add(camera);
 
         let perlin = new Perlin(); // used for terrain generation
@@ -49,7 +90,7 @@
 
         let delta;
         // used in terrain generation
-        let peak = 30;
+        let peak = 0;
         let smoothing = 200;
 
         // used for movement and rotation management
@@ -70,6 +111,7 @@
         let starHit = -1;
         let starsCollected = 0;
         let lives = 3;
+        let spotLightOn = false;
 
         let intersection = null;
 
@@ -112,6 +154,8 @@
         let moonColor = [0xdde2e5];
         let skyColors = [0x000608, 0x072f41, 0x094f6d, 0x436e91, 0x5e88b8, 0x7998bb];
 
+        let spotLight, lightTarget;
+
         let renderer = new THREE.WebGLRenderer({ canvas: myCanvas, antialias: true });
         renderer.setClearColor(0xADD8E6);//Sets color of renderer
         renderer.setPixelRatio(document.getElementById('myCanvas').devicePixelRatio); //Sets renderer to the canvas
@@ -124,8 +168,20 @@
         // pointer lock controls for first person camera movement 
         let controls = new PointerLockControls(camera, document.body); //Enables pointerlock controls
         document.addEventListener('click', function () {
+            instructions.style.display = 'none';
+            blocker.style.display = 'none';
+
             controls.lock(); //Locks pointerlock controls upon the user clicking
         });
+
+        controls.addEventListener('unlock', function () {
+
+            blocker.style.display = 'block';
+            instructions.style.display = '';
+            controls.unlock();
+
+        });
+
 
         //Initializes Cursor
         function initCursor() {
@@ -153,6 +209,26 @@
             world.rotateZ(1.4708); //Rotates world specific amount to avoid the ""
             scene.add(world);
             worldItems.push(world);
+
+        }
+
+        function initFlashLight() {
+
+            spotLight = new THREE.SpotLight(0xffff00, 2, 0, Math.PI * .1, 0, 1);
+
+            spotLight.castShadow = true;
+           // spotLight.receiveShadow = true;
+          //  spotLight.shadow = new THREE.SpotLightShadow(new THREE.PerspectiveCamera(20, 1, 1, 250));
+            spotLight.target = cursor;
+
+
+            spotLight.shadow.camera.near = 500;
+            spotLight.shadow.camera.far = 4000;
+
+            spotLightOn = true;
+
+            camera.add(spotLight);
+
 
         }
 
@@ -599,7 +675,7 @@
             return treePos;
         }
 
-       
+
         function makeSmoke() {
             smokeTexture = loader.load('skies/smoke.png');
             smokeMaterial = new THREE.MeshLambertMaterial({ color: 0x808080, map: smokeTexture, transparent: true, side: THREE.DoubleSide });
@@ -608,16 +684,16 @@
 
             for (let p = 0; p < 150; p++) {
                 var particle = new THREE.Mesh(smokeGeo, smokeMaterial);
-                particle.position.set(0,0,0);
+                particle.position.set(0, 0, 0);
                 particle.rotation.z = Math.random() * 180;
                 scene.add(particle);
                 smokeParticles.push(particle);
             }
         }
 
-        makeSmoke();
+        //    makeSmoke();
 
-      
+
         function evolveSmoke() {
             var sp = smokeParticles.length;
             while (sp--) {
@@ -758,6 +834,7 @@
             scene.add(group);
 
         }
+        
 
 
         //The animate function is a function which is continuously called for every frame of the program
@@ -765,7 +842,7 @@
 
             delta = clock.getDelta();
 
-            evolveSmoke();
+            //evolveSmoke();
 
             if (movingStars.length != 0) {
                 for (let i = 0; i < movingStars.length; i++) {
@@ -887,6 +964,20 @@
             else if (keyCode == 65) movement = "left";
             else if (keyCode == 68) movement = "right";
             else if (keyCode == 83) movement = "backward";
+            else if (keyCode == 70) {
+                console.log("in");
+                spotLightOn = !spotLightOn;
+
+                if (spotLightOn == false) {
+
+                    spotLight.intensity = 0;
+                    spotLightOn = false;
+                }
+                else {
+                    spotLight.intensity = 1;
+                    spotLightOn = true;
+                }
+            }
             if (movement != 0) moveAround(); //If the user is moving then call the moveAround function
         }
 
@@ -973,6 +1064,7 @@
         makeTrees();
         makeStars(5);
         makeBody();
+        initFlashLight();
 
         animate();
         render();
