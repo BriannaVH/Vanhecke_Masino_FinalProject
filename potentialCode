@@ -9,3 +9,17 @@ https://threejs.org/examples/#webgl_shaders_ocean
 
 kinda water with mouse cursor?
 https://threejs.org/examples/#webgl_gpgpu_water
+
+maybe heart and health bar?
+http://jsfiddle.net/p2nuga2f/
+
+stamina and hearts, might need to use vertex shader to do in threejs
+
+stamina in html might be an option
+http://jsfiddle.net/jessefreeman/mXUEx/ 
+
+cool heart thing
+https://codepen.io/shorinamaria/pen/pRwQBx
+
+morphing sphere
+https://codepen.io/smpnjn/pen/MWVLqZa
