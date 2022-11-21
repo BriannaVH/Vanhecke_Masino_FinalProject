@@ -57,6 +57,16 @@
         import { PointerLockControls } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/controls/PointerLockControls.js';
         import { LightningStrike } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/geometries/LightningStrike.js';
         import { LightningStorm } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/objects/LightningStorm.js';
+
+
+        //Variable Declaration
+        import { OutlinePass } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/OutlinePass.js'
+        import { RenderPass } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/RenderPass.js'
+        import { EffectComposer } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/EffectComposer.js'
+        import { OrbitControls } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/controls/OrbitControls.js';
+
+
+
         //Variable Declaration
         let scene = new THREE.Scene();
         let windowWidth = window.innerWidth;
@@ -72,6 +82,15 @@
         let raycaster = new THREE.Raycaster();
         let group = new THREE.Group(); // used for the body
         let clock = new THREE.Clock();
+
+
+
+
+        const GROUND_SIZE = 1000;
+        const ground = new THREE.Mesh(new THREE.PlaneGeometry(GROUND_SIZE, GROUND_SIZE), new THREE.MeshLambertMaterial({ color: 0x072302 }));
+        ground.rotation.x = - Math.PI * 0.5;
+        let currentSceneIndex = 0;
+        let currentTime = 0;
 
 
         let movementSpeeds = 40;
@@ -165,6 +184,9 @@
         renderer.shadowMapSoft = true; //Specifies type of shadow
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
+        
+        let composer = new EffectComposer(renderer);
+
         // pointer lock controls for first person camera movement 
         let controls = new PointerLockControls(camera, document.body); //Enables pointerlock controls
         document.addEventListener('click', function () {
@@ -181,6 +203,187 @@
             controls.unlock();
 
         });
+
+        initLightning();
+        // animate();
+
+        function initLightning() {
+
+            createStormScene(camera, terrain, 450);
+
+
+            scene.userData.timeRate = 4;
+
+
+            scene.userData.lightningColorRGB = [
+                scene.userData.lightningColor.r * 255,
+                scene.userData.lightningColor.g * 255,
+                scene.userData.lightningColor.b * 255
+            ];
+
+            scene.userData.outlineColorRGB = [
+                scene.userData.outlineColor.r * 255,
+                scene.userData.outlineColor.g * 255,
+                scene.userData.outlineColor.b * 255
+            ];
+
+            //createScene();
+
+        }
+        function createOutline(scene, objectsArray, visibleColor) {
+
+            const outlinePass = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, scene.userData.camera, objectsArray);
+            outlinePass.edgeStrength = 2.5;
+            outlinePass.edgeGlow = 0.7;
+            outlinePass.edgeThickness = 2.8;
+            outlinePass.visibleEdgeColor = visibleColor;
+            outlinePass.hiddenEdgeColor.set(0);
+            composer.addPass(outlinePass);
+
+            scene.userData.outlineEnabled = true;
+
+            return outlinePass;
+
+        }
+
+
+
+        //
+
+        function createStormScene(camera, terrain, terrainSize) {
+
+            // scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x050505);
+
+            scene.userData.canGoBackwardsInTime = false;
+
+            scene.userData.camera = new THREE.PerspectiveCamera(27, window.innerWidth / window.innerHeight, 20, 10000);
+
+            // Lights
+
+           // scene.add(new THREE.AmbientLight(0x444444));
+
+            // const light1 = new THREE.DirectionalLight(0xffffff, 0.5);
+            // light1.position.set(1, 1, 1);
+            // scene.add(light1);
+
+            // const posLight = new THREE.PointLight(0x00ffff);
+            // posLight.position.set(0, 100, 0);
+            // scene.add(posLight);
+
+            // Ground
+
+
+
+            scene.userData.camera.position.set(0, 0.2, 1.6).multiplyScalar(GROUND_SIZE * 0.5);
+
+
+            //scene.add(ground);
+
+            // Storm
+
+            scene.userData.lightningColor = new THREE.Color(0xB0FFFF);
+            scene.userData.outlineColor = new THREE.Color(0x00FFFF);
+
+            scene.userData.lightningMaterial = new THREE.MeshBasicMaterial({ color: scene.userData.lightningColor });
+
+            const rayDirection = new THREE.Vector3(0, - 1, 0);
+            let rayLength = 0;
+            const vec1 = new THREE.Vector3();
+            const vec2 = new THREE.Vector3();
+
+            scene.userData.rayParams = {
+
+                radius0: 1,
+                radius1: 0.5,
+                minRadius: 0.3,
+                maxIterations: 7,
+
+                timeScale: 1,
+                propagationTimeFactor: .01,
+                vanishingTimeFactor: .7,
+                subrayPeriod: .1,
+                subrayDutyCycle: .7,
+                deathTime: 1,
+
+                maxSubrayRecursion: 3,
+                ramification: 3,
+                recursionProbability: 0.4,
+
+                roughness: 0.85,
+                straightness: 0.65,
+
+                onSubrayCreation: function (segment, parentSubray, childSubray, lightningStrike) {
+
+                    //console.log("gets in here1");
+                    lightningStrike.subrayConePosition(segment, parentSubray, childSubray, 0.6, 0.6, 0.5);
+
+                    // Plane projection
+
+                    rayLength = lightningStrike.rayParameters.sourceOffset.y;
+                    vec1.subVectors(childSubray.pos1, lightningStrike.rayParameters.sourceOffset);
+                    const proj = rayDirection.dot(vec1);
+                    vec2.copy(rayDirection).multiplyScalar(proj);
+                    vec1.sub(vec2);
+                    const scale = proj / rayLength > 0.5 ? rayLength / proj : 1;
+                    vec2.multiplyScalar(scale);
+                    vec1.add(vec2);
+                    childSubray.pos1.addVectors(vec1, lightningStrike.rayParameters.sourceOffset);
+
+                }
+
+            };
+
+
+
+            const storm = new LightningStorm({
+
+
+                size: GROUND_SIZE,
+                minHeight: 400,//Determine how low the lightning can generate at
+                maxHeight: 800,
+                maxSlope: 0.6,
+                maxLightnings: 1,
+                lightningMinPeriod : 20,
+                lightningMaxPeriod : 30,
+
+
+                lightningParameters: scene.userData.rayParams,
+
+                lightningMaterial: scene.userData.lightningMaterial,
+
+            });
+
+            scene.add(storm);
+            console.log(storm);
+
+            // Compose rendering
+
+            composer.passes = [];
+            composer.addPass(new RenderPass(scene, scene.userData.camera));
+            createOutline(scene, storm.lightningsMeshes, scene.userData.outlineColor);
+
+            scene.userData.render = function (time) {
+               // console.log("gets in here2");
+
+                storm.update(time);
+
+                if (scene.userData.outlineEnabled) {
+
+                    composer.render();
+
+                } else {
+
+                    renderer.render(scene, scene.userData.camera);
+
+                }
+
+            };
+
+            //  return scene;
+
+        }
+
 
 
         //Initializes Cursor
@@ -217,8 +420,8 @@
             spotLight = new THREE.SpotLight(0xffff00, 2, 0, Math.PI * .1, 0, 1);
 
             spotLight.castShadow = true;
-           // spotLight.receiveShadow = true;
-          //  spotLight.shadow = new THREE.SpotLightShadow(new THREE.PerspectiveCamera(20, 1, 1, 250));
+            // spotLight.receiveShadow = true;
+            //  spotLight.shadow = new THREE.SpotLightShadow(new THREE.PerspectiveCamera(20, 1, 1, 250));
             spotLight.target = cursor;
 
 
@@ -834,7 +1037,7 @@
             scene.add(group);
 
         }
-        
+
 
 
         //The animate function is a function which is continuously called for every frame of the program
@@ -915,6 +1118,15 @@
 
         // a function that is called continuously in animate that handles the cursor, hightlighting, and sun/moon rotation
         function render() {
+            currentTime += scene.userData.timeRate * clock.getDelta();
+
+            if (currentTime < 0) {
+
+                currentTime = 0;
+
+            }
+
+            scene.userData.render(currentTime);
             // raycast from the camera position in the direction of the camera lookat
             raycaster.set(camera.getWorldPosition(new THREE.Vector3), camera.getWorldDirection(new THREE.Vector3));
             // record the intersection point of the raycaster with any world item
