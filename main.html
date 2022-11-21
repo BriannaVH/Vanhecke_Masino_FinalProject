@@ -1,7 +1,7 @@
 <html>
 
 <head>
-    <title>Forest Walk</title>
+    <title>Final Project</title>
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <link type="text/css" rel="stylesheet" href="main.css">
     <style>
@@ -46,8 +46,6 @@
             </p>
         </div>
     </div>
-
-
     <canvas id="myCanvas" width="800" height="800"></canvas>
     <script src="Perlin.js"></script>
     <script type="module">
@@ -63,7 +61,6 @@
         import { OutlinePass } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/OutlinePass.js'
         import { RenderPass } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/RenderPass.js'
         import { EffectComposer } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/EffectComposer.js'
-        import { OrbitControls } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/controls/OrbitControls.js';
 
 
 
@@ -109,7 +106,7 @@
 
         let delta;
         // used in terrain generation
-        let peak = 0;
+        let peak = 30;
         let smoothing = 200;
 
         // used for movement and rotation management
@@ -131,7 +128,7 @@
         let starsCollected = 0;
         let lives = 3;
         let spotLightOn = false;
-
+        let gameOverBool = false;
         let intersection = null;
 
 
@@ -179,12 +176,62 @@
         renderer.setClearColor(0xADD8E6);//Sets color of renderer
         renderer.setPixelRatio(document.getElementById('myCanvas').devicePixelRatio); //Sets renderer to the canvas
         renderer.setSize(window.innerWidth, window.innerHeight); //Specifies how much of screen will be rendererd
-
+        renderer.autoClear = false;
+        document.body.appendChild(renderer.domElement);
         renderer.shadowMap.enabled = true; //Enables shadow map
         renderer.shadowMapSoft = true; //Specifies type of shadow
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-        
+
+        var hudCanvas = document.createElement('canvas');
+        // Again, set dimensions to fit the screen.
+        hudCanvas.width = windowWidth;
+        hudCanvas.height = windowHeight;
+        // Get 2D context and draw something supercool.
+        //  var hudBitmap = hudCanvas.getContext('2d');
+        //  hudBitmap.font = "Normal 40px Arial";
+        //  hudBitmap.textAlign = 'center';
+        //  hudBitmap.fillStyle = "rgba(245,245,245,0.75)";
+        //  hudBitmap.fillText('Initializing...', width / 2, height / 2);
+        // Create the camera and set the viewport to match the screen dimensions.
+        var cameraHUD = new THREE.OrthographicCamera(-windowWidth / 2, windowWidth / 2, windowHeight / 2, -windowHeight / 2, 0, 30);
+        // Create also a custom scene for HUD.
+        let sceneHUD = new THREE.Scene();
+        // Create texture from rendered graphics.
+        var hudTexture = new THREE.Texture(hudCanvas)
+        hudTexture.needsUpdate = true;
+        // Create HUD material.
+        var material = new THREE.MeshBasicMaterial({ map: hudTexture });
+        material.transparent = true;
+        // Create plane to render the HUD. This plane fill the whole screen.
+        var planeGeometry = new THREE.PlaneGeometry(windowWidth, windowHeight);
+        var plane = new THREE.Mesh(planeGeometry, material);
+        sceneHUD.add(plane);
+        console.log(windowWidth);
+        console.log(windowHeight);
+        // const x = width - (width * .8)
+        let heartArray = [];
+        function makeHeart(x) {
+            const y = windowHeight - (windowHeight * .8);
+            const heartShape = new THREE.Shape();
+            heartShape.moveTo(x + 5, y + 5);
+            heartShape.bezierCurveTo(x + 5, y + 5, x + 4, y, x, y);
+            heartShape.bezierCurveTo(x - 6, y, x - 6, y + 7, x - 6, y + 7);
+            heartShape.bezierCurveTo(x - 6, y + 11, x - 3, y + 15.4, x + 5, y + 19);
+            heartShape.bezierCurveTo(x + 12, y + 15.4, x + 16, y + 11, x + 16, y + 7);
+            heartShape.bezierCurveTo(x + 16, y + 7, x + 16, y, x + 10, y);
+            heartShape.bezierCurveTo(x + 7, y, x + 5, y + 5, x + 5, y + 5);
+            const geometry = new THREE.ShapeGeometry(heartShape);
+            const hmaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, side: THREE.DoubleSide });
+            const mesh = new THREE.Mesh(geometry, hmaterial);
+            mesh.rotation.z = -3.15;
+            mesh.scale.set(2, 2);
+            sceneHUD.add(mesh);
+            heartArray.push(mesh);
+        }
+
+
+
         let composer = new EffectComposer(renderer);
 
         // pointer lock controls for first person camera movement 
@@ -261,7 +308,7 @@
 
             // Lights
 
-           // scene.add(new THREE.AmbientLight(0x444444));
+            // scene.add(new THREE.AmbientLight(0x444444));
 
             // const light1 = new THREE.DirectionalLight(0xffffff, 0.5);
             // light1.position.set(1, 1, 1);
@@ -344,8 +391,8 @@
                 maxHeight: 800,
                 maxSlope: 0.6,
                 maxLightnings: 1,
-                lightningMinPeriod : 20,
-                lightningMaxPeriod : 30,
+                lightningMinPeriod: 20,
+                lightningMaxPeriod: 30,
 
 
                 lightningParameters: scene.userData.rayParams,
@@ -364,7 +411,7 @@
             createOutline(scene, storm.lightningsMeshes, scene.userData.outlineColor);
 
             scene.userData.render = function (time) {
-               // console.log("gets in here2");
+                // console.log("gets in here2");
 
                 storm.update(time);
 
@@ -914,7 +961,7 @@
                 let position = randomizePositions();
 
                 const geometry = new THREE.SphereGeometry(5, 32, 16);
-                const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+                const material = new THREE.MeshPhongMaterial({ color: 0xffff00, shininess: 100, specular: 0xffff00, emissive: 0xffff00, reflectivity: 1 });
                 const sphere = new THREE.Mesh(geometry, material);
                 sphere.position.set(position.x, position.y, position.z);
                 stars.push(sphere);
@@ -1101,7 +1148,7 @@
                 camera.position.y = 50;
             }
 
-            requestAnimationFrame(animate);
+
             // if the camera is locked in 
             if (controls.isLocked === true) {
                 // set yPos to the camera y minus 5 then set the group to the camera x z and yPos
@@ -1113,7 +1160,12 @@
                 group.setRotationFromMatrix(camera.matrix);
 
             }
+            hudTexture.needsUpdate = true;
+            // Render HUD on top of the scene.
             renderer.render(scene, camera);
+            renderer.render(sceneHUD, cameraHUD);
+            requestAnimationFrame(animate);
+
         }
 
         // a function that is called continuously in animate that handles the cursor, hightlighting, and sun/moon rotation
@@ -1152,7 +1204,11 @@
 
 
             checkPositions(moon);
+            hudTexture.needsUpdate = true;
+            // Render HUD on top of the scene.
             renderer.render(scene, camera);
+            renderer.render(sceneHUD, cameraHUD);
+            //renderer.render(scene, camera);
         }
 
         //source: https://threejs.org/examples/webgl_multiple_views.html
@@ -1206,10 +1262,15 @@
             for (let t = 0; t < trees.length; t++) { //For the length of the array containing all of the trees
                 if (calcPointDistance(camera.position, trees[t].position) <= 2) { //Calcs whether the camera and a
                     //certain tree are too close together
-                    hit = true; //Sets boolean "hit" to true
-                    lives -= 1;
+                    if (gameOverBool == false) {
+                        hit = true; //Sets boolean "hit" to true
+                        lives -= 1;
+                        heartArray[lives].material.color.set(0x000000);
+                    }
+
                     if (lives == 0) {
                         gameOver(0);
+                        gameOverBool = true;
                     }
                 }
             }
@@ -1254,6 +1315,7 @@
             }
             else {
                 console.log("wahh wahh wahhh");
+
             }
 
 
@@ -1267,6 +1329,8 @@
         });
 
 
+
+
         // function calls
         initCursor();
         initWorld();
@@ -1278,8 +1342,19 @@
         makeBody();
         initFlashLight();
 
+        let positions = [windowWidth - (windowWidth * .78), windowWidth - (windowWidth * .81), windowWidth - (windowWidth * .84)];
+        for (let i = 0; i < 3; i++) {
+            makeHeart(positions[i]);
+            console.log(heartArray[i]);
+        }
+        console.log(positions);
+
+
+
         animate();
         render();
+
+
     </script>
 </body>
 

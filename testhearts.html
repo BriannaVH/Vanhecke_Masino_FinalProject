@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>three.js webgl - lightning strike</title>
+
+</head>
+
+<body>
+    <canvas id="myCanvas" width="800" height="800"></canvas>
+
+    <!-- <div id="container"></div> -->
+
+
+    <!-- Import maps polyfill -->
+    <!-- Remove this when import maps will be widely supported -->
+
+
+
+    <script type="module">
+
+
+        import * as THREE from "http://cs.merrimack.edu/~stuetzlec/three.js-master/build/three.module.js";
+        import { PointerLockControls } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/controls/PointerLockControls.js';
+
+
+       // document.addEventListener("DOMContentLoaded", function () {
+
+
+            // Create scene for 3D content.
+            var scene = new THREE.Scene();
+
+            // Create shortcuts for window size.
+            var width = window.innerWidth;
+            var height = window.innerHeight;
+            let windowWidth = window.innerWidth;
+            let windowHeight = window.innerHeight;
+
+            // Create camera and move it a bit further. Make it to look to origo.
+            var camera = new THREE.PerspectiveCamera(45, width / height, 1, 500);
+            camera.position.y = 100;
+            camera.position.z = 100;
+            camera.position.x = 100;
+            camera.lookAt(scene.position);
+
+            // Create renderer.
+            var renderer = new THREE.WebGLRenderer({  canvas: myCanvas, antialias: false });
+            renderer.setSize(width, height);
+            renderer.autoClear = false;
+            document.body.appendChild(renderer.domElement);
+
+            // Let there be light!
+            var light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(50, 50, 50);
+            scene.add(light);
+
+            //   And the box.
+            var bgeometry = new THREE.BoxGeometry(20, 20, 20);
+            var material = new THREE.MeshPhongMaterial({ color: 0xcccccc });
+            var cube = new THREE.Mesh(bgeometry, material);
+            scene.add(cube);
+
+            let controls = new PointerLockControls(camera, document.body); //Enables pointerlock controls
+            document.addEventListener('click', function () {
+                // instructions.style.display = 'none';
+                // blocker.style.display = 'none';
+
+                controls.lock(); //Locks pointerlock controls upon the user clicking
+            });
+
+
+            // Ok, now we have the cube. Next we'll create the hud. For that we'll
+            // need a separate scene which we'll render on top of our 3D scene. We'll
+            // use a dynamic texture to render the HUD.
+
+            // We will use 2D canvas element to render our HUD.  
+            var hudCanvas = document.createElement('canvas');
+            // Again, set dimensions to fit the screen.
+            hudCanvas.width = width;
+            hudCanvas.height = height;
+            // Get 2D context and draw something supercool.
+          //  var hudBitmap = hudCanvas.getContext('2d');
+          //  hudBitmap.font = "Normal 40px Arial";
+          //  hudBitmap.textAlign = 'center';
+          //  hudBitmap.fillStyle = "rgba(245,245,245,0.75)";
+          //  hudBitmap.fillText('Initializing...', width / 2, height / 2);
+            // Create the camera and set the viewport to match the screen dimensions.
+            var cameraHUD = new THREE.OrthographicCamera(-width / 2, width / 2, height / 2, -height / 2, 0, 30);
+            // Create also a custom scene for HUD.
+            let sceneHUD = new THREE.Scene();
+            // Create texture from rendered graphics.
+            var hudTexture = new THREE.Texture(hudCanvas)
+            hudTexture.needsUpdate = true;
+            // Create HUD material.
+            var material = new THREE.MeshBasicMaterial({ map: hudTexture });
+            material.transparent = true;
+            // Create plane to render the HUD. This plane fill the whole screen.
+            var planeGeometry = new THREE.PlaneGeometry(width, height);
+            var plane = new THREE.Mesh(planeGeometry, material);
+            sceneHUD.add(plane);
+            console.log(width);
+            console.log(height);
+            // const x = width - (width * .8)
+            let heartArray = [];
+            function makeHeart(x) {
+                const y = height - (height * .8);
+                const heartShape = new THREE.Shape();
+                heartShape.moveTo(x + 5, y + 5);
+                heartShape.bezierCurveTo(x + 5, y + 5, x + 4, y, x, y);
+                heartShape.bezierCurveTo(x - 6, y, x - 6, y + 7, x - 6, y + 7);
+                heartShape.bezierCurveTo(x - 6, y + 11, x - 3, y + 15.4, x + 5, y + 19);
+                heartShape.bezierCurveTo(x + 12, y + 15.4, x + 16, y + 11, x + 16, y + 7);
+                heartShape.bezierCurveTo(x + 16, y + 7, x + 16, y, x + 10, y);
+                heartShape.bezierCurveTo(x + 7, y, x + 5, y + 5, x + 5, y + 5);
+                const geometry = new THREE.ShapeGeometry(heartShape);
+                const hmaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, side: THREE.DoubleSide });
+                const mesh = new THREE.Mesh(geometry, hmaterial);
+                mesh.rotation.z = -3.15;
+                mesh.scale.set(2, 2);
+                sceneHUD.add(mesh);
+                heartArray.push(mesh);
+            }
+            let positions = [width - (width * .78), width - (width * .81), width - (width * .84)];
+            for (let i = 0; i < 3; i++) {
+                makeHeart(positions[i]);
+            }
+            console.log(positions);
+            const pgeometry = new THREE.PlaneGeometry(100, 10);
+            const pmaterial = new THREE.MeshBasicMaterial({ color: 0xffff00, side: THREE.DoubleSide });
+            const hplane = new THREE.Mesh(pgeometry, pmaterial);
+            hplane.position.set(175, -90, 0);
+            sceneHUD.add(hplane);
+            console.log(hplane);
+           
+            // Now we have two scenes. Only thing we need now is a render loop!
+            function animate() {
+                //  console.log(change);
+
+                // Rotate cube.
+                cube.rotation.x += 0.01;
+                cube.rotation.y -= 0.01;
+                cube.rotation.z += 0.03;
+
+                //    // if (change > -2) {
+                //         pgeometry.scale(change,1,1);
+                //         change -= 1;
+                //   //  }
+                // else{
+                // console.log("empty");
+                // }
+                //  hplane.geometry.parameters.width = hplane.geometry.parameters.width - 1;
+
+
+
+                // Update HUD graphics.
+               // hudBitmap.clearRect(0, 0, width, height);
+              //  hudBitmap.fillText("RAD [x:" + (cube.rotation.x % (2 * Math.PI)).toFixed(1) + ", y:" + (cube.rotation.y % (2 * Math.PI)).toFixed(1) + ", z:" + (cube.rotation.z % (2 * Math.PI)).toFixed(1) + "]", width / 2, height / 2);
+                hudTexture.needsUpdate = true;
+                // Render scene.
+                renderer.render(scene, camera);
+                // Render HUD on top of the scene.
+                renderer.render(sceneHUD, cameraHUD);
+
+                // Request new frame.
+                requestAnimationFrame(animate);
+
+            };
+
+            // Start animation.
+            animate();
+
+            function onDocumentKeyDown(e) {
+                var keyCode = e.which || e.keyCode; //Gets the key code
+                //Sets the direction the user is moving based on which key the user pressed
+                if (keyCode == 87) {
+                    sceneHUD.remove(mesh);
+                    mesh.material.dispose();
+                    mesh.geometry.dispose();
+                }
+            }
+
+            document.addEventListener('keydown', onDocumentKeyDown, false); //Adds key handler to the document
+
+
+
+
+        //});
+
+
+
+
+
+
+
+
+
+
+
+    </script>
+
+</body>
+
+</html>
