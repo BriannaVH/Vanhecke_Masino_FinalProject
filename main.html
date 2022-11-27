@@ -207,8 +207,8 @@
         var planeGeometry = new THREE.PlaneGeometry(windowWidth, windowHeight);
         var plane = new THREE.Mesh(planeGeometry, material);
         sceneHUD.add(plane);
-        console.log(windowWidth);
-        console.log(windowHeight);
+        // console.log(windowWidth);
+        // console.log(windowHeight);
         // const x = width - (width * .8)
         let heartArray = [];
         function makeHeart(x) {
@@ -402,7 +402,7 @@
             });
 
             scene.add(storm);
-            console.log(storm);
+            //  console.log(storm);
 
             // Compose rendering
 
@@ -1085,13 +1085,41 @@
 
         }
 
+        let timer = 0;
+        let footStep = 0;
+        let previousPos = [];
+        let caught = false;
 
 
         //The animate function is a function which is continuously called for every frame of the program
         function animate() {
-
+            //monster.position.set(camera.position.x, camera.position.y+100, camera.position.z);
+            //console.log("monster ", monster);
             delta = clock.getDelta();
+            // console.log(delta);
+            if (caught == false){  
+            timer += delta;
+            //console.log(timer);
+           // console.log("foot", footStep);
+            if (timer >= .01) {
+                console.log(previousPos);
+                timer = 0;
+                footStep += 1;
+                previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z))
+            }
 
+
+            if(previousPos.length>20){
+                monster.position.set(previousPos[0].x,previousPos[0].y,previousPos[0].z);
+                previousPos.shift();
+                if (calcPointDistance(monster.position, camera.position) == 0){
+                    console.log("caught");
+                    caught = true;
+                }
+              //  console.log("MONSTER MOVED");
+            }
+
+        }
             //evolveSmoke();
 
             if (movingStars.length != 0) {
@@ -1233,7 +1261,7 @@
             else if (keyCode == 68) movement = "right";
             else if (keyCode == 83) movement = "backward";
             else if (keyCode == 70) {
-                console.log("in");
+                //   console.log("in");
                 spotLightOn = !spotLightOn;
 
                 if (spotLightOn == false) {
@@ -1311,10 +1339,10 @@
 
         function gameOver(state) {
             if (state == 1) {
-                console.log("YOU WON BITCHES!");
+                //console.log("YOU WON BITCHES!");
             }
             else {
-                console.log("wahh wahh wahhh");
+                //  console.log("wahh wahh wahhh");
 
             }
 
@@ -1331,23 +1359,39 @@
 
 
 
+        function makeMonster() {
+            const geometry = new THREE.SphereGeometry(10, 32, 16);
+            const material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+            const sphere = new THREE.Mesh(geometry, material);
+            scene.add(sphere);
+            return sphere;
+        }
+
+
+        let monster = makeMonster();
+        //console.log(camera.position);
+
+
+
+
+
         // function calls
         initCursor();
         initWorld();
         createLandAndWater();
         createMoon();
 
-        makeTrees();
-        makeStars(5);
-        makeBody();
+        // makeTrees();
+        // makeStars(5);
+        // makeBody();
         initFlashLight();
 
         let positions = [windowWidth - (windowWidth * .78), windowWidth - (windowWidth * .81), windowWidth - (windowWidth * .84)];
         for (let i = 0; i < 3; i++) {
             makeHeart(positions[i]);
-            console.log(heartArray[i]);
+            // console.log(heartArray[i]);
         }
-        console.log(positions);
+        // console.log(positions);
 
 
 
