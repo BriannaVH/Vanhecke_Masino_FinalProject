@@ -490,7 +490,7 @@
             this.bulbGeometry = new THREE.SphereGeometry(10, 32, 16); //Creates sphere geometry
             this.bulbLight = new THREE.PointLight(hexCode, intensity, 20000); //Creates point light
 
-            this.bulbMat = new THREE.MeshPhongMaterial({ //Creates bulb material for the light and customizes it
+            this.bulbMat = new THREE.MeshBasicMaterial({ //Creates bulb material for the light and customizes it
                 emissive: 0x880808,
                 emissiveIntensity: 1,
                 color: 0x880808
@@ -504,6 +504,17 @@
             this.bulbLight.shadow.mapSize.width = 2048; //Increases resolution of shadows
             this.bulbLight.shadow.mapSize.height = 2048;
             scene.add(this.bulbLight); //Adds point light to the scene
+        }
+
+
+        function makeFoggy(){
+            const near = 50;
+            const far = 100;
+          //  const color = 0x111111;
+            const color = 0xff0000;
+
+            scene.fog = new THREE.FogExp2(color, .005);
+            
         }
 
         //Creates terrain and water that will appear in the scene
@@ -1085,8 +1096,6 @@
 
         }
 
-        let timer = 0;
-        let footStep = 0;
         let previousPos = [];
         let caught = false;
 
@@ -1097,29 +1106,24 @@
             //console.log("monster ", monster);
             delta = clock.getDelta();
             // console.log(delta);
-            if (caught == false){  
-            timer += delta;
-            //console.log(timer);
-           // console.log("foot", footStep);
-            if (timer >= .01) {
-                console.log(previousPos);
-                timer = 0;
-                footStep += 1;
-                previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z))
-            }
+            if (caught == false) {
+
+                    console.log(previousPos);
+                    previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z))
 
 
-            if(previousPos.length>20){
-                monster.position.set(previousPos[0].x,previousPos[0].y,previousPos[0].z);
-                previousPos.shift();
-                if (calcPointDistance(monster.position, camera.position) == 0){
-                    console.log("caught");
-                    caught = true;
+
+                if (previousPos.length > 50) {
+                    monster.position.set(previousPos[0].x, previousPos[0].y, previousPos[0].z);
+                    previousPos.shift();
+                    if (calcPointDistance(monster.position, camera.position) == 0) {
+                        console.log("caught");
+                        caught = true;
+                    }
+                    //  console.log("MONSTER MOVED");
                 }
-              //  console.log("MONSTER MOVED");
-            }
 
-        }
+            }
             //evolveSmoke();
 
             if (movingStars.length != 0) {
@@ -1378,12 +1382,13 @@
         // function calls
         initCursor();
         initWorld();
+        makeFoggy();
         createLandAndWater();
         createMoon();
 
-        // makeTrees();
-        // makeStars(5);
-        // makeBody();
+        makeTrees();
+        makeStars(5);
+        makeBody();
         initFlashLight();
 
         let positions = [windowWidth - (windowWidth * .78), windowWidth - (windowWidth * .81), windowWidth - (windowWidth * .84)];
