@@ -984,8 +984,13 @@
 
                 var particle = new THREE.Mesh(smokeGeo, smokeMaterial);
                 //particle.opacity = .1;
+                let rotation = Math.random()*1000;
+                if (random()==true){
+                    rotation *=-1;
+                }
                 particle.position.set(x, y, 0);
-                particle.rotation.z = Math.random() * 1000;
+                particle.rotation.z = rotation;
+                console.log(rotation, 'rotation');
                 scene.add(particle);
                 smokeParticles.push(particle);
             }
@@ -1203,7 +1208,7 @@
                     gameOverBool = true;
                 }
             }
-            //evolveSmoke();
+            evolveSmoke();
 
             if (movingStars.length != 0) {
                 for (let i = 0; i < movingStars.length; i++) {
