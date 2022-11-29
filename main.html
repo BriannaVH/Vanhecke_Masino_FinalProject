@@ -77,7 +77,8 @@
         let perlin = new Perlin(); // used for terrain generation
         let loader = new THREE.TextureLoader(); //Texture loader
         let raycaster = new THREE.Raycaster();
-        let group = new THREE.Group(); // used for the body
+        let humanGroup = new THREE.Group(); // used for the body
+        let monsterGroup = new THREE.Group(); // used for the body
         let clock = new THREE.Clock();
 
 
@@ -942,10 +943,6 @@
 
             smokeTexture = loader.load('skies/smoke1.png');
             smokeMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, map: smokeTexture, transparent: true, side: THREE.DoubleSide });
-
-            //  smokeMaterial.blendingEquation = THREE.SrcAlphaFactor;
-            //  smokeMaterial.blending = THREE.AddEquation;
-
             smokeGeo = new THREE.DodecahedronGeometry(30, 0);
             //smokeMaterial.opacity
             // smokeMaterial.receiveShadow = false;
@@ -956,21 +953,24 @@
             let eyesGeom = new THREE.PlaneGeometry(40, 40);
             let eyesMat = new THREE.MeshBasicMaterial({ transparent: true, map: eyesTexture, side: THREE.DoubleSide });
             let eyes = new THREE.Mesh(eyesGeom, eyesMat);
-            scene.add(eyes);
+          //  scene.add(eyes);
             eyes.position.set(0, 70, 30);
+            monsterGroup.add(eyes);
 
 
             let smileTexture = loader.load('skies/download.png');
             let smileGeo = new THREE.PlaneGeometry(40, 40);
             let smileMat = new THREE.MeshBasicMaterial({ transparent: true, map: smileTexture, side: THREE.DoubleSide });
             let smile = new THREE.Mesh(smileGeo, smileMat);
-            scene.add(smile);
+            //scene.add(smile);
             smile.position.set(0, 35, 30);
+            monsterGroup.add(smile);
 
 
             smokeParticles = [];
 
             for (let p = 0; p < 40; p++) {
+                
                 x = Math.random() * 40;
                 y = Math.random() * 50;
 
@@ -983,6 +983,7 @@
                 y = y + 50;
 
                 var particle = new THREE.Mesh(smokeGeo, smokeMaterial);
+                
                 //particle.opacity = .1;
                 let rotation = Math.random()*1000;
                 if (random()==true){
@@ -990,10 +991,16 @@
                 }
                 particle.position.set(x, y, 0);
                 particle.rotation.z = rotation;
-                console.log(rotation, 'rotation');
+              //  console.log(rotation, 'rotation');
                 scene.add(particle);
                 smokeParticles.push(particle);
+                monsterGroup.add(particle);
             }
+
+           
+            scene.add(monsterGroup);
+
+            console.log(monsterGroup, 'monster group');
         }
 
         //    makeSmoke();
@@ -1083,7 +1090,7 @@
             let head = new THREE.Mesh(headGeometry, wholeBodyMaterial);
             head.castShadow = true;
             head.receiveShadow = true;
-            group.add(head);
+            humanGroup.add(head);
             head.position.set(0, 2, 0);
 
             //Creates body mesh, positions it relative to the rest of the body, and adds it to the group for the body
@@ -1093,7 +1100,7 @@
             body.castShadow = true;
             body.receiveShadow = true;
             body.position.set(0, -4, 0);
-            group.add(body)
+            humanGroup.add(body)
 
             //Creates the left arm mesh, positions it relative to the rest of the body, and adds it to the group for the body
             let leftArmGeometry = new THREE.BoxGeometry(1.2, 10, 1.2)
@@ -1103,7 +1110,7 @@
             leftArm.receiveShadow = true;
             leftArm.rotateZ(-Math.PI / 3);
             leftArm.position.set(-3.3, -3.5, 0);
-            group.add(leftArm);
+            humanGroup.add(leftArm);
 
             //Creates the right arm mesh, positions it relative to the rest of the body, and adds it to the group for the body
             let rightArmGeometry = new THREE.BoxGeometry(1.2, 10, 1.2)
@@ -1113,7 +1120,7 @@
             rightArm.receiveShadow = true;
             rightArm.rotateZ(Math.PI / 3);
             rightArm.position.set(3.3, -3.5, 0);
-            group.add(rightArm);
+            humanGroup.add(rightArm);
 
             //Creates the right leg mesh, positions it relative to the rest of the body, and adds it to the group for the body
             let rightLegGeometry = new THREE.BoxGeometry(2, 10, 2)
@@ -1123,7 +1130,7 @@
             rightLeg.receiveShadow = true;
             rightLeg.rotateZ(Math.PI / 6);
             rightLeg.position.set(3.3, -12, 0);
-            group.add(rightLeg);
+            humanGroup.add(rightLeg);
 
             //Creates the left arm mesh, positions it relative to the rest of the body, and adds it to the group for the body
             let leftLegGeometry = new THREE.BoxGeometry(2, 10, 2)
@@ -1133,10 +1140,10 @@
             leftLeg.receiveShadow = true;
             leftLeg.rotateZ(-Math.PI / 6);
             leftLeg.position.set(-3.3, -12, 0);
-            group.add(leftLeg);
+            humanGroup.add(leftLeg);
 
 
-            scene.add(group);
+            scene.add(humanGroup);
 
         }
 
@@ -1160,7 +1167,7 @@
             }
             if (moving == true) {
                 stamina -= fitness;
-                console.log("losing stamina ", stamina);
+                //console.log("losing stamina ", stamina);
                 scene.fog.density += .00003;
 
             }
@@ -1180,10 +1187,11 @@
                     timer += delta;
                     if (timer > monsterSpeed) {
                         timer = 0;
-                        monster.position.set(previousPos[0].x, previousPos[0].y, previousPos[0].z);
+                        monsterGroup.position.set(previousPos[0].x, previousPos[0].y, previousPos[0].z);
+                        monsterGroup.lookAt(camera.position);
                         previousPos.shift();
                         distance -= 1;
-                        if (calcPointDistance(monster.position, camera.position) == 0) {
+                        if (calcPointDistance(monsterGroup.position, camera.position) == 0) {
                             console.log("caught");
                             caught = true;
                         }
@@ -1269,11 +1277,11 @@
             if (controls.isLocked === true) {
                 // set yPos to the camera y minus 5 then set the group to the camera x z and yPos
                 let yPos = camera.position.y - 5;
-                group.position.y = (yPos);
-                group.position.z = (camera.position.z);
-                group.position.x = (camera.position.x);
+                humanGroup.position.y = (yPos);
+                humanGroup.position.z = (camera.position.z);
+                humanGroup.position.x = (camera.position.x);
                 // make the group rotation match the camera rotation
-                group.setRotationFromMatrix(camera.matrix);
+                humanGroup.setRotationFromMatrix(camera.matrix);
 
             }
             hudTexture.needsUpdate = true;
