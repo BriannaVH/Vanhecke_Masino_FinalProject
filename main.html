@@ -935,16 +935,57 @@
         }
 
 
+        let x = 0;
+        let y = 50;
+
         function makeSmoke() {
-            smokeTexture = loader.load('skies/smoke.png');
-            smokeMaterial = new THREE.MeshLambertMaterial({ color: 0x808080, map: smokeTexture, transparent: true, side: THREE.DoubleSide });
-            smokeGeo = new THREE.PlaneGeometry(150, 150);
+
+            smokeTexture = loader.load('skies/smoke1.png');
+            smokeMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, map: smokeTexture, transparent: true, side: THREE.DoubleSide });
+
+            //  smokeMaterial.blendingEquation = THREE.SrcAlphaFactor;
+            //  smokeMaterial.blending = THREE.AddEquation;
+
+            smokeGeo = new THREE.DodecahedronGeometry(30, 0);
+            //smokeMaterial.opacity
+            // smokeMaterial.receiveShadow = false;
             smokeParticles = [];
 
-            for (let p = 0; p < 150; p++) {
+
+            let eyesTexture = loader.load('skies/eyestra.png');
+            let eyesGeom = new THREE.PlaneGeometry(40, 40);
+            let eyesMat = new THREE.MeshBasicMaterial({ transparent: true, map: eyesTexture, side: THREE.DoubleSide });
+            let eyes = new THREE.Mesh(eyesGeom, eyesMat);
+            scene.add(eyes);
+            eyes.position.set(0, 70, 30);
+
+
+            let smileTexture = loader.load('skies/download.png');
+            let smileGeo = new THREE.PlaneGeometry(40, 40);
+            let smileMat = new THREE.MeshBasicMaterial({ transparent: true, map: smileTexture, side: THREE.DoubleSide });
+            let smile = new THREE.Mesh(smileGeo, smileMat);
+            scene.add(smile);
+            smile.position.set(0, 35, 30);
+
+
+            smokeParticles = [];
+
+            for (let p = 0; p < 40; p++) {
+                x = Math.random() * 40;
+                y = Math.random() * 50;
+
+                if (random() == true) {
+                    x *= -1;
+                }
+                if (random() == true) {
+                    y *= -1;
+                }
+                y = y + 50;
+
                 var particle = new THREE.Mesh(smokeGeo, smokeMaterial);
-                particle.position.set(0, 0, 0);
-                particle.rotation.z = Math.random() * 180;
+                //particle.opacity = .1;
+                particle.position.set(x, y, 0);
+                particle.rotation.z = Math.random() * 1000;
                 scene.add(particle);
                 smokeParticles.push(particle);
             }
@@ -956,11 +997,11 @@
         function evolveSmoke() {
             var sp = smokeParticles.length;
             while (sp--) {
-                smokeParticles[sp].rotation.z += (delta * 0.2);
+                smokeParticles[sp].rotation.z += (delta * 10);
+                //      smokeParticles[sp].rotation.y += (delta * 0.5);
             }
         }
 
-        //makeSmoke();
 
         function makeStars(numStars) {
 
@@ -1394,6 +1435,7 @@
 
 
         function makeMonster() {
+            makeSmoke();
             const geometry = new THREE.SphereGeometry(10, 32, 16);
             const material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
             const sphere = new THREE.Mesh(geometry, material);
