@@ -194,6 +194,16 @@
         let clock = new THREE.Clock();
 
 
+        let previousPos = [];
+        previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z));
+        let caught = false;
+        let distance = 25;
+        let timer = 0;
+        let monsterSpeed = .08;
+        let stamina = 50;
+        let fitness = .5;
+        let gameTime = 0;
+
 
 
         const GROUND_SIZE = 1000;
@@ -348,31 +358,6 @@
         // pointer lock controls for first person camera movement 
         let controls = new PointerLockControls(camera, document.body); //Enables pointerlock controls
 
-        /* When the user clicks on the button, 
-               toggle between hiding and showing the dropdown content */
-
-
-        // // Close the dropdown if the user clicks outside of it
-        // window.onclick = function (event) {
-        //     // if (!event.target.matches('.dropbtn')) {
-        //     //     console.log("triggered");
-        //     //     var dropdowns = document.getElementsByClassName("dropdown-content");
-        //     //     var i;
-        //     //     for (i = 0; i < dropdowns.length; i++) {
-        //     //         var openDropdown = dropdowns[i];
-        //     //         if (openDropdown.classList.contains('show')) {
-        //     //             openDropdown.classList.remove('show');
-        //     //         }
-        //     //     }
-        //     // }
-        //      if (event.target.matches('button')) {
-        //         console.log(event.target);
-        //         console.log("GOT IN");
-        //         instructions.style.display = 'none';
-        //         blocker.style.display = 'none';
-        //         controls.lock(); //Locks pointerlock controls upon the user clicking
-        //     }
-        // }
 
         var e = document.getElementById("selectButton2");
         console.log(e);
@@ -390,16 +375,6 @@
             blocker.style.display = 'none';
             controls.lock(); //Locks pointerlock controls upon the user clicking
         };
-
-
-        // document.addEventListener('click', function () {
-        //     if (document.getElementById("button") == true) {
-        //         instructions.style.display = 'none';
-        //         blocker.style.display = 'none';
-        //         controls.lock(); //Locks pointerlock controls upon the user clicking
-        //     }
-
-        // });
 
         controls.addEventListener('unlock', function () {
 
@@ -1304,15 +1279,7 @@
 
         }
 
-        let previousPos = [];
-        previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z));
-        let caught = false;
-        let distance = 25;
-        let timer = 0;
-        let monsterSpeed = .08;
-        let stamina = 50;
-        let fitness = .5;
-        let gameTime = 0;
+        
 
         //The animate function is a function which is continuously called for every frame of the program
         function animate() {
@@ -1551,6 +1518,12 @@
                 if (calcPointDistance(camera.position, stars[t].position) <= 2) { //Calcs whether the camera and a
                     //certain tree are too close together
                     starHit = t; //Sets boolean "hit" to true
+                }
+            }
+            for (let t = 0; t < trees.length; t++) { //For the length of the array containing all of the trees
+                if (calcPointDistance(camera.position, trees[t].position) <= 2) { //Calcs whether the camera and a
+                    //certain tree are too close together
+                    hit = true; //Sets boolean "hit" to true
                 }
             }
             //Src: https://github.com/TovAqulic/threejs_collision_issue
