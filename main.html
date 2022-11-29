@@ -11,9 +11,11 @@
             height: 100%;
             background-color: rgba(14, 1, 38, 0.789);
             color: white;
+            font-family: "Serif", "Georgia", monospace;
         }
 
         #instructions {
+            position: fixed;
             width: 100%;
             height: 100%;
 
@@ -23,8 +25,82 @@
             align-items: center;
 
             text-align: center;
+            top: -30%;
             font-size: 25px;
+            font-family: "Serif", "Georgia", monospace;
             cursor: pointer;
+        }
+
+        .dropbtn {
+            min-width: 160px;
+            background-color: #F3DEFF;
+            color: black;
+            padding: 16px;
+            font-size: 25px;
+            border: none;
+            cursor: pointer;
+            position: fixed;
+            left: 35%;
+            top: 65%;
+            font-family: "Serif", "Georgia", monospace;
+        }
+
+        .dropbtn:hover,
+        .dropbtn:focus {
+            background-color: #D3D3D3;
+        }
+
+        .dropdown {
+
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+
+            display: none;
+            position: fixed;
+            left: 35%;
+            top: 72%;
+            background-color: #F3DEFF;
+            min-width: 160px;
+            overflow: auto;
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+            font-family: "Serif", "Georgia", monospace;
+            font-size: 20px;
+
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+
+        }
+
+        .dropdown a:hover {
+            background-color: #D3D3D3;
+
+        }
+
+        .show {
+            display: block;
+        }
+
+        .button {
+            min-width: 160px;
+            background-color: #F3DEFF;
+            color: black;
+            padding: 16px;
+            font-size: 25px;
+            border: none;
+            cursor: pointer;
+            position: fixed;
+            left: 55%;
+            top: 65%;
+            font-family: "Serif", "Georgia", monospace;
         }
     </style>
 </head>
@@ -32,20 +108,42 @@
 <!-- Zara Masino & Brianna Van Hecke -->
 <!-- We did the head bob & made the user casts a shadow  -->
 
+
+
+<div id="blocker">
+    <div id="instructions">
+        <p style="font-size:80px">
+            Monster Bash
+        </p>
+        <p>
+            Instructions<br />
+            <br />
+            More Instructions
+        </p>
+    </div>
+    <div class="dropdown">
+        <button onclick="myFunction()" class="dropbtn">Difficulty</button>
+        <div id="myDropdown" class="dropdown-content">
+            <a href="easy">Easy</a>
+            <a href="#medium">Medium</a>
+            <a href="#hard">Hard</a>
+        </div>
+        <div id="button">
+            <button class="button">Start</button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function myFunction() {
+        document.getElementById("myDropdown").classList.toggle("show");
+    }
+</script>
+
 <body>
 
-    <div id="blocker">
-        <div id="instructions">
-            <p style="font-size:60px">
-                Click to play
-            </p>
-            <p>
-                Move: WASD<br />
-                <br />
-                Look: MOUSE
-            </p>
-        </div>
-    </div>
+
     <canvas id="myCanvas" width="800" height="800"></canvas>
     <script src="Perlin.js"></script>
     <script type="module">
@@ -231,18 +329,53 @@
             heartArray.push(mesh);
         }
 
-
-
         let composer = new EffectComposer(renderer);
 
         // pointer lock controls for first person camera movement 
         let controls = new PointerLockControls(camera, document.body); //Enables pointerlock controls
-        document.addEventListener('click', function () {
-            instructions.style.display = 'none';
-            blocker.style.display = 'none';
 
-            controls.lock(); //Locks pointerlock controls upon the user clicking
-        });
+        /* When the user clicks on the button, 
+               toggle between hiding and showing the dropdown content */
+
+
+        // // Close the dropdown if the user clicks outside of it
+        // window.onclick = function (event) {
+        //     // if (!event.target.matches('.dropbtn')) {
+        //     //     console.log("triggered");
+        //     //     var dropdowns = document.getElementsByClassName("dropdown-content");
+        //     //     var i;
+        //     //     for (i = 0; i < dropdowns.length; i++) {
+        //     //         var openDropdown = dropdowns[i];
+        //     //         if (openDropdown.classList.contains('show')) {
+        //     //             openDropdown.classList.remove('show');
+        //     //         }
+        //     //     }
+        //     // }
+        //      if (event.target.matches('button')) {
+        //         console.log(event.target);
+        //         console.log("GOT IN");
+        //         instructions.style.display = 'none';
+        //         blocker.style.display = 'none';
+        //         controls.lock(); //Locks pointerlock controls upon the user clicking
+        //     }
+        // }
+
+        document.getElementById("button").onclick = function () {
+            console.log("hello");
+            instructions.style.display = 'none';
+                blocker.style.display = 'none';
+                controls.lock(); //Locks pointerlock controls upon the user clicking
+         };
+
+
+        // document.addEventListener('click', function () {
+        //     if (document.getElementById("button") == true) {
+        //         instructions.style.display = 'none';
+        //         blocker.style.display = 'none';
+        //         controls.lock(); //Locks pointerlock controls upon the user clicking
+        //     }
+
+        // });
 
         controls.addEventListener('unlock', function () {
 
@@ -509,7 +642,7 @@
 
 
         function makeFoggy() {
-            const near = 50;
+            const near = 30;
             const far = 100;
             const color = 0xff0000;
             scene.fog = new THREE.FogExp2(color, 0); //.005
@@ -953,7 +1086,7 @@
             let eyesGeom = new THREE.PlaneGeometry(40, 40);
             let eyesMat = new THREE.MeshBasicMaterial({ transparent: true, map: eyesTexture, side: THREE.DoubleSide });
             let eyes = new THREE.Mesh(eyesGeom, eyesMat);
-          //  scene.add(eyes);
+            //  scene.add(eyes);
             eyes.position.set(0, 70, 30);
             monsterGroup.add(eyes);
 
@@ -970,7 +1103,7 @@
             smokeParticles = [];
 
             for (let p = 0; p < 40; p++) {
-                
+
                 x = Math.random() * 40;
                 y = Math.random() * 50;
 
@@ -983,21 +1116,21 @@
                 y = y + 50;
 
                 var particle = new THREE.Mesh(smokeGeo, smokeMaterial);
-                
+
                 //particle.opacity = .1;
-                let rotation = Math.random()*1000;
-                if (random()==true){
-                    rotation *=-1;
+                let rotation = Math.random() * 1000;
+                if (random() == true) {
+                    rotation *= -1;
                 }
                 particle.position.set(x, y, 0);
                 particle.rotation.z = rotation;
-              //  console.log(rotation, 'rotation');
+                //  console.log(rotation, 'rotation');
                 scene.add(particle);
                 smokeParticles.push(particle);
                 monsterGroup.add(particle);
             }
 
-           
+
             scene.add(monsterGroup);
 
             console.log(monsterGroup, 'monster group');
@@ -1161,8 +1294,8 @@
         function animate() {
             delta = clock.getDelta();
             gameTime += delta;
-            if (gameTime > 1){
-                monsterSpeed-=.01;
+            if (gameTime > 1) {
+                monsterSpeed -= .01;
                 gameTime = 0;
             }
             if (moving == true) {
@@ -1382,47 +1515,47 @@
             else if (stamina > 10) {
                 speed = 2;
             }
-                moving = true; //Sets the boolean whether the user was moving or not to true
-                oldCamera = camera.clone(); //Create a clone of the camera
-                //Translates the user using a specific speed based on which movement has been triggered
-                if (movement == "forward") camera.translateZ(-speed);
-                if (movement == "left") camera.translateX(-speed);
-                if (movement == "backward") camera.translateZ(speed);
-                if (movement == "right") camera.translateX(speed);
+            moving = true; //Sets the boolean whether the user was moving or not to true
+            oldCamera = camera.clone(); //Create a clone of the camera
+            //Translates the user using a specific speed based on which movement has been triggered
+            if (movement == "forward") camera.translateZ(-speed);
+            if (movement == "left") camera.translateX(-speed);
+            if (movement == "backward") camera.translateZ(speed);
+            if (movement == "right") camera.translateX(speed);
 
-                for (let t = 0; t < stars.length; t++) { //For the length of the array containing all of the trees
-                    if (calcPointDistance(camera.position, stars[t].position) <= 2) { //Calcs whether the camera and a
-                        //certain tree are too close together
-                        starHit = t; //Sets boolean "hit" to true
-                    }
+            for (let t = 0; t < stars.length; t++) { //For the length of the array containing all of the trees
+                if (calcPointDistance(camera.position, stars[t].position) <= 2) { //Calcs whether the camera and a
+                    //certain tree are too close together
+                    starHit = t; //Sets boolean "hit" to true
                 }
-                //Src: https://github.com/TovAqulic/threejs_collision_issue
-                if (hit == true) { //If the user has collided with a tree then move the user in the opposite direction that
-                    //the tree they collided with is in
-                    if (movement == "forward") camera.translateZ(speed);
-                    if (movement == "left") camera.translateX(speed);
-                    if (movement == "backward") camera.translateZ(-speed);
-                    if (movement == "right") camera.translateX(-speed);
-                    hit = false; //Sets the "hit" boolean to false
+            }
+            //Src: https://github.com/TovAqulic/threejs_collision_issue
+            if (hit == true) { //If the user has collided with a tree then move the user in the opposite direction that
+                //the tree they collided with is in
+                if (movement == "forward") camera.translateZ(speed);
+                if (movement == "left") camera.translateX(speed);
+                if (movement == "backward") camera.translateZ(-speed);
+                if (movement == "right") camera.translateX(-speed);
+                hit = false; //Sets the "hit" boolean to false
+            }
+            //Src: https://github.com/TovAqulic/threejs_collision_issue
+            if (starHit != -1) {
+                movingStars.push(stars[starHit]);
+                stars.splice(starHit, 1);
+                starHit = -1; //Sets the "hit" boolean to false
+                starsCollected += 1;
+                if (starsCollected == 5) {
+                    gameOver(1);
                 }
-                //Src: https://github.com/TovAqulic/threejs_collision_issue
-                if (starHit != -1) {
-                    movingStars.push(stars[starHit]);
-                    stars.splice(starHit, 1);
-                    starHit = -1; //Sets the "hit" boolean to false
-                    starsCollected += 1;
-                    if (starsCollected == 5) {
-                        gameOver(1);
-                    }
-                }
-                //If the user is out of bounds then move them in the opposite direction of the way they are trying to walk
-                else if (camera.position.x < -380 || camera.position.x > 380 || camera.position.z < -380 || camera.position.z > 380) {
-                    if (movement == "forward") camera.translateZ(speed);
-                    if (movement == "left") camera.translateX(speed);
-                    if (movement == "backward") camera.translateZ(-speed);
-                    if (movement == "right") camera.translateX(-speed);
+            }
+            //If the user is out of bounds then move them in the opposite direction of the way they are trying to walk
+            else if (camera.position.x < -380 || camera.position.x > 380 || camera.position.z < -380 || camera.position.z > 380) {
+                if (movement == "forward") camera.translateZ(speed);
+                if (movement == "left") camera.translateX(speed);
+                if (movement == "backward") camera.translateZ(-speed);
+                if (movement == "right") camera.translateX(-speed);
 
-                }
+            }
         };
 
         function gameOver(state) {
