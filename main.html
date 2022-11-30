@@ -138,15 +138,15 @@
     </div>
 
     <div class="dropdown">
-        <div id = "selectbutton">
-        <select class="dropbtn" name="difficulty" id = "selectButton2" onchange="this.className=this.options[this.selectedIndex].className"
-            class="greenText">>
+        <div id="selectbutton">
+            <select class="dropbtn" name="difficulty" id="selectButton2"
+                onchange="this.className=this.options[this.selectedIndex].className" class="greenText">>
 
-            <option class="greyText" disabled="disabled" selected="selected">Choose Difficulty</option>
-            <option class="greenText" value="easy">Easy</option>
-            <option class="blueText" value="medium">Medium</option>
-            <option class="redText" value="hard">Hard</option>
-        </select>
+                <option class="greyText" disabled="disabled" selected="selected">Choose Difficulty</option>
+                <option value="easy" class="greenText" value="easy">Easy</option>
+                <option value="medium" class="blueText" value="medium">Medium</option>
+                <option value="hard" class="redText" value="hard">Hard</option>
+            </select>
         </div>
         <div id="button">
             <button class="button">Start</button>
@@ -184,6 +184,8 @@
         camera.lookAt(new THREE.Vector3(0.0, 0.0, 0.0));
         camera.position.set(0, 80, 10);
 
+        let level = "easy";
+
         scene.add(camera);
 
         let perlin = new Perlin(); // used for terrain generation
@@ -200,7 +202,8 @@
         let distance = 25;
         let timer = 0;
         let monsterSpeed = .08;
-        let stamina = 50;
+        let stamina = 100;
+        let maxStamina = 100;
         let fitness = .5;
         let gameTime = 0;
 
@@ -209,7 +212,6 @@
         const GROUND_SIZE = 1000;
         const ground = new THREE.Mesh(new THREE.PlaneGeometry(GROUND_SIZE, GROUND_SIZE), new THREE.MeshLambertMaterial({ color: 0x072302 }));
         ground.rotation.x = - Math.PI * 0.5;
-        let currentSceneIndex = 0;
         let currentTime = 0;
 
 
@@ -234,7 +236,6 @@
 
         // used for movement and rotation management
         let speed = 2;
-        let turnSpeed = .2;
 
         // used for the head bobbing effect
         let change = 0;
@@ -334,6 +335,28 @@
         // console.log(windowHeight);
         // const x = width - (width * .8)
         let heartArray = [];
+
+        function initParameters(level) {
+            if (level == "easy") {
+                console.log("easy");
+                 distance = 60;
+                 monsterSpeed = .06;
+                 stamina = 100;
+            }
+            else if (level == "medium") {
+                console.log("medium");
+                 distance = 50;
+                 monsterSpeed = .04;
+                 stamina = 100;
+            }
+            else if (level == "hard") {
+                console.log("hard");
+                 distance = 40;
+                 monsterSpeed = .03;
+                 stamina = 70;
+            }
+        }
+
         function makeHeart(x) {
             const y = windowHeight - (windowHeight * .8);
             const heartShape = new THREE.Shape();
@@ -359,20 +382,24 @@
         let controls = new PointerLockControls(camera, document.body); //Enables pointerlock controls
 
 
-        var e = document.getElementById("selectButton2");
-        console.log(e);
-        function onChange() {
-            var value = e.value;
-            var text = e.options[e.selectedIndex].text;
-            console.log(value, text);
-        }
-        e.onchange = onChange;
-        onChange();
+
 
         document.getElementById("button").onclick = function () {
             console.log("hello");
             instructions.style.display = 'none';
             blocker.style.display = 'none';
+            var e = document.getElementById("selectButton2");
+            console.log(e);
+            function onChange() {
+                level = e.value;
+                console.log(level);
+            }
+            e.onchange = onChange;
+            onChange();
+
+            initParameters(level);
+
+
             controls.lock(); //Locks pointerlock controls upon the user clicking
         };
 
@@ -1279,7 +1306,7 @@
 
         }
 
-        
+
 
         //The animate function is a function which is continuously called for every frame of the program
         function animate() {
@@ -1295,9 +1322,9 @@
                 scene.fog.density += .00003;
 
             }
-            else if (stamina < 50) {
+            else if (stamina < maxStamina) {
                 stamina += fitness * 5;
-                console.log("recovering stamina ", stamina);
+               // console.log("recovering stamina ", stamina);
                 scene.fog.density -= .00003 * 5;
             }
             // console.log(delta);
@@ -1579,20 +1606,10 @@
 
         function makeMonster() {
             makeSmoke();
-            const geometry = new THREE.SphereGeometry(10, 32, 16);
-            const material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
-            const sphere = new THREE.Mesh(geometry, material);
-            scene.add(sphere);
-            return sphere;
         }
 
 
         let monster = makeMonster();
-        //console.log(camera.position);
-
-
-
-
 
         // function calls
         initCursor();
