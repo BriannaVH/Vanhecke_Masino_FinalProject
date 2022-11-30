@@ -177,6 +177,7 @@
 
 
         //Variable Declaration
+
         let scene = new THREE.Scene();
         let windowWidth = window.innerWidth;
         let windowHeight = window.innerHeight;
@@ -207,6 +208,7 @@
         let fitness = .5;
         let gameTime = 0;
 
+        let gamePaused = false;
 
 
         const GROUND_SIZE = 1000;
@@ -339,21 +341,21 @@
         function initParameters(level) {
             if (level == "easy") {
                 console.log("easy");
-                 distance = 60;
-                 monsterSpeed = .06;
-                 stamina = 100;
+                distance = 60;
+                monsterSpeed = .06;
+                stamina = 100;
             }
             else if (level == "medium") {
                 console.log("medium");
-                 distance = 50;
-                 monsterSpeed = .04;
-                 stamina = 100;
+                distance = 50;
+                monsterSpeed = .04;
+                stamina = 100;
             }
             else if (level == "hard") {
                 console.log("hard");
-                 distance = 40;
-                 monsterSpeed = .03;
-                 stamina = 70;
+                distance = 40;
+                monsterSpeed = .03;
+                stamina = 70;
             }
         }
 
@@ -385,7 +387,7 @@
 
 
         document.getElementById("button").onclick = function () {
-            console.log("hello");
+            gamePaused = false;
             instructions.style.display = 'none';
             blocker.style.display = 'none';
             var e = document.getElementById("selectButton2");
@@ -401,10 +403,11 @@
 
 
             controls.lock(); //Locks pointerlock controls upon the user clicking
+            animate();
         };
 
         controls.addEventListener('unlock', function () {
-
+            gamePaused = true;
             blocker.style.display = 'block';
             instructions.style.display = '';
             controls.unlock();
@@ -1310,137 +1313,139 @@
 
         //The animate function is a function which is continuously called for every frame of the program
         function animate() {
-            delta = clock.getDelta();
-            gameTime += delta;
-            if (gameTime > 1) {
-                monsterSpeed -= .01;
-                gameTime = 0;
-            }
-            if (moving == true) {
-                stamina -= fitness;
-                //console.log("losing stamina ", stamina);
-                scene.fog.density += .00003;
+            if (gamePaused == false) {
 
-            }
-            else if (stamina < maxStamina) {
-                stamina += fitness * 5;
-               // console.log("recovering stamina ", stamina);
-                scene.fog.density -= .00003 * 5;
-            }
-            // console.log(delta);
-            if (caught == false) {
-                if (calcPointDistance(camera.position, previousPos[previousPos.length - 1]) != 0) {
-                    //   console.log("INNIT ", previousPos);
-                    previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z))
+                delta = clock.getDelta();
+                gameTime += delta;
+                if (gameTime > 1) {
+                    monsterSpeed -= .01;
+                    gameTime = 0;
                 }
+                if (moving == true) {
+                    stamina -= fitness;
+                    //console.log("losing stamina ", stamina);
+                    scene.fog.density += .00003;
 
-                if (previousPos.length > distance) {
-                    timer += delta;
-                    if (timer > monsterSpeed) {
-                        timer = 0;
-                        monsterGroup.position.set(previousPos[0].x, previousPos[0].y, previousPos[0].z);
-                        monsterGroup.lookAt(camera.position);
-                        previousPos.shift();
-                        distance -= 1;
-                        if (calcPointDistance(monsterGroup.position, camera.position) < 30) {
-                            console.log("caught");
-                            caught = true;
+                }
+                else if (stamina < maxStamina) {
+                    stamina += fitness * 5;
+                    // console.log("recovering stamina ", stamina);
+                    scene.fog.density -= .00003 * 5;
+                }
+                // console.log(delta);
+                if (caught == false) {
+                    if (calcPointDistance(camera.position, previousPos[previousPos.length - 1]) != 0) {
+                        //   console.log("INNIT ", previousPos);
+                        previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z))
+                    }
+
+                    if (previousPos.length > distance) {
+                        timer += delta;
+                        if (timer > monsterSpeed) {
+                            timer = 0;
+                            monsterGroup.position.set(previousPos[0].x, previousPos[0].y, previousPos[0].z);
+                            monsterGroup.lookAt(camera.position);
+                            previousPos.shift();
+                            distance -= 1;
+                            if (calcPointDistance(monsterGroup.position, camera.position) < 30) {
+                                console.log("caught");
+                                caught = true;
+                            }
                         }
                     }
-                }
-
-            }
-            else if (caught == true) { //Calcs whether the camera and a
-                //certain tree are too close together
-                if (gameOverBool == false) {
-                    // hit = true; //Sets boolean "hit" to true
-                    lives -= 1;
-                    heartArray[lives].material.color.set(0x000000);
-                    previousPos = [];
-                    previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z));
-                    distance = 25;
-                    caught = false;
 
                 }
-                if (lives == 0) {
-                    gameOver(0);
-                    gameOverBool = true;
-                }
-            }
-            evolveSmoke();
-
-            if (movingStars.length != 0) {
-                for (let i = 0; i < movingStars.length; i++) {
-                    if (movingStars[i].position.y <= 450) {
-                        movingStars[i].translateY(5);
+                else if (caught == true) { //Calcs whether the camera and a
+                    //certain tree are too close together
+                    if (gameOverBool == false) {
+                        // hit = true; //Sets boolean "hit" to true
+                        lives -= 1;
+                        heartArray[lives].material.color.set(0x000000);
+                        previousPos = [];
+                        previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z));
+                        distance = 25;
+                        caught = false;
 
                     }
+                    if (lives == 0) {
+                        gameOver(0);
+                        gameOverBool = true;
+                    }
+                }
+                evolveSmoke();
+
+                if (movingStars.length != 0) {
+                    for (let i = 0; i < movingStars.length; i++) {
+                        if (movingStars[i].position.y <= 450) {
+                            movingStars[i].translateY(5);
+
+                        }
+                        else {
+                            parts.push(new ExplodeAnimation(movingStars[i].position.x, movingStars[i].position.y, movingStars[i].position.z));
+                            scene.remove(movingStars[i]);
+                            movingStars[i].material.dispose();
+                            movingStars[i].geometry.dispose();
+                            movingStars.splice(i, 1);
+                            //parts.pop();
+
+                        }
+
+                    }
+                }
+
+                var pCount = parts.length;
+                while (pCount--) {
+                    parts[pCount].update(); //Keeps exploding the particles
+                }
+
+                //Adds .2 to the change variable and then gets the sin of that value
+                change += .1;
+                sinwave = Math.sin(change);
+
+                //Creates a raycaster at the camera position that casts in the -y direction
+                let ray = new THREE.Raycaster();
+                var rayPos = new THREE.Vector3();
+                rayPos.set(camera.position.x, camera.position.y, camera.position.z);
+                var rayDir = new THREE.Vector3(0, -1, 0);
+                ray.set(rayPos, rayDir);
+                // keeps track of where the ray intersects the terrain
+                let intersect = ray.intersectObject(terrain);
+                // if the raycaster is intersecting the terrain
+                if (intersect.length != 0) {
+                    // if the person is moving
+                    if (moving == true) {
+                        // set displacement to our sin*.2 and set the camera y to the intersection y value plus 20 and the displacement
+                        displacement = sinwave * .2;
+                        camera.position.y = (intersect[0].point.y + 20) + displacement * camera.position.y;
+                    }
+                    //otherwise the camera is just 20 above the terrain y so the camera should not bob
                     else {
-                        parts.push(new ExplodeAnimation(movingStars[i].position.x, movingStars[i].position.y, movingStars[i].position.z));
-                        scene.remove(movingStars[i]);
-                        movingStars[i].material.dispose();
-                        movingStars[i].geometry.dispose();
-                        movingStars.splice(i, 1);
-                        //parts.pop();
-
+                        camera.position.y = (intersect[0].point.y + 20)
                     }
-
                 }
-            }
-
-            var pCount = parts.length;
-            while (pCount--) {
-                parts[pCount].update(); //Keeps exploding the particles
-            }
-
-            //Adds .2 to the change variable and then gets the sin of that value
-            change += .1;
-            sinwave = Math.sin(change);
-
-            //Creates a raycaster at the camera position that casts in the -y direction
-            let ray = new THREE.Raycaster();
-            var rayPos = new THREE.Vector3();
-            rayPos.set(camera.position.x, camera.position.y, camera.position.z);
-            var rayDir = new THREE.Vector3(0, -1, 0);
-            ray.set(rayPos, rayDir);
-            // keeps track of where the ray intersects the terrain
-            let intersect = ray.intersectObject(terrain);
-            // if the raycaster is intersecting the terrain
-            if (intersect.length != 0) {
-                // if the person is moving
-                if (moving == true) {
-                    // set displacement to our sin*.2 and set the camera y to the intersection y value plus 20 and the displacement
-                    displacement = sinwave * .2;
-                    camera.position.y = (intersect[0].point.y + 20) + displacement * camera.position.y;
-                }
-                //otherwise the camera is just 20 above the terrain y so the camera should not bob
+                // in an edge case where the camera cannot find the terrain during loading, set the camera height to 50
                 else {
-                    camera.position.y = (intersect[0].point.y + 20)
+                    camera.position.y = 50;
                 }
+
+
+                // if the camera is locked in 
+                if (controls.isLocked === true) {
+                    // set yPos to the camera y minus 5 then set the group to the camera x z and yPos
+                    let yPos = camera.position.y - 5;
+                    humanGroup.position.y = (yPos);
+                    humanGroup.position.z = (camera.position.z);
+                    humanGroup.position.x = (camera.position.x);
+                    // make the group rotation match the camera rotation
+                    humanGroup.setRotationFromMatrix(camera.matrix);
+
+                }
+                hudTexture.needsUpdate = true;
+                // Render HUD on top of the scene.
+                renderer.render(scene, camera);
+                renderer.render(sceneHUD, cameraHUD);
+                requestAnimationFrame(animate);
             }
-            // in an edge case where the camera cannot find the terrain during loading, set the camera height to 50
-            else {
-                camera.position.y = 50;
-            }
-
-
-            // if the camera is locked in 
-            if (controls.isLocked === true) {
-                // set yPos to the camera y minus 5 then set the group to the camera x z and yPos
-                let yPos = camera.position.y - 5;
-                humanGroup.position.y = (yPos);
-                humanGroup.position.z = (camera.position.z);
-                humanGroup.position.x = (camera.position.x);
-                // make the group rotation match the camera rotation
-                humanGroup.setRotationFromMatrix(camera.matrix);
-
-            }
-            hudTexture.needsUpdate = true;
-            // Render HUD on top of the scene.
-            renderer.render(scene, camera);
-            renderer.render(sceneHUD, cameraHUD);
-            requestAnimationFrame(animate);
-
         }
 
         // a function that is called continuously in animate that handles the cursor, hightlighting, and sun/moon rotation
@@ -1500,28 +1505,31 @@
 
         //A function which determines which way the user is moving
         function onDocumentKeyDown(e) {
-            movement = 0;
-            var keyCode = e.which || e.keyCode; //Gets the key code
-            //Sets the direction the user is moving based on which key the user pressed
-            if (keyCode == 87) movement = "forward";
-            else if (keyCode == 65) movement = "left";
-            else if (keyCode == 68) movement = "right";
-            else if (keyCode == 83) movement = "backward";
-            else if (keyCode == 70) {
-                //   console.log("in");
-                spotLightOn = !spotLightOn;
+            if (gamePaused == false) {
 
-                if (spotLightOn == false) {
+                movement = 0;
+                var keyCode = e.which || e.keyCode; //Gets the key code
+                //Sets the direction the user is moving based on which key the user pressed
+                if (keyCode == 87) movement = "forward";
+                else if (keyCode == 65) movement = "left";
+                else if (keyCode == 68) movement = "right";
+                else if (keyCode == 83) movement = "backward";
+                else if (keyCode == 70) {
+                    //   console.log("in");
+                    spotLightOn = !spotLightOn;
 
-                    spotLight.intensity = 0;
-                    spotLightOn = false;
+                    if (spotLightOn == false) {
+
+                        spotLight.intensity = 0;
+                        spotLightOn = false;
+                    }
+                    else {
+                        spotLight.intensity = 1;
+                        spotLightOn = true;
+                    }
                 }
-                else {
-                    spotLight.intensity = 1;
-                    spotLightOn = true;
-                }
+                if (movement != 0) moveAround(); //If the user is moving then call the moveAround function
             }
-            if (movement != 0) moveAround(); //If the user is moving then call the moveAround function
         }
 
         //Function which moves the user & handles collision
