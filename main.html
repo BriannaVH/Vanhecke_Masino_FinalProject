@@ -173,12 +173,16 @@
         import { OutlinePass } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/OutlinePass.js'
         import { RenderPass } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/RenderPass.js'
         import { EffectComposer } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/EffectComposer.js'
-        import {UnrealBloomPass} from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/UnrealBloomPass.js';
+        import { UnrealBloomPass } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/UnrealBloomPass.js';
 
 
 
 
         //Variable Declaration
+
+        var audio;
+        let monsterNoises = ['sounds/creatureGrowl.wav', 'sounds/groan.wav', 'sounds/roar.wav', 'sounds/scaryAudio.wav', 'sounds/scaryRoar.wav'];
+        let thunderNoises = ['sounds/thunder1.wav', 'sounds/thunder2.wav', 'sounds/thunder3.wav', 'sounds/thunder4.wav',];
 
         let scene = new THREE.Scene();
         let windowWidth = window.innerWidth;
@@ -197,7 +201,7 @@
         let humanGroup = new THREE.Group(); // used for the body
         let monsterGroup = new THREE.Group(); // used for the body
         let clock = new THREE.Clock();
-        
+
 
 
         let previousPos = [];
@@ -312,7 +316,7 @@
         renderer.shadowMap.enabled = true; //Enables shadow map
         renderer.shadowMapSoft = true; //Specifies type of shadow
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        
+
         let composer = new EffectComposer(renderer);
 
 
@@ -351,7 +355,7 @@
         bloomPass.strength = 1.2;
         bloomPass.radius = 0.55;
         bloomPass.renderToScreen = true;
-        
+
         let renderScene = new RenderPass(sceneHUD, camera);
 
         composer.addPass(renderScene)
@@ -384,8 +388,10 @@
         function makeStarIcon(color, scale) {
             let starGroup = new THREE.Group();
             var geometry = new THREE.CircleGeometry(25, 5)
-            var material = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide,  metalness: .5,
-                    roughness: .5})
+            var material = new THREE.MeshBasicMaterial({
+                color: color, side: THREE.DoubleSide, metalness: .5,
+                roughness: .5
+            })
             var circle = new THREE.Mesh(geometry, material)
 
             starGroup.add(circle);
@@ -619,6 +625,7 @@
                     vec1.add(vec2);
                     childSubray.pos1.addVectors(vec1, lightningStrike.rayParameters.sourceOffset);
 
+
                 }
 
             };
@@ -640,10 +647,13 @@
                 lightningParameters: scene.userData.rayParams,
 
                 lightningMaterial: scene.userData.lightningMaterial,
+                
+               
 
             });
 
             scene.add(storm);
+
             //  console.log(storm);
 
             // Compose rendering
@@ -652,17 +662,21 @@
             composer.addPass(new RenderPass(scene, scene.userData.camera));
             createOutline(scene, storm.lightningsMeshes, scene.userData.outlineColor);
 
+
             scene.userData.render = function (time) {
                 // console.log("gets in here2");
 
                 storm.update(time);
+              
 
                 if (scene.userData.outlineEnabled) {
 
                     composer.render();
+                   
 
                 } else {
 
+                 
                     renderer.render(scene, scene.userData.camera);
 
                 }
@@ -1402,6 +1416,11 @@
                     stamina -= fitness;
                     //console.log("losing stamina ", stamina);
                     scene.fog.density += .00003;
+                    if (stamina < maxStamina * .2) {
+                        console.log("getting in heere");
+                        // play('sounds/heartbeat3.wav');
+                    }
+
 
                 }
                 else if (stamina < maxStamina) {
@@ -1442,6 +1461,9 @@
                         previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z));
                         distance = 25;
                         caught = false;
+                        let index = Math.round(Math.random() * 5);
+                        console.log(monsterNoises[index]);
+                        play(monsterNoises[index]);
 
                     }
                     if (lives == 0) {
@@ -1650,7 +1672,7 @@
             }
             //Src: https://github.com/TovAqulic/threejs_collision_issue
             if (starHit != -1) {
-                console.log(starGroup);
+                play('sounds/starAscension.wav');
                 movingStars.push(stars[starHit]);
                 stars.splice(starHit, 1);
                 starHit = -1; //Sets the "hit" boolean to false
@@ -1695,9 +1717,16 @@
                 dotGeometry.vertices.push(new THREE.Vector3(0, 0, 0));
                 var dotMaterial = new THREE.PointsMaterial({ size: 1, sizeAttenuation: false });
                 var dot = new THREE.Points(dotGeometry, dotMaterial);
-                dot.position.set(position.x,450, position.z);
+                dot.position.set(position.x, 450, position.z);
                 scene.add(dot);
             }
+        }
+
+        function play(path) {
+            audio = new Audio(path);
+
+
+            audio.play();
         }
 
 
