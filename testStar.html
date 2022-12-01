@@ -28,56 +28,54 @@
 
         let shards = [];
 
-        function makeShard() {
-            const front = 0.0;
-            //Math.tan(Math.PI / 6)
-            const back = 0.0;
-            // Math.cos(Math.PI / 6)
-            const vertices = [
-                0, 1, 0, // 0: top
-                1, 0, 0.0, // 1: right
-                -1, 0, 0.0, // 2: left
-                //  0, 0, -back, // 3: back middle
-                0, -1, 0, // 4: bottom
-            ]
-            const faces = [
-                2, 1, 0, // left, right, top
-                1, 3, 0, // right, back, top
-                3, 2, 0, // back, left, top
-                2, 4, 1, // left, bottom, right
-                1, 4, 3, // right, bottom, back
-                3, 4, 2, // back, bottom, left
-            ]
-            const geometry = new THREE.PolyhedronGeometry(vertices, faces, 30, 0)
-            const material = new THREE.MeshNormalMaterial()
-            const mesh = new THREE.Mesh(geometry, material)
-            scene.add(mesh)
-            shards.push(mesh);
+        function makeStarIcon() {
+            let starGroup = new THREE.Group();
+            var geometry = new THREE.CircleGeometry(25, 5)
+            var material = new THREE.MeshBasicMaterial({ color: 0xffff00, side: THREE.DoubleSide })
+            var circle = new THREE.Mesh(geometry, material)
+            circle.rotation.z = .94;
+            //starGroup.add(circle);
+            // circle.position.set(windowWidth - (windowWidth * .60), windowHeight - (windowHeight * .65), 0);
+            // sceneHUD.add(circle)
+            console.log("HELLO???? ", circle.geometry.vertices);
+            let known = circle.geometry.vertices;
 
-            // scale the mesh
-            mesh.scale.set(0.5, 1, 0.5)
+
+            for (let i = 0; i < 1; i++) {
+                console.log("Vecotr???? ", known[i]);
+                const shape = new THREE.Shape();
+                const x = 0;
+                const y = 0;
+
+                shape.moveTo(known[i].x, known[i].y);
+                shape.lineTo(known[i+1].x, known[i+1].y);
+                shape.lineTo(x, y + 2);
+
+                const tgeometry = new THREE.ShapeGeometry(shape);
+                const tmaterial = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide });
+                const tmesh = new THREE.Mesh(tgeometry, tmaterial);
+                tmesh.scale.set(10, 10);
+                //  sceneHUD.add(tmesh);
+                starGroup.add(tmesh);
+                console.log("WAHH ", tmesh);
+            }
+
+            starGroup.position.set(0,0, 0);
+            scene.add(starGroup);
+
         }
 
-        // let rotations = [0,2,-2,2,-2];
-        // let xPos = [0,5,10,-5,0];
-        // let yPos = [0,5,10,-5,0];
-
-        // for ( let i = 0; i < rotations.length; i++){
-        //     makeShard();
-        //     shards[i].rotation.z = (rotations[i]);
-        //     shards[i].position.set(xPos[i], yPos[i], 0);
-        // }
-       
-        makeShard();
+makeStarIcon();
 
         function animate() {
-           
-            shards[0].rotateY(.01);
-        //     for ( let i = 0; i < shards.length; i++){
-        //         shards[i].rotateY(.01);
-        // }
-       
-            
+            // shards[0].rotateX(.01);
+            // shards[0].rotateY(.01);
+            // shards[0].rotateZ(.01);
+
+
+
+
+
             renderer.render(scene, camera);
             requestAnimationFrame(animate);
         };

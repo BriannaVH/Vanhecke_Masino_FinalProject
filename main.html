@@ -3,7 +3,7 @@
 <head>
     <title>Final Project</title>
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-    <link type="text/css" rel="stylesheet" href="main.css">
+    <!-- <link type="text/css" rel="stylesheet" href="main.css"> -->
     <style>
         #blocker {
             position: absolute;
@@ -207,6 +207,7 @@
         let maxStamina = 100;
         let fitness = .5;
         let gameTime = 0;
+        let increment = 2;
 
         let gamePaused = false;
 
@@ -344,20 +345,78 @@
                 distance = 60;
                 monsterSpeed = .06;
                 stamina = 100;
+                increment = 2;
             }
             else if (level == "medium") {
                 console.log("medium");
                 distance = 50;
-                monsterSpeed = .04;
+                monsterSpeed = .06;
                 stamina = 100;
+                increment = 2;
             }
             else if (level == "hard") {
                 console.log("hard");
-                distance = 40;
+                distance = 100;
                 monsterSpeed = .03;
                 stamina = 70;
+                increment = 1;
             }
         }
+
+        function makeStarIcon(color, scale) {
+            let starGroup = new THREE.Group();
+            var geometry = new THREE.CircleGeometry(25, 5)
+            var material = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide })
+            var circle = new THREE.Mesh(geometry, material)
+
+            starGroup.add(circle);
+            // circle.position.set(windowWidth - (windowWidth * .60), windowHeight - (windowHeight * .65), 0);
+            // sceneHUD.add(circle)
+            console.log("HELLO???? ", circle.geometry.vertices);
+            let known = circle.geometry.vertices;
+            let additionalPoints = [
+            (new THREE.Vector3(44, 32 , 0)),
+            (new THREE.Vector3(-15, 52 , 0)),
+            (new THREE.Vector3(-52, 2, 0)),
+            (new THREE.Vector3(-15, -52, 0)),
+            (new THREE.Vector3(44, -30, 0))
+           
+            ];
+
+
+            for (let i = 1; i < known.length; i++) {
+                const shape = new THREE.Shape();
+                if (i < 5) {
+                    console.log(i);
+                    shape.moveTo(known[i].x, known[i].y);
+                    shape.lineTo(known[i + 1].x, known[i + 1].y);
+                    shape.lineTo(additionalPoints[i-1].x, additionalPoints[i-1].y);
+
+                }
+                else  {
+                   // console.log(i);
+                    shape.moveTo(known[i].x, known[i].y);
+                    shape.lineTo(known[1].x, known[1].y);
+                    shape.lineTo(additionalPoints[i-1].x, additionalPoints[i-1].y);
+                }
+
+                const tgeometry = new THREE.ShapeGeometry(shape);
+                const tmaterial = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide });
+                const tmesh = new THREE.Mesh(tgeometry, tmaterial);
+                // tmesh.scale.set(10, 10);
+                //  sceneHUD.add(tmesh);
+                starGroup.add(tmesh);
+                console.log("WAHH ", tmesh);
+            }
+            starGroup.rotation.z = .94;
+            starGroup.scale.set(scale,scale);
+            starGroup.position.set(windowWidth - (windowWidth * .60), windowHeight - (windowHeight * .65), 0);
+            sceneHUD.add(starGroup);
+        }
+
+
+
+
 
         function makeHeart(x) {
             const y = windowHeight - (windowHeight * .8);
@@ -654,8 +713,8 @@
             this.bulbLight = new THREE.PointLight(hexCode, intensity, 20000); //Creates point light
 
             this.bulbMat = new THREE.MeshBasicMaterial({ //Creates bulb material for the light and customizes it
-                emissive: 0x880808,
-                emissiveIntensity: 1,
+                //emissive: 0x880808,
+                //emissiveIntensity: 1,
                 color: 0x880808
             });
 
@@ -1177,15 +1236,19 @@
         }
 
 
-        function makeStars(numStars) {
-
-
-
+        function makeStarShards(numStars) {
             for (let i = 0; i < numStars; i++) {
                 let position = randomizePositions();
-
-                const geometry = new THREE.SphereGeometry(5, 32, 16);
-                const material = new THREE.MeshPhongMaterial({ color: 0xffff00, shininess: 100, specular: 0xffff00, emissive: 0xffff00, reflectivity: 1 });
+                const geometry = new THREE.ConeGeometry(10, 30, 3);
+                const material = new THREE.MeshPhysicalMaterial({
+                    color: 0xffff00,
+                    // metalness: 1,
+                    // roughness: 10,
+                    // shininess: 100, 
+                    // specular: 0xffff00, 
+                    emissive: 0xffff00,
+                    reflectivity: 1
+                });
                 const sphere = new THREE.Mesh(geometry, material);
                 sphere.position.set(position.x, position.y, position.z);
                 stars.push(sphere);
@@ -1193,8 +1256,6 @@
                 scene.add(sphere);
 
             }
-
-
 
         }
 
@@ -1317,7 +1378,7 @@
 
                 delta = clock.getDelta();
                 gameTime += delta;
-                if (gameTime > 1) {
+                if (gameTime > increment) {
                     monsterSpeed -= .01;
                     gameTime = 0;
                 }
@@ -1627,7 +1688,7 @@
         createMoon();
 
         makeTrees();
-        makeStars(5);
+        makeStarShards(5);
         makeBody();
         initFlashLight();
 
@@ -1637,7 +1698,9 @@
             // console.log(heartArray[i]);
         }
         // console.log(positions);
-
+       
+        makeStarIcon(0x000000, .6);
+        makeStarIcon(0xffff00, .5);
 
 
         animate();
