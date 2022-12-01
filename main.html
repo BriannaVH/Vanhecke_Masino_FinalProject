@@ -212,6 +212,7 @@
         let gamePaused = false;
 
 
+
         const GROUND_SIZE = 1000;
         const ground = new THREE.Mesh(new THREE.PlaneGeometry(GROUND_SIZE, GROUND_SIZE), new THREE.MeshLambertMaterial({ color: 0x072302 }));
         ground.rotation.x = - Math.PI * 0.5;
@@ -366,38 +367,39 @@
         function makeStarIcon(color, scale) {
             let starGroup = new THREE.Group();
             var geometry = new THREE.CircleGeometry(25, 5)
-            var material = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide })
+            var material = new THREE.MeshPhysicalMaterial({ color: color, side: THREE.DoubleSide,  metalness: .5,
+                    roughness: .5})
             var circle = new THREE.Mesh(geometry, material)
 
             starGroup.add(circle);
             // circle.position.set(windowWidth - (windowWidth * .60), windowHeight - (windowHeight * .65), 0);
             // sceneHUD.add(circle)
-            console.log("HELLO???? ", circle.geometry.vertices);
+            // console.log("HELLO???? ", circle.geometry.vertices);
             let known = circle.geometry.vertices;
             let additionalPoints = [
-            (new THREE.Vector3(44, 32 , 0)),
-            (new THREE.Vector3(-15, 52 , 0)),
-            (new THREE.Vector3(-52, 2, 0)),
-            (new THREE.Vector3(-15, -52, 0)),
-            (new THREE.Vector3(44, -30, 0))
-           
+                (new THREE.Vector3(44, 32, 0)),
+                (new THREE.Vector3(-15, 52, 0)),
+                (new THREE.Vector3(-52, 2, 0)),
+                (new THREE.Vector3(-15, -52, 0)),
+                (new THREE.Vector3(44, -30, 0))
+
             ];
 
 
             for (let i = 1; i < known.length; i++) {
                 const shape = new THREE.Shape();
                 if (i < 5) {
-                    console.log(i);
+                    // console.log(i);
                     shape.moveTo(known[i].x, known[i].y);
                     shape.lineTo(known[i + 1].x, known[i + 1].y);
-                    shape.lineTo(additionalPoints[i-1].x, additionalPoints[i-1].y);
+                    shape.lineTo(additionalPoints[i - 1].x, additionalPoints[i - 1].y);
 
                 }
-                else  {
-                   // console.log(i);
+                else {
+                    // console.log(i);
                     shape.moveTo(known[i].x, known[i].y);
                     shape.lineTo(known[1].x, known[1].y);
-                    shape.lineTo(additionalPoints[i-1].x, additionalPoints[i-1].y);
+                    shape.lineTo(additionalPoints[i - 1].x, additionalPoints[i - 1].y);
                 }
 
                 const tgeometry = new THREE.ShapeGeometry(shape);
@@ -406,12 +408,13 @@
                 // tmesh.scale.set(10, 10);
                 //  sceneHUD.add(tmesh);
                 starGroup.add(tmesh);
-                console.log("WAHH ", tmesh);
+                //  console.log("WAHH ", tmesh);
             }
             starGroup.rotation.z = .94;
-            starGroup.scale.set(scale,scale);
+            starGroup.scale.set(scale, scale);
             starGroup.position.set(windowWidth - (windowWidth * .60), windowHeight - (windowHeight * .65), 0);
             sceneHUD.add(starGroup);
+            return starGroup;
         }
 
 
@@ -1242,12 +1245,8 @@
                 const geometry = new THREE.ConeGeometry(10, 30, 3);
                 const material = new THREE.MeshPhysicalMaterial({
                     color: 0xffff00,
-                    // metalness: 1,
-                    // roughness: 10,
-                    // shininess: 100, 
-                    // specular: 0xffff00, 
-                    emissive: 0xffff00,
-                    reflectivity: 1
+                    metalness: .5,
+                    roughness: .5
                 });
                 const sphere = new THREE.Mesh(geometry, material);
                 sphere.position.set(position.x, position.y, position.z);
@@ -1637,7 +1636,9 @@
                 stars.splice(starHit, 1);
                 starHit = -1; //Sets the "hit" boolean to false
                 starsCollected += 1;
+                starGroup.children[starsCollected].material.color.setHex(0xffff00);
                 if (starsCollected == 5) {
+                    starGroup.children[0].material.color.setHex(0xffff00);
                     gameOver(1);
                 }
             }
@@ -1698,10 +1699,10 @@
             // console.log(heartArray[i]);
         }
         // console.log(positions);
-       
-        makeStarIcon(0x000000, .6);
-        makeStarIcon(0xffff00, .5);
 
+        makeStarIcon(0x000000, .6);
+        let starGroup = makeStarIcon(0x000000, .5);
+        console.log(starGroup);
 
         animate();
         render();
