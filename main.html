@@ -173,6 +173,8 @@
         import { OutlinePass } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/OutlinePass.js'
         import { RenderPass } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/RenderPass.js'
         import { EffectComposer } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/EffectComposer.js'
+        import {UnrealBloomPass} from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/UnrealBloomPass.js';
+
 
 
 
@@ -195,6 +197,7 @@
         let humanGroup = new THREE.Group(); // used for the body
         let monsterGroup = new THREE.Group(); // used for the body
         let clock = new THREE.Clock();
+        
 
 
         let previousPos = [];
@@ -309,6 +312,8 @@
         renderer.shadowMap.enabled = true; //Enables shadow map
         renderer.shadowMapSoft = true; //Specifies type of shadow
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        
+        let composer = new EffectComposer(renderer);
 
 
         var hudCanvas = document.createElement('canvas');
@@ -323,6 +328,7 @@
         //  hudBitmap.fillText('Initializing...', width / 2, height / 2);
         // Create the camera and set the viewport to match the screen dimensions.
         var cameraHUD = new THREE.OrthographicCamera(-windowWidth / 2, windowWidth / 2, windowHeight / 2, -windowHeight / 2, 0, 30);
+        cameraHUD.layers.enable(1);
         // Create also a custom scene for HUD.
         let sceneHUD = new THREE.Scene();
         // Create texture from rendered graphics.
@@ -339,6 +345,17 @@
         // console.log(windowHeight);
         // const x = width - (width * .8)
         let heartArray = [];
+
+        let bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85)
+        bloomPass.threshold = 0.21;
+        bloomPass.strength = 1.2;
+        bloomPass.radius = 0.55;
+        bloomPass.renderToScreen = true;
+        
+        let renderScene = new RenderPass(sceneHUD, camera);
+
+        composer.addPass(renderScene)
+        composer.addPass(bloomPass)
 
         function initParameters(level) {
             if (level == "easy") {
@@ -367,7 +384,7 @@
         function makeStarIcon(color, scale) {
             let starGroup = new THREE.Group();
             var geometry = new THREE.CircleGeometry(25, 5)
-            var material = new THREE.MeshPhysicalMaterial({ color: color, side: THREE.DoubleSide,  metalness: .5,
+            var material = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide,  metalness: .5,
                     roughness: .5})
             var circle = new THREE.Mesh(geometry, material)
 
@@ -436,11 +453,11 @@
             const mesh = new THREE.Mesh(geometry, hmaterial);
             mesh.rotation.z = -3.15;
             mesh.scale.set(2, 2);
+            mesh.layers.enable(1);
             sceneHUD.add(mesh);
             heartArray.push(mesh);
         }
 
-        let composer = new EffectComposer(renderer);
 
         // pointer lock controls for first person camera movement 
         let controls = new PointerLockControls(camera, document.body); //Enables pointerlock controls
@@ -1441,6 +1458,7 @@
 
                         }
                         else {
+                            addStars();
                             parts.push(new ExplodeAnimation(movingStars[i].position.x, movingStars[i].position.y, movingStars[i].position.z));
                             scene.remove(movingStars[i]);
                             movingStars[i].material.dispose();
@@ -1632,6 +1650,7 @@
             }
             //Src: https://github.com/TovAqulic/threejs_collision_issue
             if (starHit != -1) {
+                console.log(starGroup);
                 movingStars.push(stars[starHit]);
                 stars.splice(starHit, 1);
                 starHit = -1; //Sets the "hit" boolean to false
@@ -1658,10 +1677,7 @@
             }
             else {
                 //  console.log("wahh wahh wahhh");
-
             }
-
-
         }
 
         document.addEventListener('keydown', onDocumentKeyDown, false); //Adds key handler to the document
@@ -1672,6 +1688,17 @@
         });
 
 
+        function addStars() {
+            for (let i = 0; i < 20; i++) {
+                var dotGeometry = new THREE.Geometry();
+                let position = randomizePositions();
+                dotGeometry.vertices.push(new THREE.Vector3(0, 0, 0));
+                var dotMaterial = new THREE.PointsMaterial({ size: 1, sizeAttenuation: false });
+                var dot = new THREE.Points(dotGeometry, dotMaterial);
+                dot.position.set(position.x,450, position.z);
+                scene.add(dot);
+            }
+        }
 
 
         function makeMonster() {
