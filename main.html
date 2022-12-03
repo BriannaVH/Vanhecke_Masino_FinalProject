@@ -181,8 +181,13 @@
         //Variable Declaration
 
         var audio;
-        let monsterNoises = ['sounds/creatureGrowl.wav', 'sounds/groan.wav', 'sounds/roar.wav', 'sounds/scaryAudio.wav', 'sounds/scaryRoar.wav'];
+        let caughtSound = ['sounds/catch/creatureGrowl.wav', 'sounds/catch/groan.wav', 'sounds/catch/scaryRoar.wav'];
+        let closeSound = ['sounds/close/roar.wav', 'sounds/close/close1.wav', 'sounds/close/close2.wav', 'sounds/close/close3.wav'];
+        let loseSounds = ['sounds/gameOver/lose1.wav', 'sounds/gameOver/lose2.wav'];
         let thunderNoises = ['sounds/thunder1.wav', 'sounds/thunder2.wav', 'sounds/thunder3.wav', 'sounds/thunder4.wav',];
+
+        let heartbeatAudio = new Audio('sounds/heartbeat.wav');
+
 
         let scene = new THREE.Scene();
         let windowWidth = window.innerWidth;
@@ -493,6 +498,8 @@
         };
 
         controls.addEventListener('unlock', function () {
+            heartbeatAudio.pause();
+            heartbeatAudio.currentTime = 0;
             gamePaused = true;
             blocker.style.display = 'block';
             instructions.style.display = '';
@@ -1404,9 +1411,16 @@
 
         // let scales = 1;
         let scales;
+        let timerThunder = 0;
+        let maxThunder = 0;
         //let scale1 = stamina *.01;
         //The animate function is a function which is continuously called for every frame of the program
         function animate() {
+
+            
+
+
+
 
             if (stamina > maxStamina * .5) {
                 staminaBar.material.color.set(0x5CFF5C);
@@ -1419,9 +1433,21 @@
             }
 
             scales = 2.015 * (stamina - 5) * .01;
-            console.log(scales, 'scales');
+           // console.log(scales, 'scales');
             if (gamePaused == false) {
                 delta = clock.getDelta();
+                timerThunder+=delta;
+
+                console.log(timerThunder);
+                console.log(maxThunder);
+                if (timerThunder >= maxThunder){
+                    console.log("thunder playing");
+                    let index = Math.round(Math.random()*4);
+                    play(thunderNoises[index]);
+                    timerThunder = 0;
+                    maxThunder =Math.random()*5+2;
+                }
+                
                 gameTime += delta;
                 if (gameTime > increment) {
                     monsterSpeed -= .01;
@@ -1429,13 +1455,13 @@
                 }
                 if (moving == true && stamina > 0) {
                     if (stamina > maxStamina * .1) {
-                        console.log("if moving");
+                       // console.log("if moving");
                         staminaBar.scale.x = scales;
                     }
                     stamina -= fitness;
                     scene.fog.density += .00003;
                     if (stamina < maxStamina * .2) {
-                        console.log("getting in heere");
+                        //console.log("getting in heere");
                     }
                 }
                 else if (moving == false && stamina < maxStamina && stamina >= 0) {
@@ -1463,7 +1489,18 @@
                             distance -= 1;
                             if (calcPointDistance(monsterGroup.position, camera.position) < 30) {
                                 console.log("caught");
+                                let index = Math.round(Math.random() * 3);
+                                play(caughtSound[index]);
                                 caught = true;
+                            }
+                            else if (calcPointDistance(monsterGroup.position, camera.position) < 150) {
+                                //play('sounds/heartbeat.wav');
+                                heartbeatAudio.play();
+                                heartbeatAudio.volume = .5;
+                            }
+                            else if (calcPointDistance(monsterGroup.position, camera.position) > 150) {
+                                heartbeatAudio.pause();
+                                heartbeatAudio.currentTime = 0;
                             }
                         }
                     }
@@ -1479,9 +1516,7 @@
                         previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z));
                         distance = 25;
                         caught = false;
-                        let index = Math.round(Math.random() * 5);
-                        console.log(monsterNoises[index]);
-                        play(monsterNoises[index]);
+
 
                     }
                     if (lives == 0) {
@@ -1560,7 +1595,7 @@
                 }
 
 
-                for (let i = 0; i < shootingStars.length; i ++){
+                for (let i = 0; i < shootingStars.length; i++) {
                     shootingStars[i].translateX(starXDirs[i]);
                     shootingStars[i].translateZ(starZDirs[i]);
 
@@ -1737,7 +1772,7 @@
             moving = false;
         });
 
-        
+
         let starXDirs = [];
         let starZDirs = [];
 
@@ -1748,8 +1783,8 @@
                 dotGeometry.vertices.push(new THREE.Vector3(0, 0, 0));
                 var dotMaterial = new THREE.PointsMaterial({ size: Math.random() * 3, sizeAttenuation: false });
                 var dot = new THREE.Points(dotGeometry, dotMaterial);
-                let x = Math.random()*450;
-                let z =  Math.random()*450;
+                let x = Math.random() * 450;
+                let z = Math.random() * 450;
                 let y;
                 if (random() == true) {
                     x *= -1;
@@ -1757,14 +1792,14 @@
                 if (random() == true) {
                     z *= -1;
                 }
-                if (x > 350 || x < -350 || z> 350 || z < -350 ){
-                    y = Math.random()*350+40;
+                if (x > 350 || x < -350 || z > 350 || z < -350) {
+                    y = Math.random() * 350 + 40;
                 }
                 else {
                     y = 350;
                 }
-                dot.position.set(x, y,z);
-               if (Math.random() > .8) {
+                dot.position.set(x, y, z);
+                if (Math.random() > .8) {
                     shootingStars.push(dot);
                 }
                 scene.add(dot);
@@ -1772,15 +1807,15 @@
             addShootingStar();
         }
 
-       
+
 
 
         function addShootingStar() {
             for (let i = 0; i < shootingStars.length; i++) {
-                let x = Math.random()*5 + 2;
-                let z = Math.random()*5 + 2;
+                let x = Math.random() * 5 + 2;
+                let z = Math.random() * 5 + 2;
                 console.log("X HERE ", x);
-                console.log("Z HERE ",z);
+                console.log("Z HERE ", z);
                 if (random() == true) {
                     x *= -1;
                 }
@@ -1798,8 +1833,7 @@
 
         function play(path) {
             audio = new Audio(path);
-
-
+            audio.volume = .5;
             audio.play();
         }
 
