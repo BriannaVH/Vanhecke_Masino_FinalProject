@@ -205,6 +205,7 @@
 
 
         let previousPos = [];
+        let shootingStars = [];
         previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z));
         let caught = false;
         let distance = 25;
@@ -1155,7 +1156,7 @@
         }
 
         //Function that randomizes a position (x,y,z) coordinate in the terrain
-        function randomizePositions() {
+        function randomizePositions(limit) {
 
             let rayHeight = new THREE.Raycaster();
             let rayDirection = new THREE.Vector3(0, -1, 0);//Gives direction for raycaster
@@ -1166,8 +1167,8 @@
             let treePos = new THREE.Vector3();
 
             //Gives x and z a random position within the bounds of the terrain
-            let xPos = Math.random() * (380 - 5) + 5;
-            let zPos = Math.random() * (380 - 5) + 5;
+            let xPos = Math.random() * (limit - 5) + 5;
+            let zPos = Math.random() * (limit - 5) + 5;
             let yPos = 100;//Gives the y pos a set point above the terrain
 
             //Randomizes whether the x and z position were negative
@@ -1272,7 +1273,7 @@
 
         function makeStarShards(numStars) {
             for (let i = 0; i < numStars; i++) {
-                let position = randomizePositions();
+                let position = randomizePositions(380);
                 const geometry = new THREE.ConeGeometry(10, 30, 3);
                 const material = new THREE.MeshPhysicalMaterial({
                     color: 0xffff00,
@@ -1313,7 +1314,7 @@
                 let rewriter = new Rewriter(rules); //Choose which rule to use based on some probability out of the rules 
                 //written in the string
                 let string = rewriter.rewrite(params); //Returns which rules were selected
-                let positionTree = randomizePositions(); //Randomizes position of the tree
+                let positionTree = randomizePositions(380); //Randomizes position of the tree
                 let newTree = new TreeBuilder(string, params, wood).build(); //Builds tree with rules, params, and specific texture
                 newTree.position.set(positionTree.x, positionTree.y, positionTree.z);//Sets position of tree
 
@@ -1407,17 +1408,17 @@
         //The animate function is a function which is continuously called for every frame of the program
         function animate() {
 
-            if (stamina > maxStamina *.5){
+            if (stamina > maxStamina * .5) {
                 staminaBar.material.color.set(0x5CFF5C);
             }
-            else if (stamina < maxStamina *.2) {
+            else if (stamina < maxStamina * .2) {
                 staminaBar.material.color.set(0xDF362D);
             }
             else {
                 staminaBar.material.color.set(0xFFC55C);
             }
-            
-            scales = 2.015 * (stamina-5) * .01;
+
+            scales = 2.015 * (stamina - 5) * .01;
             console.log(scales, 'scales');
             if (gamePaused == false) {
                 delta = clock.getDelta();
@@ -1557,6 +1558,16 @@
                     humanGroup.setRotationFromMatrix(camera.matrix);
 
                 }
+
+
+                for (let i = 0; i < shootingStars.length; i ++){
+                    shootingStars[i].translateX(starXDirs[i]);
+                    shootingStars[i].translateZ(starZDirs[i]);
+
+                }
+
+
+
                 hudTexture.needsUpdate = true;
                 // Render HUD on top of the scene.
                 renderer.render(scene, camera);
@@ -1726,17 +1737,63 @@
             moving = false;
         });
 
+        
+        let starXDirs = [];
+        let starZDirs = [];
+
 
         function addStars() {
-            for (let i = 0; i < 20; i++) {
+            for (let i = 0; i < 50; i++) {
                 var dotGeometry = new THREE.Geometry();
-                let position = randomizePositions();
                 dotGeometry.vertices.push(new THREE.Vector3(0, 0, 0));
-                var dotMaterial = new THREE.PointsMaterial({ size: 1, sizeAttenuation: false });
+                var dotMaterial = new THREE.PointsMaterial({ size: Math.random() * 3, sizeAttenuation: false });
                 var dot = new THREE.Points(dotGeometry, dotMaterial);
-                dot.position.set(position.x, 450, position.z);
+                let x = Math.random()*450;
+                let z =  Math.random()*450;
+                let y;
+                if (random() == true) {
+                    x *= -1;
+                }
+                if (random() == true) {
+                    z *= -1;
+                }
+                if (x > 350 || x < -350 || z> 350 || z < -350 ){
+                    y = Math.random()*350+40;
+                }
+                else {
+                    y = 350;
+                }
+                dot.position.set(x, y,z);
+               if (Math.random() > .8) {
+                    shootingStars.push(dot);
+                }
                 scene.add(dot);
             }
+            addShootingStar();
+        }
+
+       
+
+
+        function addShootingStar() {
+            for (let i = 0; i < shootingStars.length; i++) {
+                let x = Math.random()*5 + 2;
+                let z = Math.random()*5 + 2;
+                console.log("X HERE ", x);
+                console.log("Z HERE ",z);
+                if (random() == true) {
+                    x *= -1;
+                }
+                if (random() == true) {
+                    z *= -1;
+                }
+                starXDirs.push(x);
+                starZDirs.push(z);
+            }
+            console.log(shootingStars);
+            console.log(starXDirs);
+            console.log(starZDirs);
+
         }
 
         function play(path) {
@@ -1755,7 +1812,7 @@
             const hmaterial = new THREE.MeshBasicMaterial({ color: 0x5CFF5C, side: THREE.DoubleSide });
             const mesh = new THREE.Mesh(geometry, hmaterial);
             mesh.position.set(windowWidth - (windowWidth * .6), windowHeight - (windowHeight * 1.42), 0);
-            mesh.scale.set( 2.015 * (stamina-5) * .01, 4);
+            mesh.scale.set(2.015 * (stamina - 5) * .01, 4);
             //heartArray.push(mesh);
             sceneHUD.add(mesh);
             console.log("in");
