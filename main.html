@@ -647,8 +647,8 @@
                 lightningParameters: scene.userData.rayParams,
 
                 lightningMaterial: scene.userData.lightningMaterial,
-                
-               
+
+
 
             });
 
@@ -667,16 +667,16 @@
                 // console.log("gets in here2");
 
                 storm.update(time);
-              
+
 
                 if (scene.userData.outlineEnabled) {
 
                     composer.render();
-                   
+
 
                 } else {
 
-                 
+
                     renderer.render(scene, scene.userData.camera);
 
                 }
@@ -1401,32 +1401,49 @@
         }
 
 
-
+        // let scales = 1;
+        let scales;
+        //let scale1 = stamina *.01;
         //The animate function is a function which is continuously called for every frame of the program
         function animate() {
-            if (gamePaused == false) {
 
+            if (stamina > maxStamina *.5){
+                staminaBar.material.color.set(0x5CFF5C);
+            }
+            else if (stamina < maxStamina *.2) {
+                staminaBar.material.color.set(0xDF362D);
+            }
+            else {
+                staminaBar.material.color.set(0xFFC55C);
+            }
+            
+            scales = 2.015 * (stamina-5) * .01;
+            console.log(scales, 'scales');
+            if (gamePaused == false) {
                 delta = clock.getDelta();
                 gameTime += delta;
                 if (gameTime > increment) {
                     monsterSpeed -= .01;
                     gameTime = 0;
                 }
-                if (moving == true) {
+                if (moving == true && stamina > 0) {
+                    if (stamina > maxStamina * .1) {
+                        console.log("if moving");
+                        staminaBar.scale.x = scales;
+                    }
                     stamina -= fitness;
-                    //console.log("losing stamina ", stamina);
                     scene.fog.density += .00003;
                     if (stamina < maxStamina * .2) {
                         console.log("getting in heere");
-                        // play('sounds/heartbeat3.wav');
                     }
-
-
                 }
-                else if (stamina < maxStamina) {
+                else if (moving == false && stamina < maxStamina && stamina >= 0) {
+                    staminaBar.scale.x = scales;
                     stamina += fitness * 5;
-                    // console.log("recovering stamina ", stamina);
                     scene.fog.density -= .00003 * 5;
+                }
+                else if (stamina == 0 && moving == false) {
+
                 }
                 // console.log(delta);
                 if (caught == false) {
@@ -1733,6 +1750,24 @@
         function makeMonster() {
             makeSmoke();
         }
+        function makeStaminaBar() {
+            const geometry = new THREE.PlaneGeometry(100, 5);
+            const hmaterial = new THREE.MeshBasicMaterial({ color: 0x5CFF5C, side: THREE.DoubleSide });
+            const mesh = new THREE.Mesh(geometry, hmaterial);
+            mesh.position.set(windowWidth - (windowWidth * .6), windowHeight - (windowHeight * 1.42), 0);
+            mesh.scale.set( 2.015 * (stamina-5) * .01, 4);
+            //heartArray.push(mesh);
+            sceneHUD.add(mesh);
+            console.log("in");
+            // while(1+1==2){
+            //     console.log("in");
+            //     mesh.scale(scale-1, 2);
+            // }
+
+            return mesh;
+
+        }
+        let staminaBar = makeStaminaBar();
 
 
         let monster = makeMonster();
