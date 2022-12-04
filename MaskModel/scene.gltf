@@ -1,0 +1,274 @@
+{
+  "accessors": [
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 4620,
+      "max": [
+        0.08930155634880066,
+        0.20001725852489471,
+        0.044186148792505264
+      ],
+      "min": [
+        -0.0895027294754982,
+        -0.00013812209363095462,
+        -0.04437240585684776
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 55440,
+      "componentType": 5126,
+      "count": 4620,
+      "max": [
+        0.9969279170036316,
+        0.9961563348770142,
+        0.9999818801879883
+      ],
+      "min": [
+        -0.9989970922470093,
+        -0.9994587302207947,
+        -0.9999603033065796
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5126,
+      "count": 4620,
+      "max": [
+        0.9999514222145081,
+        0.9998096823692322,
+        0.9897671341896057,
+        1.0
+      ],
+      "min": [
+        -0.9980291724205017,
+        -0.9999992251396179,
+        -0.9855276346206665,
+        1.0
+      ],
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 4620,
+      "max": [
+        0.9980050921440125,
+        0.9422600865364075
+      ],
+      "min": [
+        0.000974658876657486,
+        0.000974658876657486
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 36960,
+      "componentType": 5126,
+      "count": 4620,
+      "max": [
+        0.9980050921440125,
+        0.9422600865364075
+      ],
+      "min": [
+        0.000974658876657486,
+        0.000974658876657486
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5125,
+      "count": 22854,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "extras": {
+      "author": "David Wigforss (https://sketchfab.com/dwigfor)",
+      "license": "CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)",
+      "source": "https://sketchfab.com/3d-models/scary-clown-mask-d06ed4a7da7e471eb63ce60c370d51e1",
+      "title": "Scary Clown Mask"
+    },
+    "generator": "Sketchfab-12.66.0",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 91416,
+      "name": "floatBufferViews",
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 73920,
+      "byteOffset": 91416,
+      "byteStride": 8,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 110880,
+      "byteOffset": 165336,
+      "byteStride": 12,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 73920,
+      "byteOffset": 276216,
+      "byteStride": 16,
+      "name": "floatBufferViews",
+      "target": 34962
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 350136,
+      "uri": "scene.bin"
+    }
+  ],
+  "images": [
+    {
+      "uri": "textures/MAT_Mask_ScaryClown_baseColor.jpeg"
+    },
+    {
+      "uri": "textures/MAT_Mask_ScaryClown_normal.png"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "name": "MAT_Mask_ScaryClown",
+      "normalTexture": {
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.9577051494623774
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "geo1_MAT_Mask_ScaryClown_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TANGENT": 2,
+            "TEXCOORD_0": 3,
+            "TEXCOORD_1": 4
+          },
+          "indices": 5,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "children": [
+        1
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.220446049250313e-16,
+        -1.0,
+        0.0,
+        0.0,
+        1.0,
+        2.220446049250313e-16,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Sketchfab_model"
+    },
+    {
+      "children": [
+        2
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        -1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "mesh.fbx"
+    },
+    {
+      "children": [
+        3
+      ],
+      "name": "RootNode"
+    },
+    {
+      "children": [
+        4
+      ],
+      "name": "geo1"
+    },
+    {
+      "mesh": 0,
+      "name": "geo1_MAT_Mask_ScaryClown_0"
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Sketchfab_Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "source": 0
+    },
+    {
+      "sampler": 0,
+      "source": 1
+    }
+  ]
+}

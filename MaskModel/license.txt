@@ -1,0 +1,11 @@
+Model Information:
+* title:	Scary Clown Mask
+* source:	https://sketchfab.com/3d-models/scary-clown-mask-d06ed4a7da7e471eb63ce60c370d51e1
+* author:	David Wigforss (https://sketchfab.com/dwigfor)
+
+Model License:
+* license type:	CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)
+* requirements:	Author must be credited. No commercial use.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Scary Clown Mask" (https://sketchfab.com/3d-models/scary-clown-mask-d06ed4a7da7e471eb63ce60c370d51e1) by David Wigforss (https://sketchfab.com/dwigfor) licensed under CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)

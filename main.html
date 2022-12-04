@@ -200,29 +200,31 @@
 
 
         // Instantiate a loader
-        const Mloader = new GLTFLoader();
-        let dog;
+        // const Mloader = new GLTFLoader();
+        // let dog;
 
-        // Load a glTF resource
-        Mloader.load(
-            // resource URL
-            'model/scene.gltf',
-            // called when the resource is loaded
-            function (gltf) {
-                dog = gltf.scene;
-                dog.scale.set(100, 100, 100);
-                console.log(dog);
-                scene.add(dog);
-                gltf.animations; // Array<THREE.AnimationClip>
-                gltf.scene; // THREE.Group
-                gltf.scenes; // Array<THREE.Group>
-                gltf.cameras; // Array<THREE.Camera>
-                gltf.asset; // Object
-                dog.position.setX(0);
-                dog.position.setY(100);
-                dog.position.setZ(0);
-            }
-        );
+        // // Load a glTF resource
+        // Mloader.load(
+        //     // resource URL
+        //     'shibaModel/scene.gltf',
+        //     // called when the resource is loaded
+        //     function (gltf) {
+        //         dog = gltf.scene;
+        //         dog.scale.set(50, 50, 50);
+        //         console.log(dog);
+        //         scene.add(dog);
+        //         gltf.animations; // Array<THREE.AnimationClip>
+        //         gltf.scene; // THREE.Group
+        //         gltf.scenes; // Array<THREE.Group>
+        //         gltf.cameras; // Array<THREE.Camera>
+        //         gltf.asset; // Object
+        //         dog.position.setX(camera.positon.x);
+        //         dog.position.setY(camera.position.y);
+        //         dog.position.setZ(camera.position.z);
+        //     }
+        //   );
+
+
 
 
 
@@ -662,7 +664,7 @@
             starGroup.rotation.z = .94;
             starGroup.scale.set(scale, scale);
             starGroup.position.set(windowWidth - (windowWidth * .60), windowHeight - (windowHeight * .65), 0);
-            sceneHUD.add(starGroup);
+           
             return starGroup;
         }
 
@@ -1050,8 +1052,10 @@
 
         //The animate function is a function which is continuously called for every frame of the program
         function animate() {
+            endStar.lookAt(camera.position);
             if (typeof dog != 'undefined') {
-                dog.lookAt(camera.position);
+                let lookHere = new THREE.Vector3(camera.position.x, camera.position.y-50, camera.position.z);
+                dog.lookAt(lookHere);
             }
 
             if (stamina > maxStamina * .5) {
@@ -1494,8 +1498,14 @@
         for (let i = 0; i < 3; i++) {
             initHeartIcon(heartPositions[i]);
         }
-        initStarIcon(0x000000, .6);
+        let starBorderGroup = initStarIcon(0x000000, .6);
         let starGroup = initStarIcon(0x000000, .5);
+        sceneHUD.add(starGroup);
+        sceneHUD.add(starBorderGroup)
+        let endStar = initStarIcon(0xffff00, .5);
+        endStar.position.set(0, 280, 0);
+        
+        scene.add(endStar);
 
         animate();
         render();
