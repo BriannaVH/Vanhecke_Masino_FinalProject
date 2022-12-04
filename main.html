@@ -223,6 +223,7 @@
         let increment = 2;
 
         let gamePaused = false;
+        let gameState = 0;
 
 
 
@@ -370,7 +371,7 @@
         function initParameters(level) {
             if (level == "easy") {
                 console.log("easy");
-                distance = 60;
+                distance = 10000; //60
                 monsterSpeed = .06;
                 stamina = 100;
                 increment = 2;
@@ -550,8 +551,6 @@
         }
 
 
-
-        //
 
         function createStormScene(camera, terrain, terrainSize) {
 
@@ -1263,7 +1262,7 @@
 
             scene.add(monsterGroup);
 
-            console.log(monsterGroup, 'monster group');
+            //console.log(monsterGroup, 'monster group');
         }
 
         //    makeSmoke();
@@ -1408,19 +1407,23 @@
 
         }
 
+        function createRandomPosOrNeg(max, min) {
+            let number = Math.random() * max + min
+            if (random() == true) {
+                number *= -1;
+            }
+            return number;
+        }
+
 
         // let scales = 1;
         let scales;
         let timerThunder = 0;
         let maxThunder = 0;
+        let k = .03;
         //let scale1 = stamina *.01;
         //The animate function is a function which is continuously called for every frame of the program
         function animate() {
-
-            
-
-
-
 
             if (stamina > maxStamina * .5) {
                 staminaBar.material.color.set(0x5CFF5C);
@@ -1433,21 +1436,21 @@
             }
 
             scales = 2.015 * (stamina - 5) * .01;
-           // console.log(scales, 'scales');
+            // console.log(scales, 'scales');
             if (gamePaused == false) {
                 delta = clock.getDelta();
-                timerThunder+=delta;
+                timerThunder += delta;
 
-                console.log(timerThunder);
-                console.log(maxThunder);
-                if (timerThunder >= maxThunder){
-                    console.log("thunder playing");
-                    let index = Math.round(Math.random()*4);
+                //  console.log(timerThunder);
+                // console.log(maxThunder);
+                if (timerThunder >= maxThunder) {
+                    //console.log("thunder playing");
+                    let index = Math.round(Math.random() * 4);
                     play(thunderNoises[index]);
                     timerThunder = 0;
-                    maxThunder =Math.random()*5+2;
+                    maxThunder = Math.random() * 5 + 2;
                 }
-                
+
                 gameTime += delta;
                 if (gameTime > increment) {
                     monsterSpeed -= .01;
@@ -1455,7 +1458,7 @@
                 }
                 if (moving == true && stamina > 0) {
                     if (stamina > maxStamina * .1) {
-                       // console.log("if moving");
+                        // console.log("if moving");
                         staminaBar.scale.x = scales;
                     }
                     stamina -= fitness;
@@ -1598,6 +1601,28 @@
                 for (let i = 0; i < shootingStars.length; i++) {
                     shootingStars[i].translateX(starXDirs[i]);
                     shootingStars[i].translateZ(starZDirs[i]);
+                    //console.log(shootingStars[i]);
+
+                }
+
+                if (gameState == 1) {
+                    let counter = 0;
+                    for (let i = 0; i < prettyStars.length; i++) {
+                        // console.log(spheres[i].shape.position);
+                        prettyStars[i].translateX(k * (createRandomPosOrNeg(300, 0) - prettyStars[i].position.x));
+                        prettyStars[i].translateY(k * (270 - prettyStars[i].position.y));
+                        prettyStars[i].translateZ(k * (createRandomPosOrNeg(300, 0) - prettyStars[i].position.z));
+                        prettyStars[i].scale.set(Math.random() * 30 + 10, Math.random() * 30 + 10);
+                        if (calcPointDistance(prettyStars[i].position, moon.bulbLight.position) <= 100) {
+                            counter++;
+                        }
+                    }
+                    if (counter > prettyStars.length * .8) {
+                        moon.bulbLight.color.setHex(0xffffff);
+                        moon.bulbMat.color.setHex(0xffffff);
+                        console.log("swap moon to star now");
+                    }
+
 
                 }
 
@@ -1716,6 +1741,7 @@
                 if (calcPointDistance(camera.position, stars[t].position) <= 2) { //Calcs whether the camera and a
                     //certain tree are too close together
                     starHit = t; //Sets boolean "hit" to true
+
                 }
             }
             for (let t = 0; t < trees.length; t++) { //For the length of the array containing all of the trees
@@ -1757,11 +1783,12 @@
         };
 
         function gameOver(state) {
+            gameOverBool = true;
             if (state == 1) {
-                //console.log("YOU WON BITCHES!");
+                gameState = 1;
             }
             else {
-                //  console.log("wahh wahh wahhh");
+                gameState = 0;
             }
         }
 
@@ -1775,6 +1802,7 @@
 
         let starXDirs = [];
         let starZDirs = [];
+        let prettyStars = [];
 
 
         function addStars() {
@@ -1802,6 +1830,9 @@
                 if (Math.random() > .8) {
                     shootingStars.push(dot);
                 }
+                else {
+                    prettyStars.push(dot);
+                }
                 scene.add(dot);
             }
             addShootingStar();
@@ -1814,8 +1845,8 @@
             for (let i = 0; i < shootingStars.length; i++) {
                 let x = Math.random() * 5 + 2;
                 let z = Math.random() * 5 + 2;
-                console.log("X HERE ", x);
-                console.log("Z HERE ", z);
+                //  console.log("X HERE ", x);
+                //console.log("Z HERE ", z);
                 if (random() == true) {
                     x *= -1;
                 }
@@ -1825,9 +1856,9 @@
                 starXDirs.push(x);
                 starZDirs.push(z);
             }
-            console.log(shootingStars);
-            console.log(starXDirs);
-            console.log(starZDirs);
+            // console.log(shootingStars);
+            // console.log(starXDirs);
+            //console.log(starZDirs);
 
         }
 
@@ -1849,7 +1880,7 @@
             mesh.scale.set(2.015 * (stamina - 5) * .01, 4);
             //heartArray.push(mesh);
             sceneHUD.add(mesh);
-            console.log("in");
+            // console.log("in");
             // while(1+1==2){
             //     console.log("in");
             //     mesh.scale(scale-1, 2);
@@ -1884,7 +1915,7 @@
 
         makeStarIcon(0x000000, .6);
         let starGroup = makeStarIcon(0x000000, .5);
-        console.log(starGroup);
+        // console.log(starGroup);
 
         animate();
         render();
