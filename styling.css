@@ -1,0 +1,110 @@
+#blocker {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(14, 1, 38, 0.789);
+    color: white;
+    font-family: "Serif", "Georgia", monospace;
+}
+
+#instructions {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    text-align: center;
+    top: -30%;
+    font-size: 25px;
+    font-family: "Serif", "Georgia", monospace;
+    cursor: pointer;
+}
+
+.dropbtn {
+    min-width: 160px;
+    background-color: #F3DEFF;
+    color: black;
+    padding: 16px;
+    font-size: 25px;
+    border: none;
+    cursor: pointer;
+    position: fixed;
+    left: 35%;
+    top: 65%;
+    font-family: "Serif", "Georgia", monospace;
+}
+
+.button {
+    min-width: 160px;
+    background-color: #F3DEFF;
+    color: black;
+    padding: 16px;
+    font-size: 25px;
+    border: none;
+    cursor: pointer;
+    position: fixed;
+    left: 55%;
+    top: 65%;
+    font-family: "Serif", "Georgia", monospace;
+}
+
+.greenText {
+    min-width: 160px;
+    color: black;
+    padding: 16px;
+    font-size: 25px;
+    border: none;
+    cursor: pointer;
+    position: fixed;
+    left: 35%;
+    top: 65%;
+    font-family: "Serif", "Georgia", monospace;
+    background-color: green;
+}
+
+.blueText {
+    min-width: 160px;
+
+    color: black;
+    padding: 16px;
+    font-size: 25px;
+    border: none;
+    cursor: pointer;
+    position: fixed;
+    left: 35%;
+    top: 65%;
+    font-family: "Serif", "Georgia", monospace;
+    background-color: rgb(255, 191, 0);
+}
+
+.redText {
+    min-width: 160px;
+    color: black;
+    padding: 16px;
+    font-size: 25px;
+    border: none;
+    cursor: pointer;
+    position: fixed;
+    left: 35%;
+    top: 65%;
+    font-family: "Serif", "Georgia", monospace;
+    background-color: red;
+}
+
+.greyText {
+    min-width: 160px;
+    color: black;
+    padding: 16px;
+    font-size: 25px;
+    border: none;
+    cursor: pointer;
+    position: fixed;
+    left: 35%;
+    top: 65%;
+    font-family: "Serif", "Georgia", monospace;
+    background-color: rgba(97, 89, 89, 0.637);
+}
