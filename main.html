@@ -61,14 +61,15 @@
         import { RenderPass } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/RenderPass.js'
         import { EffectComposer } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/EffectComposer.js'
         import { UnrealBloomPass } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/UnrealBloomPass.js';
-      
+        import { GLTFLoader } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/loaders/GLTFLoader.js';
+
 
 
 
         //Variable Declaration
-        
-       
-       
+
+
+
 
         let scene = new THREE.Scene();
         let windowWidth = window.innerWidth;
@@ -129,7 +130,7 @@
         // game logic
         let heartPositions = [windowWidth - (windowWidth * .78), windowWidth - (windowWidth * .81), windowWidth - (windowWidth * .84)];
 
-      
+
         let wood = new THREE.MeshPhongMaterial({ color: 0x80471C, map: loader.load("trees/oakwood.jpg") });
 
 
@@ -198,16 +199,38 @@
         });
 
 
-        // animate();
+        // Instantiate a loader
+        const Mloader = new GLTFLoader();
+        let dog;
+
+        // Load a glTF resource
+        Mloader.load(
+            // resource URL
+            'model/scene.gltf',
+            // called when the resource is loaded
+            function (gltf) {
+                dog = gltf.scene;
+                dog.scale.set(100, 100, 100);
+                console.log(dog);
+                scene.add(dog);
+                gltf.animations; // Array<THREE.AnimationClip>
+                gltf.scene; // THREE.Group
+                gltf.scenes; // Array<THREE.Group>
+                gltf.cameras; // Array<THREE.Camera>
+                gltf.asset; // Object
+                dog.position.setX(0);
+                dog.position.setY(100);
+                dog.position.setZ(0);
+            }
+        );
+
+
 
         function initLightning() {
 
             createStormScene(camera, terrain, 450);
 
-
             scene.userData.timeRate = 4;
-
-
             scene.userData.lightningColorRGB = [
                 scene.userData.lightningColor.r * 255,
                 scene.userData.lightningColor.g * 255,
@@ -219,11 +242,8 @@
                 scene.userData.outlineColor.g * 255,
                 scene.userData.outlineColor.b * 255
             ];
-
-            //createScene();
-
         }
-        
+
         function createOutline(scene, objectsArray, visibleColor) {
 
             const outlinePass = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, scene.userData.camera, objectsArray);
@@ -233,48 +253,19 @@
             outlinePass.visibleEdgeColor = visibleColor;
             outlinePass.hiddenEdgeColor.set(0);
             composer.addPass(outlinePass);
-
             scene.userData.outlineEnabled = true;
 
             return outlinePass;
-
         }
 
         function createStormScene(camera, terrain, terrainSize) {
 
-            // scene = new THREE.Scene();
             scene.background = new THREE.Color(0x050505);
-
             scene.userData.canGoBackwardsInTime = false;
-
             scene.userData.camera = new THREE.PerspectiveCamera(27, window.innerWidth / window.innerHeight, 20, 10000);
-
-            // Lights
-
-            // scene.add(new THREE.AmbientLight(0x444444));
-
-            // const light1 = new THREE.DirectionalLight(0xffffff, 0.5);
-            // light1.position.set(1, 1, 1);
-            // scene.add(light1);
-
-            // const posLight = new THREE.PointLight(0x00ffff);
-            // posLight.position.set(0, 100, 0);
-            // scene.add(posLight);
-
-            // Ground
-
-
-
             scene.userData.camera.position.set(0, 0.2, 1.6).multiplyScalar(GROUND_SIZE * 0.5);
-
-
-            //scene.add(ground);
-
-            // Storm
-
             scene.userData.lightningColor = new THREE.Color(0xB0FFFF);
             scene.userData.outlineColor = new THREE.Color(0x00FFFF);
-
             scene.userData.lightningMaterial = new THREE.MeshBasicMaterial({ color: scene.userData.lightningColor });
 
             const rayDirection = new THREE.Vector3(0, - 1, 0);
@@ -283,7 +274,6 @@
             const vec2 = new THREE.Vector3();
 
             scene.userData.rayParams = {
-
                 radius0: 1,
                 radius1: 0.5,
                 minRadius: 0.3,
@@ -305,11 +295,7 @@
 
                 onSubrayCreation: function (segment, parentSubray, childSubray, lightningStrike) {
 
-                    //console.log("gets in here1");
                     lightningStrike.subrayConePosition(segment, parentSubray, childSubray, 0.6, 0.6, 0.5);
-
-                    // Plane projection
-
                     rayLength = lightningStrike.rayParameters.sourceOffset.y;
                     vec1.subVectors(childSubray.pos1, lightningStrike.rayParameters.sourceOffset);
                     const proj = rayDirection.dot(vec1);
@@ -319,17 +305,10 @@
                     vec2.multiplyScalar(scale);
                     vec1.add(vec2);
                     childSubray.pos1.addVectors(vec1, lightningStrike.rayParameters.sourceOffset);
-
-
                 }
-
             };
 
-
-
             const storm = new LightningStorm({
-
-
                 size: GROUND_SIZE,
                 minHeight: 400,//Determine how low the lightning can generate at
                 maxHeight: 800,
@@ -337,49 +316,23 @@
                 maxLightnings: 1,
                 lightningMinPeriod: 20,
                 lightningMaxPeriod: 30,
-
-
                 lightningParameters: scene.userData.rayParams,
-
                 lightningMaterial: scene.userData.lightningMaterial,
-
-
-
             });
 
             scene.add(storm);
-
-            //  console.log(storm);
-
-            // Compose rendering
-
             composer.passes = [];
             composer.addPass(new RenderPass(scene, scene.userData.camera));
             createOutline(scene, storm.lightningsMeshes, scene.userData.outlineColor);
 
-
             scene.userData.render = function (time) {
-                // console.log("gets in here2");
-
                 storm.update(time);
-
-
                 if (scene.userData.outlineEnabled) {
-
                     composer.render();
-
-
                 } else {
-
-
                     renderer.render(scene, scene.userData.camera);
-
                 }
-
             };
-
-            //  return scene;
-
         }
 
 
@@ -675,12 +628,10 @@
                 color: color, side: THREE.DoubleSide, metalness: .5,
                 roughness: .5
             })
-            var circle = new THREE.Mesh(geometry, material)
 
+            var circle = new THREE.Mesh(geometry, material)
             starGroup.add(circle);
-            // circle.position.set(windowWidth - (windowWidth * .60), windowHeight - (windowHeight * .65), 0);
-            // sceneHUD.add(circle)
-            // console.log("HELLO???? ", circle.geometry.vertices);
+
             let known = circle.geometry.vertices;
             let additionalPoints = [
                 (new THREE.Vector3(44, 32, 0)),
@@ -688,21 +639,16 @@
                 (new THREE.Vector3(-52, 2, 0)),
                 (new THREE.Vector3(-15, -52, 0)),
                 (new THREE.Vector3(44, -30, 0))
-
             ];
-
 
             for (let i = 1; i < known.length; i++) {
                 const shape = new THREE.Shape();
                 if (i < 5) {
-                    // console.log(i);
                     shape.moveTo(known[i].x, known[i].y);
                     shape.lineTo(known[i + 1].x, known[i + 1].y);
                     shape.lineTo(additionalPoints[i - 1].x, additionalPoints[i - 1].y);
-
                 }
                 else {
-                    // console.log(i);
                     shape.moveTo(known[i].x, known[i].y);
                     shape.lineTo(known[1].x, known[1].y);
                     shape.lineTo(additionalPoints[i - 1].x, additionalPoints[i - 1].y);
@@ -711,10 +657,7 @@
                 const tgeometry = new THREE.ShapeGeometry(shape);
                 const tmaterial = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide });
                 const tmesh = new THREE.Mesh(tgeometry, tmaterial);
-                // tmesh.scale.set(10, 10);
-                //  sceneHUD.add(tmesh);
                 starGroup.add(tmesh);
-                //  console.log("WAHH ", tmesh);
             }
             starGroup.rotation.z = .94;
             starGroup.scale.set(scale, scale);
@@ -726,6 +669,7 @@
         function initHeartIcon(x) {
             const y = windowHeight - (windowHeight * .8);
             const heartShape = new THREE.Shape();
+
             heartShape.moveTo(x + 5, y + 5);
             heartShape.bezierCurveTo(x + 5, y + 5, x + 4, y, x, y);
             heartShape.bezierCurveTo(x - 6, y, x - 6, y + 7, x - 6, y + 7);
@@ -733,9 +677,11 @@
             heartShape.bezierCurveTo(x + 12, y + 15.4, x + 16, y + 11, x + 16, y + 7);
             heartShape.bezierCurveTo(x + 16, y + 7, x + 16, y, x + 10, y);
             heartShape.bezierCurveTo(x + 7, y, x + 5, y + 5, x + 5, y + 5);
+
             const geometry = new THREE.ShapeGeometry(heartShape);
             const hmaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, side: THREE.DoubleSide });
             const mesh = new THREE.Mesh(geometry, hmaterial);
+
             mesh.rotation.z = -3.15;
             mesh.scale.set(2, 2);
             mesh.layers.enable(1);
@@ -774,23 +720,13 @@
         }
 
         function initFlashLight() {
-
             spotLight = new THREE.SpotLight(0xffff00, 2, 0, Math.PI * .1, 0, 1);
-
             spotLight.castShadow = true;
-            // spotLight.receiveShadow = true;
-            //  spotLight.shadow = new THREE.SpotLightShadow(new THREE.PerspectiveCamera(20, 1, 1, 250));
             spotLight.target = cursor;
-
-
             spotLight.shadow.camera.near = 500;
             spotLight.shadow.camera.far = 4000;
-
             spotLightOn = true;
-
             camera.add(spotLight);
-
-
         }
 
         //Creates the sun/moon and their corresponding point lights
@@ -826,14 +762,13 @@
                     metalness: .5,
                     roughness: .5
                 });
+
                 const sphere = new THREE.Mesh(geometry, material);
                 sphere.position.set(position.x, position.y, position.z);
                 starShards.push(sphere);
                 worldItems.push(sphere);
                 scene.add(sphere);
-
             }
-
         }
 
         // A function that makes the trees for the scene. There are 3 types of wood and 3 grammars
@@ -953,7 +888,6 @@
             const far = 100;
             const color = 0xff0000;
             scene.fog = new THREE.FogExp2(color, 0); //.005
-
         }
 
         //Creates terrain and water that will appear in the scene
@@ -1019,59 +953,18 @@
         //Creates sun and moon bulblights
         function initMoon() {
             moon = new initLights(moonColor[0], 0, 280, 0, .1);
-            //Creates both lights and geometries
-
             worldItems.push(moon.bulbLight);
         }
 
-    
-        //This function checks the position of the sun and moon and changes the colors/intensity of either of the two
-        //objects based on height
-        function checkPositions(moon) {
-            let moonLight = moon.bulbLight;
-
-            //If the moon is a specific height then modify the color of the renderer, the world (sphere surrounding the terrain),
-            // & change the intensity of the moon
-            if (moonLight.position.y > 300) {
-                renderer.setClearColor(skyColors[0]);
-                world.material.color.setHex(skyColors[0]);
-                moonLight.intensity = .8;
-            }
-            else if (240 <= moonLight.position.y && moonLight.position.y < 300) {
-                renderer.setClearColor(skyColors[1]);
-                world.material.color.setHex(skyColors[1]);
-                moonLight.intensity = .7;
-            }
-            else if (180 <= moonLight.position.y && moonLight.position.y < 240) {
-                moonLight.intensity = .6;
-            }
-            else if (120 <= moonLight.position.y && moonLight.position.y < 180) {
-                renderer.setClearColor(skyColors[2]);
-                world.material.color.setHex(skyColors[2]);
-                moonLight.intensity = .5;
-            }
-            else if (moonLight.position.y < 120 && moonLight.position.y > -.5) {
-                moonLight.intensity = .4;
-            }
-            //Turn off the moon point light completely if it is below the terrain
-            else if (moonLight.position.y < -.5) {
-                moonLight.intensity = 0;
-            }
-        }
-
-  
 
         //Function that randomizes a position (x,y,z) coordinate in the terrain
         function randomizePositions(limit) {
-
             let rayHeight = new THREE.Raycaster();
             let rayDirection = new THREE.Vector3(0, -1, 0);//Gives direction for raycaster
             //Below recalculates the world matrix of the objects and their descendants on the current frame
             terrain.updateMatrixWorld(true);
             scene.updateMatrixWorld(true);
-
             let treePos = new THREE.Vector3();
-
             //Gives x and z a random position within the bounds of the terrain
             let xPos = Math.random() * (limit - 5) + 5;
             let zPos = Math.random() * (limit - 5) + 5;
@@ -1093,48 +986,34 @@
                 yPos = intersectHeight[0].point.y; //Sets the yPos to where the ray intersected with the terrain
             }
             treePos.set(xPos, yPos, zPos);//Sets treePosition to the randomized x,y and z coordinates
-
             return treePos;
         }
 
 
-
-
         function initSmoke() {
-
             smokeTexture = loader.load('skies/smoke1.png');
             smokeMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, map: smokeTexture, transparent: true, side: THREE.DoubleSide });
             smokeGeo = new THREE.DodecahedronGeometry(30, 0);
-            //smokeMaterial.opacity
-            // smokeMaterial.receiveShadow = false;
             smokeParticles = [];
-
 
             let eyesTexture = loader.load('skies/eyestra.png');
             let eyesGeom = new THREE.PlaneGeometry(40, 40);
             let eyesMat = new THREE.MeshBasicMaterial({ transparent: true, map: eyesTexture, side: THREE.DoubleSide });
             let eyes = new THREE.Mesh(eyesGeom, eyesMat);
-            //  scene.add(eyes);
             eyes.position.set(0, 70, 30);
             monsterGroup.add(eyes);
-
 
             let smileTexture = loader.load('skies/download.png');
             let smileGeo = new THREE.PlaneGeometry(40, 40);
             let smileMat = new THREE.MeshBasicMaterial({ transparent: true, map: smileTexture, side: THREE.DoubleSide });
             let smile = new THREE.Mesh(smileGeo, smileMat);
-            //scene.add(smile);
             smile.position.set(0, 35, 30);
             monsterGroup.add(smile);
 
-
             smokeParticles = [];
-
             for (let p = 0; p < 40; p++) {
-
                 x = Math.random() * 40;
                 y = Math.random() * 50;
-
                 if (random() == true) {
                     x *= -1;
                 }
@@ -1144,44 +1023,37 @@
                 y = y + 50;
 
                 var particle = new THREE.Mesh(smokeGeo, smokeMaterial);
-
-                //particle.opacity = .1;
                 let rotation = Math.random() * 1000;
                 if (random() == true) {
                     rotation *= -1;
                 }
+
                 particle.position.set(x, y, 0);
                 particle.rotation.z = rotation;
-                //  console.log(rotation, 'rotation');
                 scene.add(particle);
                 smokeParticles.push(particle);
                 monsterGroup.add(particle);
             }
-
-
             scene.add(monsterGroup);
-
-            //console.log(monsterGroup, 'monster group');
         }
 
-        //    makeSmoke();
 
 
         function evolveSmoke() {
             var sp = smokeParticles.length;
             while (sp--) {
                 smokeParticles[sp].rotation.z += (delta * 10);
-                //      smokeParticles[sp].rotation.y += (delta * 0.5);
             }
         }
 
 
-      
-        // let scales = 1;
 
-        //let scale1 = stamina *.01;
         //The animate function is a function which is continuously called for every frame of the program
         function animate() {
+            if (typeof dog != 'undefined') {
+                dog.lookAt(camera.position);
+            }
+
             if (stamina > maxStamina * .5) {
                 staminaBar.material.color.set(0x5CFF5C);
             }
@@ -1396,13 +1268,9 @@
         // a function that is called continuously in animate that handles the cursor, hightlighting, and sun/moon rotation
         function render() {
             currentTime += scene.userData.timeRate * clock.getDelta();
-
             if (currentTime < 0) {
-
                 currentTime = 0;
-
             }
-
             scene.userData.render(currentTime);
             // raycast from the camera position in the direction of the camera lookat
             raycaster.set(camera.getWorldPosition(new THREE.Vector3), camera.getWorldDirection(new THREE.Vector3));
@@ -1428,7 +1296,6 @@
             // Rotate the sun and moon around the world 
 
 
-            checkPositions(moon);
             hudTexture.needsUpdate = true;
             // Render HUD on top of the scene.
             renderer.render(scene, camera);
@@ -1451,7 +1318,6 @@
         //A function which determines which way the user is moving
         function onDocumentKeyDown(e) {
             if (gamePaused == false) {
-
                 movement = 0;
                 var keyCode = e.which || e.keyCode; //Gets the key code
                 //Sets the direction the user is moving based on which key the user pressed
@@ -1460,11 +1326,8 @@
                 else if (keyCode == 68) movement = "right";
                 else if (keyCode == 83) movement = "backward";
                 else if (keyCode == 70) {
-                    //   console.log("in");
                     spotLightOn = !spotLightOn;
-
                     if (spotLightOn == false) {
-
                         spotLight.intensity = 0;
                         spotLightOn = false;
                     }
@@ -1479,7 +1342,6 @@
 
         //Function which moves the user & handles collision
         function moveAround() {
-
             if (stamina <= 10) {
                 speed = 1;
             }
@@ -1498,7 +1360,6 @@
                 if (calcPointDistance(camera.position, starShards[t].position) <= 2) { //Calcs whether the camera and a
                     //certain tree are too close together
                     starHit = t; //Sets boolean "hit" to true
-
                 }
             }
             for (let t = 0; t < trees.length; t++) { //For the length of the array containing all of the trees
@@ -1589,8 +1450,6 @@
             for (let i = 0; i < shootingStars.length; i++) {
                 let x = Math.random() * 5 + 2;
                 let z = Math.random() * 5 + 2;
-                //  console.log("X HERE ", x);
-                //console.log("Z HERE ", z);
                 if (random() == true) {
                     x *= -1;
                 }
@@ -1600,32 +1459,21 @@
                 starXDirs.push(x);
                 starZDirs.push(z);
             }
-            // console.log(shootingStars);
-            // console.log(starXDirs);
-            //console.log(starZDirs);
-
         }
 
-     
+
         function initMonster() {
             initSmoke();
         }
+
         function initStaminaBar() {
             const geometry = new THREE.PlaneGeometry(100, 5);
             const hmaterial = new THREE.MeshBasicMaterial({ color: 0x5CFF5C, side: THREE.DoubleSide });
             const mesh = new THREE.Mesh(geometry, hmaterial);
             mesh.position.set(windowWidth - (windowWidth * .6), windowHeight - (windowHeight * 1.42), 0);
             mesh.scale.set(2.015 * (stamina - 5) * .01, 4);
-            //heartArray.push(mesh);
             sceneHUD.add(mesh);
-            // console.log("in");
-            // while(1+1==2){
-            //     console.log("in");
-            //     mesh.scale(scale-1, 2);
-            // }
-
             return mesh;
-
         }
 
 
@@ -1646,8 +1494,6 @@
         for (let i = 0; i < 3; i++) {
             initHeartIcon(heartPositions[i]);
         }
-        
-
         initStarIcon(0x000000, .6);
         let starGroup = initStarIcon(0x000000, .5);
 
