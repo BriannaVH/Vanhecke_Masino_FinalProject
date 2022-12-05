@@ -39,11 +39,13 @@ let k = .01;
  let dirs = [];
  let parts = [];
 
+
  // smoke 
  let smokeParticles;
  let smokeTexture;
  let smokeMaterial;
  let smokeGeo
+ let storm;
 
 
 
@@ -110,3 +112,9 @@ let k = .01;
   let skyColors = [0x000608, 0x072f41, 0x094f6d, 0x436e91, 0x5e88b8, 0x7998bb];
 
   let spotLight, lightTarget;
+
+  let shibaCounter=0;
+  let shiba;
+  let endStar;
+  let number=0;
+  let dog;

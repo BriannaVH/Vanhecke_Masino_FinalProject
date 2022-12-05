@@ -198,31 +198,34 @@
 
         });
 
+        let addShiba = false;
+        function makeShiba(position) {
 
-        // Instantiate a loader
-        // const Mloader = new GLTFLoader();
-        // let dog;
+            //   Instantiate a loader
+            const Mloader = new GLTFLoader();
+           
 
-        // // Load a glTF resource
-        // Mloader.load(
-        //     // resource URL
-        //     'shibaModel/scene.gltf',
-        //     // called when the resource is loaded
-        //     function (gltf) {
-        //         dog = gltf.scene;
-        //         dog.scale.set(50, 50, 50);
-        //         console.log(dog);
-        //         scene.add(dog);
-        //         gltf.animations; // Array<THREE.AnimationClip>
-        //         gltf.scene; // THREE.Group
-        //         gltf.scenes; // Array<THREE.Group>
-        //         gltf.cameras; // Array<THREE.Camera>
-        //         gltf.asset; // Object
-        //         dog.position.setX(camera.positon.x);
-        //         dog.position.setY(camera.position.y);
-        //         dog.position.setZ(camera.position.z);
-        //     }
-        //   );
+            // Load a glTF resource
+            Mloader.load(
+                // resource URL
+                'shibaModel/scene.gltf',
+                // called when the resource is loaded
+                function (gltf) {
+                    dog = gltf.scene;
+                    dog.scale.set(50, 50, 50);
+                    //console.log(dog);
+                    scene.add(dog);
+                    gltf.animations; // Array<THREE.AnimationClip>
+                    gltf.scene; // THREE.Group
+                    gltf.scenes; // Array<THREE.Group>
+                    gltf.cameras; // Array<THREE.Camera>
+                    gltf.asset; // Object
+                    dog.position.setX(position.x);
+                    dog.position.setY(position.y);
+                    dog.position.setZ(position.z);
+                }
+            );
+        }
 
 
 
@@ -310,7 +313,7 @@
                 }
             };
 
-            const storm = new LightningStorm({
+            storm = new LightningStorm({
                 size: GROUND_SIZE,
                 minHeight: 400,//Determine how low the lightning can generate at
                 maxHeight: 800,
@@ -321,6 +324,8 @@
                 lightningParameters: scene.userData.rayParams,
                 lightningMaterial: scene.userData.lightningMaterial,
             });
+
+           // console.log(storm);
 
             scene.add(storm);
             composer.passes = [];
@@ -602,7 +607,7 @@
         function initParameters(level) {
             if (level == "easy") {
                 console.log("easy");
-                distance = 10000; //60
+                distance = 200; //60
                 monsterSpeed = .06;
                 stamina = 100;
                 increment = 2;
@@ -1054,113 +1059,46 @@
 
         //The animate function is a function which is continuously called for every frame of the program
         function animate() {
-            if (typeof dog != 'undefined') {
-                let lookHere = new THREE.Vector3(camera.position.x, camera.position.y - 50, camera.position.z);
-                dog.lookAt(lookHere);
-            }
 
-            if (stamina > maxStamina * .5) {
-                staminaBar.material.color.set(0x5CFF5C);
-            }
-            else if (stamina < maxStamina * .2) {
-                staminaBar.material.color.set(0xDF362D);
-            }
-            else {
-                staminaBar.material.color.set(0xFFC55C);
-            }
-
-            scales = 2.015 * (stamina - 5) * .01;
             // console.log(scales, 'scales');
             if (gamePaused == false) {
+                if (typeof endStar != 'undefined') {
+
+                    endStar.lookAt(camera.position);
+
+                }
+
+                if (stamina > maxStamina * .5) {
+                    staminaBar.material.color.set(0x5CFF5C);
+                }
+                else if (stamina < maxStamina * .2) {
+                    staminaBar.material.color.set(0xDF362D);
+                }
+                else {
+                    staminaBar.material.color.set(0xFFC55C);
+                }
+
+                scales = 2.015 * (stamina - 5) * .01;
+                console.log(gameState, 'game state');
                 delta = clock.getDelta();
-                timerThunder += delta;
-
-                //  console.log(timerThunder);
-                // console.log(maxThunder);
-                if (timerThunder >= maxThunder) {
-                    //console.log("thunder playing");
-                    let index = Math.round(Math.random() * 4);
-                    play(thunderNoises[index]);
-                    timerThunder = 0;
-                    maxThunder = Math.random() * 5 + 2;
-                }
-
-                gameTime += delta;
-                if (gameTime > increment) {
-                    monsterSpeed -= .01;
-                    gameTime = 0;
-                }
                 if (moving == true && stamina > 0) {
                     if (stamina > maxStamina * .1) {
-                        // console.log("if moving");
                         staminaBar.scale.x = scales;
                     }
                     stamina -= fitness;
-                    scene.fog.density += .00003;
-                    if (stamina < maxStamina * .2) {
-                        //console.log("getting in heere");
+                    if (gameState == 0) {
+                        scene.fog.density += .00003;
                     }
                 }
                 else if (moving == false && stamina < maxStamina && stamina >= 0) {
                     staminaBar.scale.x = scales;
                     stamina += fitness * 5;
-                    scene.fog.density -= .00003 * 5;
-                }
-                else if (stamina == 0 && moving == false) {
-
-                }
-                // console.log(delta);
-                if (caught == false) {
-                    if (calcPointDistance(camera.position, previousPos[previousPos.length - 1]) != 0) {
-                        //   console.log("INNIT ", previousPos);
-                        previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z))
-                    }
-
-                    if (previousPos.length > distance) {
-                        timer += delta;
-                        if (timer > monsterSpeed) {
-                            timer = 0;
-                            monsterGroup.position.set(previousPos[0].x, previousPos[0].y, previousPos[0].z);
-                            monsterGroup.lookAt(camera.position);
-                            previousPos.shift();
-                            distance -= 1;
-                            if (calcPointDistance(monsterGroup.position, camera.position) < 30) {
-                                console.log("caught");
-                                let index = Math.round(Math.random() * 3);
-                                play(caughtSound[index]);
-                                caught = true;
-                            }
-                            else if (calcPointDistance(monsterGroup.position, camera.position) < 150) {
-                                //play('sounds/heartbeat.wav');
-                                heartbeatAudio.play();
-                                heartbeatAudio.volume = .5;
-                            }
-                            else if (calcPointDistance(monsterGroup.position, camera.position) > 150) {
-                                heartbeatAudio.pause();
-                                heartbeatAudio.currentTime = 0;
-                            }
-                        }
+                    if (gameState == 0) {
+                        scene.fog.density -= .00003 * 5;
                     }
 
                 }
-                else if (caught == true) { //Calcs whether the camera and a
-                    //certain tree are too close together
-                    if (gameOverBool == false) {
-                        // hit = true; //Sets boolean "hit" to true
-                        lives -= 1;
-                        heartArray[lives].material.color.set(0x000000);
-                        previousPos = [];
-                        previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z));
-                        distance = 25;
-                        caught = false;
 
-
-                    }
-                    if (lives == 0) {
-                        gameOver(0);
-                        gameOverBool = true;
-                    }
-                }
                 evolveSmoke();
 
                 if (movingStarShard.length != 0) {
@@ -1176,7 +1114,7 @@
                             movingStarShard[i].material.dispose();
                             movingStarShard[i].geometry.dispose();
                             movingStarShard.splice(i, 1);
-                            //parts.pop();
+
 
                         }
 
@@ -1230,16 +1168,105 @@
                     humanGroup.setRotationFromMatrix(camera.matrix);
 
                 }
-
-
                 for (let i = 0; i < shootingStars.length; i++) {
                     shootingStars[i].translateX(starXDirs[i]);
                     shootingStars[i].translateZ(starZDirs[i]);
+
                     //console.log(shootingStars[i]);
 
                 }
+                if (gameState == 0) {
+                    timerThunder += delta;
+                    if (timerThunder >= maxThunder) {
+                        //console.log("thunder playing");
+                        let index = Math.round(Math.random() * 4);
+                        play(thunderNoises[index]);
+                        timerThunder = 0;
+                        maxThunder = Math.random() * 5 + 2;
+                    }
 
-                if (gameState == 1) {
+                    gameTime += delta;
+                    if (gameTime > increment) {
+                        monsterSpeed -= .01;
+                        gameTime = 0;
+                    }
+
+                    // console.log(delta);
+                    if (caught == false) {
+                        if (calcPointDistance(camera.position, previousPos[previousPos.length - 1]) != 0) {
+                            //   console.log("INNIT ", previousPos);
+                            previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z))
+                        }
+
+                        if (previousPos.length > distance) {
+                            timer += delta;
+                            if (timer > monsterSpeed) {
+                                timer = 0;
+                                monsterGroup.position.set(previousPos[0].x, previousPos[0].y, previousPos[0].z);
+                                monsterGroup.lookAt(camera.position);
+                                previousPos.shift();
+                                distance -= 1;
+                                if (calcPointDistance(monsterGroup.position, camera.position) < 30) {
+                                    console.log("caught");
+                                    let index = Math.round(Math.random() * 3);
+                                    play(caughtSound[index]);
+                                    caught = true;
+                                }
+                                else if (calcPointDistance(monsterGroup.position, camera.position) < 150) {
+                                    //play('sounds/heartbeat.wav');
+                                    heartbeatAudio.play();
+                                    heartbeatAudio.volume = .5;
+                                }
+                                else if (calcPointDistance(monsterGroup.position, camera.position) > 150) {
+                                    heartbeatAudio.pause();
+                                    heartbeatAudio.currentTime = 0;
+                                }
+                            }
+                        }
+
+                    }
+                    else if (caught == true) { //Calcs whether the camera and a
+                        //certain tree are too close together
+                        if (gameOverBool == false) {
+                            // hit = true; //Sets boolean "hit" to true
+                            lives -= 1;
+                            heartArray[lives].material.color.set(0x000000);
+                            previousPos = [];
+                            previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z));
+                            distance = 25;
+                            caught = false;
+
+
+                        }
+                        if (lives == 0) {
+                            gameOver(0);
+                            gameOverBool = true;
+
+                        }
+                    }
+
+                }
+                else if (gameState == 1) {
+                    if (shibaCounter == 0) {
+                        let shibaPosition = monsterGroup.children[0].position;
+                        scene.remove(monsterGroup);
+                        monsterGroup.traverse(monsterGroup => monsterGroup.dispose?.());
+                        scene.remove(storm);
+                        scene.fog.intensity = 0;
+                        makeShiba(shibaPosition);
+                       
+                        shibaCounter+=1;
+                    }
+                    console.log(dog)
+                    if (typeof dog != 'undefined') {
+                       
+                            dog.lookAt(camera.position);
+                        }
+                    heartbeatAudio.pause();
+                    heartbeatAudio.currentTime = 0;
+
+
+
                     let counter = 0;
                     if (prettyStars.length > 0) {
                         for (let i = 0; i < prettyStars.length; i++) {
@@ -1254,19 +1281,23 @@
                         }
 
                     }
-
                     if (counter > prettyStars.length * .9) {
                         moon.bulbLight.intensity = 2;
-                       // moon.bulbMat.dispose();
+                        // moon.bulbMat.dispose();
                         //moon.bulbGeometry.dispose();
                         moon.bulbMat.emissive.set(0xffff00);
                         moon.bulbLight.color.setHex(0xffff00);
                         //moon.bulbMat.emissive.set(0xffff00);
                         moon.bulbMat.color.setHex(0xffff00);
-                        let endStar = initStarIcon(0xffff00, .5);
-                        endStar.position.set(0, 280, 0);
-                        endStar.lookAt(camera.position);
-                        scene.add(endStar);
+                        if (number == 0) {
+                            endStar = initStarIcon(0xffff00, .5);
+                            endStar.position.set(0, 280, 0);
+                            endStar.lookAt(camera.position);
+                            scene.add(endStar);
+                            number += 1;
+                        }
+
+                       // console.log(endStar);
                         for (let i = 0; i < prettyStars.length; i++) {
                             scene.remove(prettyStars[i]);
                             prettyStars[i].material.dispose();
@@ -1281,11 +1312,7 @@
                         moon.bulbMat.color.setHex(0xffffff);
                     }
 
-
-
                 }
-
-
 
                 hudTexture.needsUpdate = true;
                 // Render HUD on top of the scene.
