@@ -664,7 +664,7 @@
             starGroup.rotation.z = .94;
             starGroup.scale.set(scale, scale);
             starGroup.position.set(windowWidth - (windowWidth * .60), windowHeight - (windowHeight * .65), 0);
-           
+
             return starGroup;
         }
 
@@ -739,7 +739,7 @@
             this.bulbGeometry = new THREE.SphereGeometry(10, 32, 16); //Creates sphere geometry
             this.bulbLight = new THREE.PointLight(hexCode, intensity, 20000); //Creates point light
 
-            this.bulbMat = new THREE.MeshBasicMaterial({ //Creates bulb material for the light and customizes it
+            this.bulbMat = new THREE.MeshPhongMaterial({ //Creates bulb material for the light and customizes it
                 //emissive: 0x880808,
                 //emissiveIntensity: 1,
                 color: 0x880808
@@ -757,7 +757,7 @@
 
         function initStarShards(numStars) {
             for (let i = 0; i < numStars; i++) {
-                let position = randomizePositions(380);
+                let position = randomizePositions(380); //380
                 const geometry = new THREE.ConeGeometry(10, 30, 3);
                 const material = new THREE.MeshPhysicalMaterial({
                     color: 0xffff00,
@@ -955,6 +955,8 @@
         //Creates sun and moon bulblights
         function initMoon() {
             moon = new initLights(moonColor[0], 0, 280, 0, .1);
+            renderer.setClearColor(skyColors[2]);
+            world.material.color.setHex(skyColors[2]);
             worldItems.push(moon.bulbLight);
         }
 
@@ -1052,9 +1054,8 @@
 
         //The animate function is a function which is continuously called for every frame of the program
         function animate() {
-            endStar.lookAt(camera.position);
             if (typeof dog != 'undefined') {
-                let lookHere = new THREE.Vector3(camera.position.x, camera.position.y-50, camera.position.z);
+                let lookHere = new THREE.Vector3(camera.position.x, camera.position.y - 50, camera.position.z);
                 dog.lookAt(lookHere);
             }
 
@@ -1240,21 +1241,46 @@
 
                 if (gameState == 1) {
                     let counter = 0;
-                    for (let i = 0; i < prettyStars.length; i++) {
-                        // console.log(spheres[i].shape.position);
-                        prettyStars[i].translateX(k * (createRandomPosOrNeg(300, 0) - prettyStars[i].position.x));
-                        prettyStars[i].translateY(k * (270 - prettyStars[i].position.y));
-                        prettyStars[i].translateZ(k * (createRandomPosOrNeg(300, 0) - prettyStars[i].position.z));
-                        prettyStars[i].scale.set(Math.random() * 30 + 10, Math.random() * 30 + 10);
-                        if (calcPointDistance(prettyStars[i].position, moon.bulbLight.position) <= 100) {
-                            counter++;
+                    if (prettyStars.length > 0) {
+                        for (let i = 0; i < prettyStars.length; i++) {
+                            // console.log(spheres[i].shape.position);
+                            prettyStars[i].translateX(k * (createRandomPosOrNeg(300, 0) - prettyStars[i].position.x));
+                            prettyStars[i].translateY(k * (270 - prettyStars[i].position.y));
+                            prettyStars[i].translateZ(k * (createRandomPosOrNeg(300, 0) - prettyStars[i].position.z));
+                            prettyStars[i].scale.set(Math.random() * 30 + 10, Math.random() * 30 + 10);
+                            if (calcPointDistance(prettyStars[i].position, moon.bulbLight.position) <= 100) {
+                                counter++;
+                            }
                         }
+
                     }
-                    if (counter > prettyStars.length * .8) {
+
+                    if (counter > prettyStars.length * .9) {
+                        moon.bulbLight.intensity = 2;
+                       // moon.bulbMat.dispose();
+                        //moon.bulbGeometry.dispose();
+                        moon.bulbMat.emissive.set(0xffff00);
+                        moon.bulbLight.color.setHex(0xffff00);
+                        //moon.bulbMat.emissive.set(0xffff00);
+                        moon.bulbMat.color.setHex(0xffff00);
+                        let endStar = initStarIcon(0xffff00, .5);
+                        endStar.position.set(0, 280, 0);
+                        endStar.lookAt(camera.position);
+                        scene.add(endStar);
+                        for (let i = 0; i < prettyStars.length; i++) {
+                            scene.remove(prettyStars[i]);
+                            prettyStars[i].material.dispose();
+                            prettyStars[i].geometry.dispose();
+                            prettyStars.splice(i, 1);
+                        }
+                        renderer.setClearColor(0xffffff);
+                        world.material.color.setHex(0xffffff);
+                    }
+                    else if (counter > prettyStars.length * .8) {
                         moon.bulbLight.color.setHex(0xffffff);
                         moon.bulbMat.color.setHex(0xffffff);
-                        console.log("swap moon to star now");
                     }
+
 
 
                 }
@@ -1361,8 +1387,7 @@
             if (movement == "right") camera.translateX(speed);
 
             for (let t = 0; t < starShards.length; t++) { //For the length of the array containing all of the trees
-                if (calcPointDistance(camera.position, starShards[t].position) <= 2) { //Calcs whether the camera and a
-                    //certain tree are too close together
+                if (calcPointDistance(camera.position, starShards[t].position) <= 1000) { //2
                     starHit = t; //Sets boolean "hit" to true
                 }
             }
@@ -1502,10 +1527,7 @@
         let starGroup = initStarIcon(0x000000, .5);
         sceneHUD.add(starGroup);
         sceneHUD.add(starBorderGroup)
-        let endStar = initStarIcon(0xffff00, .5);
-        endStar.position.set(0, 280, 0);
-        
-        scene.add(endStar);
+
 
         animate();
         render();

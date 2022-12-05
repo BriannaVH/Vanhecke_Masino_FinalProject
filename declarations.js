@@ -28,7 +28,7 @@ let y = 50;
 let scales;
 let timerThunder = 0;
 let maxThunder = 0;
-let k = .03;
+let k = .01;
 
  // particles 
  let movementSpeeds = 40;
