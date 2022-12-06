@@ -48,6 +48,7 @@
     left: 10%;
     top: 60%;
     font-family: "Serif", "Georgia", monospace;
+    text-align: center;
 }
 
 .button {
@@ -91,6 +92,7 @@
     top: 60%;
     font-family: "Serif", "Georgia", monospace;
     background-color: green;
+    text-align: center;
 }
 
 .blueText {
@@ -106,6 +108,7 @@
     top: 60%;
     font-family: "Serif", "Georgia", monospace;
     background-color: rgb(255, 191, 0);
+    text-align: center;
 }
 
 .redText {
@@ -120,9 +123,10 @@
     top: 60%;
     font-family: "Serif", "Georgia", monospace;
     background-color: red;
+    text-align: center;
 }
 
-.greyText {
+/* .greyText {
     min-width: 160px;
     color: black;
     padding: 16px;
@@ -134,4 +138,4 @@
     top: 60%;
     font-family: "Serif", "Georgia", monospace;
     background-color: rgba(97, 89, 89, 0.637);
-}
+} */

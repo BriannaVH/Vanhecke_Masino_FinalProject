@@ -5,6 +5,9 @@ let loseSounds = ['sounds/gameOver/lose1.wav', 'sounds/gameOver/lose2.wav'];
 let thunderNoises = ['sounds/thunder1.wav', 'sounds/thunder2.wav', 'sounds/thunder3.wav', 'sounds/thunder4.wav',];
 let heartbeatAudio = new Audio('sounds/heartbeat.wav');
 
+
+ 
+
 let currentTime = 0;
 let shootingStars = [];
 let caught = false;
@@ -31,7 +34,7 @@ let maxThunder = 0;
 let timerFlicker=0;
 let maxFlicker = .5;
 let lightness = 0;
-let k = .01;
+let k = .02;
 
  // particles 
  let movementSpeeds = 40;

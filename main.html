@@ -27,7 +27,6 @@
     <div id="selectbutton">
         <select class="dropbtn" name="difficulty" id="selectButton2"
             onchange="this.className=this.options[this.selectedIndex].className" class="greenText">>
-            <option class="greyText" disabled="disabled" selected="selected">Choose Difficulty</option>
             <option value="easy" class="greenText" value="easy">Easy</option>
             <option value="medium" class="blueText" value="medium">Medium</option>
             <option value="hard" class="redText" value="hard">Hard</option>
@@ -72,9 +71,6 @@
 
 
         //Variable Declaration
-
-
-
 
         let scene = new THREE.Scene();
         let windowWidth = window.innerWidth;
@@ -212,7 +208,7 @@
             gamePaused = true;
             blocker.style.display = 'block';
             setTimeout(() => {
-            unpause.style.display = 'block';
+                unpause.style.display = 'block';
             }, 1000)
             //instructions.style.display = '';
             controls.unlock();
@@ -224,7 +220,7 @@
 
             //   Instantiate a loader
             const Mloader = new GLTFLoader();
-           
+
 
             // Load a glTF resource
             Mloader.load(
@@ -346,7 +342,7 @@
                 lightningMaterial: scene.userData.lightningMaterial,
             });
 
-           // console.log(storm);
+            // console.log(storm);
 
             scene.add(storm);
             composer.passes = [];
@@ -765,7 +761,7 @@
             this.bulbGeometry = new THREE.SphereGeometry(10, 32, 16); //Creates sphere geometry
             this.bulbLight = new THREE.PointLight(hexCode, intensity, 20000); //Creates point light
 
-            this.bulbMat = new THREE.MeshPhongMaterial({ //Creates bulb material for the light and customizes it
+            this.bulbMat = new THREE.MeshBasicMaterial({ //Creates bulb material for the light and customizes it
                 //emissive: 0x880808,
                 //emissiveIntensity: 1,
                 color: 0x880808
@@ -787,8 +783,8 @@
                 const geometry = new THREE.ConeGeometry(10, 30, 3);
                 const material = new THREE.MeshPhysicalMaterial({
                     color: 0xffff00,
-                    metalness: .5,
-                    roughness: .5
+                    metalness: .75,
+                    roughness: 0
                 });
 
                 const sphere = new THREE.Mesh(geometry, material);
@@ -1083,12 +1079,18 @@
 
             // console.log(scales, 'scales');
             if (gamePaused == false) {
-                if (typeof endStar != 'undefined') {
-
-                    endStar.lookAt(camera.position);
-
+                if (prettyStars.length != 0) {
+                    for (let i = 0; i < prettyStars.length; i++) {
+                      //  console.log("INININININ");
+                        lightness > 80 ? lightness = 50 : lightness++;
+                        if (Math.random() > .5) {
+                            prettyStars[i].material.color = new THREE.Color("hsl(255, 100%, " + lightness + "%)");
+                        }
+                    }
                 }
-
+                if (typeof endStar != 'undefined') {
+                    endStar.lookAt(camera.position);
+                }
                 if (stamina > maxStamina * .5) {
                     staminaBar.material.color.set(0x5CFF5C);
                 }
@@ -1197,12 +1199,7 @@
 
                 }
                 if (gameState == 0) {
-                    for (let i = 0; i < prettyStars.length; i++) {
-                        lightness > 80 ? lightness = 50 : lightness++;
-                        if (Math.random() >.5){
-                            prettyStars[i].material.color = new THREE.Color("hsl(255, 100%, " + lightness + "%)");
-                        }
-                    }
+
                     timerThunder += delta;
                     if (timerThunder >= maxThunder) {
                         //console.log("thunder playing");
@@ -1254,15 +1251,26 @@
                     }
                     else if (caught == true) { //Calcs whether the camera and a
                         //certain tree are too close together
-                        if (gameOverBool == false) {
+                        if (gameState == 0) {
+                            if (level == 'hard') {
+                                distance = 100;
+                                monsterSpeed = .03;
+                            }
+                            else if (level == 'medium') {
+                                distance = 50;
+                                monsterSpeed = .06;
+                            }
+                            else {
+                                // for easy after testing 
+                            }
                             // hit = true; //Sets boolean "hit" to true
+                            distance = distance * .8;
                             lives -= 1;
                             heartArray[lives].material.color.set(0x000000);
                             previousPos = [];
                             previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z));
-                            distance = 25;
                             caught = false;
-
+                            monsterGroup.position.set(camera.position);
 
                         }
                         if (lives == 0) {
@@ -1281,14 +1289,14 @@
                         scene.remove(storm);
                         scene.fog.intensity = 0;
                         makeShiba(shibaPosition);
-                       
-                        shibaCounter+=1;
+
+                        shibaCounter += 1;
                     }
-                    console.log(dog)
+                    console.log("dog ", dog)
                     if (typeof dog != 'undefined') {
-                       
-                            dog.lookAt(camera.position);
-                        }
+
+                        dog.lookAt(camera.position);
+                    }
                     heartbeatAudio.pause();
                     heartbeatAudio.currentTime = 0;
 
@@ -1302,17 +1310,17 @@
                             prettyStars[i].translateY(k * (270 - prettyStars[i].position.y));
                             prettyStars[i].translateZ(k * (createRandomPosOrNeg(300, 0) - prettyStars[i].position.z));
                             prettyStars[i].scale.set(Math.random() * 30 + 10, Math.random() * 30 + 10);
-                            if (calcPointDistance(prettyStars[i].position, moon.bulbLight.position) <= 100) {
+                            if (calcPointDistance(prettyStars[i].position, moon.bulbLight.position) <= 50) {
                                 counter++;
                             }
                         }
 
                     }
-                    if (counter > prettyStars.length * .9) {
+                    if (counter > prettyStars.length * .95) {
                         moon.bulbLight.intensity = 2;
-                        // moon.bulbMat.dispose();
-                        //moon.bulbGeometry.dispose();
-                        moon.bulbMat.emissive.set(0xffff00);
+                        moon.bulbMat.dispose();
+                        moon.bulbGeometry.dispose();
+                        //moon.bulbMat.emissive.set(0xffff00);
                         moon.bulbLight.color.setHex(0xffff00);
                         //moon.bulbMat.emissive.set(0xffff00);
                         moon.bulbMat.color.setHex(0xffff00);
@@ -1324,7 +1332,7 @@
                             number += 1;
                         }
 
-                       // console.log(endStar);
+                        // console.log(endStar);
                         for (let i = 0; i < prettyStars.length; i++) {
                             scene.remove(prettyStars[i]);
                             prettyStars[i].material.dispose();
@@ -1334,9 +1342,9 @@
                         renderer.setClearColor(0xffffff);
                         world.material.color.setHex(0xffffff);
                     }
-                    else if (counter > prettyStars.length * .8) {
+                    else if (counter > prettyStars.length * .9) {
                         moon.bulbLight.color.setHex(0xffffff);
-                        moon.bulbMat.color.setHex(0xffffff);
+                        moon.bulbMat.color.setHex(0xffff00);
                     }
 
                 }
@@ -1441,7 +1449,7 @@
             if (movement == "right") camera.translateX(speed);
 
             for (let t = 0; t < starShards.length; t++) { //For the length of the array containing all of the trees
-                if (calcPointDistance(camera.position, starShards[t].position) <= 2) { //2
+                if (calcPointDistance(camera.position, starShards[t].position) <= 4) { //2
                     starHit = t; //Sets boolean "hit" to true
                 }
             }
