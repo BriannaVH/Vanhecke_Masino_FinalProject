@@ -607,7 +607,7 @@
         function initParameters(level) {
             if (level == "easy") {
                 console.log("easy");
-                distance = 200; //60
+                distance = 10000; //60
                 monsterSpeed = .06;
                 stamina = 100;
                 increment = 2;
@@ -1176,6 +1176,12 @@
 
                 }
                 if (gameState == 0) {
+                    for (let i = 0; i < prettyStars.length; i++) {
+                        lightness > 80 ? lightness = 50 : lightness++;
+                        if (Math.random() >.5){
+                            prettyStars[i].material.color = new THREE.Color("hsl(255, 100%, " + lightness + "%)");
+                        }
+                    }
                     timerThunder += delta;
                     if (timerThunder >= maxThunder) {
                         //console.log("thunder playing");
@@ -1414,7 +1420,7 @@
             if (movement == "right") camera.translateX(speed);
 
             for (let t = 0; t < starShards.length; t++) { //For the length of the array containing all of the trees
-                if (calcPointDistance(camera.position, starShards[t].position) <= 1000) { //2
+                if (calcPointDistance(camera.position, starShards[t].position) <= 2) { //2
                     starHit = t; //Sets boolean "hit" to true
                 }
             }

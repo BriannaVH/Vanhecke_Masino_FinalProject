@@ -28,6 +28,9 @@ let y = 50;
 let scales;
 let timerThunder = 0;
 let maxThunder = 0;
+let timerFlicker=0;
+let maxFlicker = .5;
+let lightness = 0;
 let k = .01;
 
  // particles 
@@ -118,3 +121,4 @@ let k = .01;
   let endStar;
   let number=0;
   let dog;
+  let light;
