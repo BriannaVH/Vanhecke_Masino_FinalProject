@@ -15,29 +15,32 @@
         <p style="font-size:80px">
             Monster Bash
         </p>
-        <p>
+        <p style="font-size:20px">
             Instructions<br />
             <br />
             More Instructions
         </p>
     </div>
+</div>
 
-    <div class="dropdown">
-        <div id="selectbutton">
-            <select class="dropbtn" name="difficulty" id="selectButton2"
-                onchange="this.className=this.options[this.selectedIndex].className" class="greenText">>
-
-                <option class="greyText" disabled="disabled" selected="selected">Choose Difficulty</option>
-                <option value="easy" class="greenText" value="easy">Easy</option>
-                <option value="medium" class="blueText" value="medium">Medium</option>
-                <option value="hard" class="redText" value="hard">Hard</option>
-            </select>
-        </div>
-        <div id="button">
-            <button class="button">Start</button>
-        </div>
-
+<div class="dropdown" , id="gameControls">
+    <div id="selectbutton">
+        <select class="dropbtn" name="difficulty" id="selectButton2"
+            onchange="this.className=this.options[this.selectedIndex].className" class="greenText">>
+            <option class="greyText" disabled="disabled" selected="selected">Choose Difficulty</option>
+            <option value="easy" class="greenText" value="easy">Easy</option>
+            <option value="medium" class="blueText" value="medium">Medium</option>
+            <option value="hard" class="redText" value="hard">Hard</option>
+        </select>
     </div>
+    <div id="button">
+        <button class="button">Start</button>
+    </div>
+
+</div>
+
+<div id="unpause" , style="display:none">
+    <button class="unPauseButton">UnPause</button>
 </div>
 
 <body>
@@ -63,6 +66,8 @@
         import { UnrealBloomPass } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/UnrealBloomPass.js';
         import { GLTFLoader } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/loaders/GLTFLoader.js';
 
+        import { FlakesTexture } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/textures/FlakesTexture.js';
+        import { RGBELoader } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/loaders/RGBELoader.js';
 
 
 
@@ -143,6 +148,9 @@
         renderer.shadowMap.enabled = true; //Enables shadow map
         renderer.shadowMapSoft = true; //Specifies type of shadow
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        // renderer.outputEncoding = THREE.sRGBEncoding;
+        // renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        // renderer.toneMappingExposure = 1.25;
 
         let composer = new EffectComposer(renderer);
 
@@ -163,6 +171,7 @@
             gamePaused = false;
             instructions.style.display = 'none';
             blocker.style.display = 'none';
+            gameControls.style.display = 'none';
             var e = document.getElementById("selectButton2");
             console.log(e);
             function onChange() {
@@ -175,6 +184,15 @@
             initParameters(level);
 
 
+            controls.lock(); //Locks pointerlock controls upon the user clicking
+            animate();
+        };
+
+
+        document.getElementById("unpause").onclick = function () {
+            gamePaused = false;
+            blocker.style.display = 'none';
+            unpause.style.display = 'none';
             controls.lock(); //Locks pointerlock controls upon the user clicking
             animate();
         };
@@ -193,7 +211,10 @@
             heartbeatAudio.currentTime = 0;
             gamePaused = true;
             blocker.style.display = 'block';
-            instructions.style.display = '';
+            setTimeout(() => {
+            unpause.style.display = 'block';
+            }, 1000)
+            //instructions.style.display = '';
             controls.unlock();
 
         });
