@@ -17,7 +17,7 @@
     width: 100px;
     height: 100px;
     position: absolute;
-    top: 50%;
+    top: 30%;
     left: 50%;
     margin: -50px 0 0 -50px;
 
@@ -45,8 +45,8 @@
     border: none;
     cursor: pointer;
     position: fixed;
-    left: 35%;
-    top: 65%;
+    left: 10%;
+    top: 60%;
     font-family: "Serif", "Georgia", monospace;
 }
 
@@ -59,8 +59,8 @@
     border: none;
     cursor: pointer;
     position: fixed;
-    left: 55%;
-    top: 65%;
+    left: 75%;
+    top: 60%;
     font-family: "Serif", "Georgia", monospace;
 }
 
@@ -73,8 +73,8 @@
     border: none;
     cursor: pointer;
     position: fixed;
-    left: 55%;
-    top: 65%;
+    left: 45%;
+    top: 50%;
     font-family: "Serif", "Georgia", monospace;
 }
 
