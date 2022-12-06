@@ -87,8 +87,8 @@
     border: none;
     cursor: pointer;
     position: fixed;
-    left: 35%;
-    top: 65%;
+    left: 10%;
+    top: 60%;
     font-family: "Serif", "Georgia", monospace;
     background-color: green;
 }
@@ -102,8 +102,8 @@
     border: none;
     cursor: pointer;
     position: fixed;
-    left: 35%;
-    top: 65%;
+    left: 10%;
+    top: 60%;
     font-family: "Serif", "Georgia", monospace;
     background-color: rgb(255, 191, 0);
 }
@@ -116,8 +116,8 @@
     border: none;
     cursor: pointer;
     position: fixed;
-    left: 35%;
-    top: 65%;
+    left: 10%;
+    top: 60%;
     font-family: "Serif", "Georgia", monospace;
     background-color: red;
 }
@@ -130,8 +130,8 @@
     border: none;
     cursor: pointer;
     position: fixed;
-    left: 35%;
-    top: 65%;
+    left: 10%;
+    top: 60%;
     font-family: "Serif", "Georgia", monospace;
     background-color: rgba(97, 89, 89, 0.637);
 }
