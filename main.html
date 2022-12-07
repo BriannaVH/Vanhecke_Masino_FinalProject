@@ -623,8 +623,9 @@
 
         function initParameters(level) {
             if (level == "easy") {
+
                 console.log("easy");
-                distance = 10000; //60
+                distance = 60; //60
                 monsterSpeed = .06;
                 stamina = 100;
                 increment = 2;
@@ -1261,16 +1262,19 @@
                                 monsterSpeed = .06;
                             }
                             else {
-                                // for easy after testing 
+                                distance = 60;
+                                monsterSpeed = .06;
                             }
                             // hit = true; //Sets boolean "hit" to true
+                            console.log("pp ", previousPos);
+                            console.log("d ", distance);
+                            previousPos = [];
                             distance = distance * .8;
                             lives -= 1;
                             heartArray[lives].material.color.set(0x000000);
-                            previousPos = [];
                             previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z));
                             caught = false;
-                            monsterGroup.position.set(camera.position);
+                            //monsterGroup.position.set(camera.position);
 
                         }
                         if (lives == 0) {
@@ -1589,6 +1593,13 @@
         let starGroup = initStarIcon(0x000000, .5);
         sceneHUD.add(starGroup);
         sceneHUD.add(starBorderGroup)
+
+
+
+
+        function makeFire(){
+            
+        }
 
 
         animate();
