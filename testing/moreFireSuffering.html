@@ -45,7 +45,7 @@
 
 
 
-        function random(min, max) {
+        function newRandom(min, max) {
             let num = Math.random() * max + min;
             let rand = Math.random();
             if (rand > .5) {
@@ -62,9 +62,9 @@
             this.geometry = new THREE.SphereGeometry(this.size, 16, 16);
             this.material = new THREE.MeshBasicMaterial({ color: fireColors[Math.floor(Math.random()*fireColors.length)], opacity: .5, transparent: true });
             this.mesh = new THREE.Mesh(this.geometry, this.material);
-            this.position = new THREE.Vector3(pos.x + random(0, spawnSpread), pos.y, pos.z + random(0, spawnSpread));
+            this.position = new THREE.Vector3(pos.x + newRandom(0, spawnSpread), pos.y, pos.z + newRandom(0, spawnSpread));
             this.mesh.position.set(this.position.x, this.position.y, this.position.z);
-            this.direction = new THREE.Vector3(random(0, sidewaysSpread) , Math.random() / this.size * overallSpeed, random(0, sidewaysSpread));
+            this.direction = new THREE.Vector3(newRandom(0, sidewaysSpread) , Math.random() / this.size * overallSpeed, newRandom(0, sidewaysSpread));
 
             //console.log(this.mesh.position);
             scene.add(this.mesh);

@@ -35,3 +35,16 @@
             )
             return distance; //Returns distance
         }
+
+
+
+
+        
+        function newRandom(min, max) {
+            let num = Math.random() * max + min;
+            let rand = Math.random();
+            if (rand > .5) {
+                num *= -1;
+            }
+            return num;
+        }

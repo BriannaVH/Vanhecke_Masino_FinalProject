@@ -131,3 +131,36 @@ let playEndMusic = false;
   let number=0;
   let dog;
   let light;
+
+
+
+  let fireColors = [0xff0000, 0xFFA500];
+  // position of campfire
+
+
+  // count of fire particles
+  let pCount = 100;
+
+  // height limit for the campfire
+  let heightLimit = 50;
+  let heightLimit2 = 50;
+
+  // how far on either side the particle can spawn 
+  let spawnSpread = 5;
+
+  let sidewaysSpread = .05;
+
+  // min and max particle size
+  let minPSize = .5;
+  let maxPSize = 4;
+
+  // speed of the particles as a whole
+  let overallSpeed = 2;
+
+  // rate that points disappear (baseline, used in combination with size later)
+  let verticalFade = 10;
+  // the rate that the fire goes out at 
+  let overallFade = .1; //.1;
+  let timeStep = 50;
+
+  let campFires = [];

@@ -27,7 +27,7 @@
 
 
 <div id="lost" , style="display:none">
-    <p style="font-size:120">
+    <p style="font-size:60">
         Lost&nbsp;Game
     </p>
 </div>
@@ -144,6 +144,10 @@
         let previousPos = [];
         previousPos.push(new THREE.Vector3(0, -200, 0));
 
+
+        let left = new THREE.Vector3(0, 50, 0);
+        let right = new THREE.Vector3(50, 20, 0);
+
         // game logic
         let heartPositions = [windowWidth - (windowWidth * .78), windowWidth - (windowWidth * .81), windowWidth - (windowWidth * .84)];
 
@@ -163,6 +167,54 @@
 
 
         let composer = new EffectComposer(renderer);
+
+
+
+
+        function Particle(pos) {
+            this.size = Math.random() * maxPSize + minPSize;
+            this.geometry = new THREE.SphereGeometry(this.size, 16, 16);
+            this.material = new THREE.MeshBasicMaterial({ color: fireColors[Math.floor(Math.random() * fireColors.length)], opacity: .5, transparent: true });
+            this.mesh = new THREE.Mesh(this.geometry, this.material);
+            this.position = new THREE.Vector3(pos.x + newRandom(0, spawnSpread), pos.y, pos.z + newRandom(0, spawnSpread));
+            this.mesh.position.set(this.position.x, this.position.y, this.position.z);
+            this.direction = new THREE.Vector3(newRandom(0, sidewaysSpread), Math.random() / this.size * overallSpeed, newRandom(0, sidewaysSpread));
+
+            //console.log(this.mesh.position);
+            scene.add(this.mesh);
+        }
+
+
+        function Log(rotationSide, pos) {
+            const geometry = new THREE.CylinderGeometry(5, 5, 30, 32);
+            const material = new THREE.MeshBasicMaterial({ color: 0x964B00 }); //, map: loader.load("wood/wood.jpg") 
+            const cylinder = new THREE.Mesh(geometry, material);
+            cylinder.position.set(pos.x, pos.y, pos.z);
+
+            if (rotationSide == 1) {
+                cylinder.rotation.z = 1.4;
+            }
+            else {
+                cylinder.rotation.x = 1.6;
+            }
+            scene.add(cylinder);
+            return cylinder;
+        }
+
+        function CampFire(pos, heightLimit) {
+            this.particles = [];
+            this.height = heightLimit;
+            this.position = new THREE.Vector3(pos.x, pos.y, pos.z);
+            this.fade = false;
+
+            for (let i = 0; i < pCount; i++) {
+                let test = new Particle(pos);
+                this.particles.push(test);
+            }
+            this.log1 = Log(1, pos);
+            this.log2 = Log(2, pos);
+        }
+
 
 
 
@@ -212,7 +264,7 @@
             gamePaused = true;
             if (gameState == 0) {
                 blocker.style.display = 'block';
-                console.log(gameState, 'gamestate');
+                //console.log(gameState, 'gamestate');
                 setTimeout(() => {
                     unpause.style.display = 'block';
 
@@ -393,7 +445,7 @@
             }
 
             monster.position.y = yPos + monsterHeight;
-            console.log(monster.position, ',monster pos');
+            //console.log(monster.position, ',monster pos');
             //jumpscare1.lookAt(camera.position);
             let camlookat = new THREE.Vector3(monster.position.x, monster.position.y + lookAtHeight, monster.position.z);
             camera.lookAt(camlookat);
@@ -1235,9 +1287,46 @@
         let rain = 8;
         //The animate function is a function which is continuously called for every frame of the program
         function animate() {
-            console.log('still running')
+
+
+
+
+            // console.log('still running')
             delta = clock.getDelta();
             rain += delta;
+
+
+            for (let c = 0; c < campFires.length; c++) {
+                for (let p = 0; p < campFires[c].particles.length; p++) {
+                    let cfp = campFires[c].particles[p];
+                    cfp.mesh.translateY(campFires[c].particles[p].direction.y);
+
+                    cfp.mesh.translateX(cfp.direction.x / cfp.size);
+                    cfp.mesh.translateZ(cfp.direction.z / cfp.size);
+                    if (cfp.mesh.position.y > campFires[c].position.y + campFires[c].height - cfp.size * verticalFade
+                        || cfp.mesh.position.x > campFires[c].position.x + 10
+                        || cfp.mesh.position.x < campFires[c].position.x - 10
+                        || cfp.mesh.position.z > campFires[c].position.z + 10
+                        || cfp.mesh.position.z < campFires[c].position.z - 10
+                    ) {
+                        cfp.mesh.position.set(cfp.position.x, cfp.position.y, cfp.position.z);
+                    }
+                }
+                if (campFires[c].height > 0 && campFires[c].fade == true) { //timeStep > .2 &&
+                    campFires[c].height -= overallFade;
+                    //timeStep = 0;
+                }
+                if (campFires[c].height <= 0) {
+                    for (let p = 0; p < campFires[c].particles.length; p++) {
+                        //console.log(campFires[c].particles[p]);
+                        campFires[c].particles[p].mesh.material.color.setHex(0x000000);
+                    }
+                    console.log("fire out");
+                    campFires.splice(c, 1);
+                }
+
+            }
+
 
             if (rain >= 4) {
                 play(thunderNoises[1]);
@@ -1303,7 +1392,7 @@
                 }
 
                 scales = 2.015 * (stamina - 5) * .01;
-                console.log(gameState, 'game state');
+                //console.log(gameState, 'game state');
 
                 if (moving == true && stamina > 0) {
                     if (stamina > maxStamina * .1) {
@@ -1460,15 +1549,15 @@
                                 monsterSpeed = .06;
                             }
                             // hit = true; //Sets boolean "hit" to true
-                            console.log("pp ", previousPos);
-                            console.log("d ", distance);
+                            //console.log("pp ", previousPos);
+                            //console.log("d ", distance);
                             previousPos = [];
                             distance = distance * .8;
                             lives -= 1;
                             heartArray[lives].material.color.set(0x000000);
                             previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z));
                             jumpscare(-1);
-                            console.log('monstergroup');
+                            //console.log('monstergroup');
                             caught = false;
 
 
@@ -1805,6 +1894,18 @@
         initStarShards(5);
         initBody();
         initFlashLight();
+
+
+
+
+        for (let i = 0; i < 5; i++) {
+            let position = randomizePositions(300, 50);
+            let fire = new CampFire(position, heightLimit);
+            campFires.push(fire);
+        }
+        campFires[0].fade = true;
+
+
 
 
 
