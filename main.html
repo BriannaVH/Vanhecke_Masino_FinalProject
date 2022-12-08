@@ -173,8 +173,8 @@
 
         function Particle(pos) {
             this.size = Math.random() * maxPSize + minPSize;
-            this.geometry = new THREE.SphereGeometry(this.size, 16, 16);
-            this.material = new THREE.MeshBasicMaterial({ color: fireColors[Math.floor(Math.random() * fireColors.length)], opacity: .5, transparent: true });
+            this.geometry = new THREE.DodecahedronGeometry(this.size, 0);
+            this.material = new THREE.MeshBasicMaterial({ color: fireColors[Math.floor(Math.random() * fireColors.length)], map: loader.load("star/testfire.jpg"), opacity: .5, transparent: true });
             this.mesh = new THREE.Mesh(this.geometry, this.material);
             this.position = new THREE.Vector3(pos.x + newRandom(0, spawnSpread), pos.y, pos.z + newRandom(0, spawnSpread));
             this.mesh.position.set(this.position.x, this.position.y, this.position.z);
@@ -187,7 +187,7 @@
 
         function Log(rotationSide, pos) {
             const geometry = new THREE.CylinderGeometry(5, 5, 30, 32);
-            const material = new THREE.MeshBasicMaterial({ color: 0x964B00 }); //, map: loader.load("wood/wood.jpg") 
+            const material = new THREE.MeshBasicMaterial({ color: 0x964B00, map: loader.load("star/wood.jpg") }); //, map: loader.load("wood/wood.jpg") 
             const cylinder = new THREE.Mesh(geometry, material);
             cylinder.position.set(pos.x, pos.y, pos.z);
 
@@ -1898,7 +1898,7 @@
 
 
 
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 3; i++) {
             let position = randomizePositions(300, 50);
             let fire = new CampFire(position, heightLimit);
             campFires.push(fire);

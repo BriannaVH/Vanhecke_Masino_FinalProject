@@ -139,26 +139,26 @@ let playEndMusic = false;
 
 
   // count of fire particles
-  let pCount = 100;
+  let pCount = 200;
 
   // height limit for the campfire
-  let heightLimit = 50;
-  let heightLimit2 = 50;
+  let heightLimit = 35;
+  //let heightLimit2 = 50;
 
   // how far on either side the particle can spawn 
   let spawnSpread = 5;
 
-  let sidewaysSpread = .05;
+  let sidewaysSpread = .02;
 
   // min and max particle size
-  let minPSize = .5;
+  let minPSize = .1;
   let maxPSize = 4;
 
   // speed of the particles as a whole
-  let overallSpeed = 2;
+  let overallSpeed = 4;
 
   // rate that points disappear (baseline, used in combination with size later)
-  let verticalFade = 10;
+  let verticalFade = 5;
   // the rate that the fire goes out at 
   let overallFade = .1; //.1;
   let timeStep = 50;
