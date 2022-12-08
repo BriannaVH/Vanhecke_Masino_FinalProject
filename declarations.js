@@ -39,6 +39,7 @@ let jumpscare1;
 let jumpscare2;
 let inJumpscare = false;
 let jumpscareLookAt;
+let jumpscarePositions = [];
 
  // particles 
  let movementSpeeds = 40;
