@@ -11,17 +11,31 @@
 <!-- We did the head bob & made the user casts a shadow  -->
 
 <div id="blocker">
-    <div id="instructions">
-        <p style="font-size:60">
-            Monster&nbsp;Bash
-        </p>
-        <p style="font-size:20px">
-            Instructions<br />
-            <br />
-            More Instructions
-        </p>
-    </div>
 </div>
+
+
+<div id="instructions">
+    <p style="font-size:60">
+        Monster&nbsp;Bash
+    </p>
+    <p style="font-size:20px">
+        Instructions<br />
+        <br />
+        More Instructions
+    </p>
+</div>
+
+
+<div id="lost", style = "display:none">
+    <p style="font-size:120">
+        Lost&nbsp;Game
+    </p>
+</div>
+
+
+
+
+
 
 <div class="dropdown" , id="gameControls">
     <div id="selectbutton">
@@ -41,6 +55,8 @@
 <div id="unpause" , style="display:none">
     <button class="unPauseButton">Resume Game</button>
 </div>
+
+
 
 <body>
 
@@ -126,7 +142,7 @@
         let monsterGroup = new THREE.Group(); // used for the body
 
         let previousPos = [];
-        previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z));
+        previousPos.push(new THREE.Vector3(0, -200, 0));
 
         // game logic
         let heartPositions = [windowWidth - (windowWidth * .78), windowWidth - (windowWidth * .81), windowWidth - (windowWidth * .84)];
@@ -195,9 +211,16 @@
             heartbeatAudio.currentTime = 0;
             gamePaused = true;
             blocker.style.display = 'block';
-            setTimeout(() => {
+            if (gameState == 0){
+                console.log(gameState, 'gamestate');
+                setTimeout(() => {
                 unpause.style.display = 'block';
             }, 1000)
+            }
+            else {
+                lost.style.display = 'block';
+            }
+         
             //instructions.style.display = '';
             controls.unlock();
         });
@@ -249,9 +272,9 @@
                     gltf.scenes; // Array<THREE.Group>
                     gltf.cameras; // Array<THREE.Camera>
                     gltf.asset; // Object
-                    jumpscare1.position.setX(Math.random() * 380);
-                    jumpscare1.position.setY(1000);
-                    jumpscare1.position.setZ(1000);
+                    jumpscare1.position.setX(0);
+                    jumpscare1.position.setY(-500);
+                    jumpscare1.position.setZ(0);
                 }
             );
 
@@ -274,9 +297,9 @@
                     gltf.scenes; // Array<THREE.Group>
                     gltf.cameras; // Array<THREE.Camera>
                     gltf.asset; // Object
-                    jumpscare2.position.setX(Math.random() * 380);
-                    jumpscare2.position.setY(1000);
-                    jumpscare2.position.setZ(1000);
+                    jumpscare2.position.setX(0);
+                    jumpscare2.position.setY(-500);
+                    jumpscare2.position.setZ(0);
                 }
             );
 
@@ -284,9 +307,14 @@
         }
 
         function placeJumpscares() {
-            for (let i = 0; i < 25; i++) {
-                let position = randomizePositions(380, 50); //380
+            for (let i = 0; i < 15; i++) {
+                let position = randomizePositions(380, 40); //380
                 jumpscarePositions.push(new THREE.Vector3(position.x, position.y, position.z));
+                const geometry = new THREE.SphereGeometry(30, 32, 32);
+                const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+                const sphere = new THREE.Mesh(geometry, material);
+                scene.add(sphere);
+                sphere.position.set(position.x, position.y, position.z);
             }
         }
 
@@ -330,12 +358,10 @@
 
             setTimeout(function () {
                 inJumpscare = false;
-                if (index != -1) {
-                    monster.position.set(0, -100, 0);
-                }
-                else {
-                    //console.log("not in ")
-                }
+                //if (index != -1) {
+                monster.position.set(0, -500, 0);
+                //  }
+
                 scene.fog.density = 0;
             }, 4000);
 
@@ -744,7 +770,7 @@
             if (level == "easy") {
 
                 console.log("easy");
-                distance = 10000; //60
+                distance = 60; //60
                 monsterSpeed = .0001;//.06
                 stamina = 100;
                 increment = 2;
@@ -1181,6 +1207,8 @@
                 monsterGroup.add(particle);
             }
             scene.add(monsterGroup);
+
+            monsterGroup.position.set(previousPos[0].x, previousPos[0].y, previousPos[0].z);
         }
 
 
@@ -1229,7 +1257,7 @@
                     for (let i = 0; i < jumpscarePositions.length; i++) {
                         //let pos1 = new THREE.Vector3(jumpscarePositions[i].x, jumpscarePositions[i].y, jumpscarePositions[i].z);
                         //console.log(jumpscarePositions[i], 'hsc');
-                        if (calcPointDistance(camera.position, jumpscarePositions[i]) < 40) {
+                        if (calcPointDistance(camera.position, jumpscarePositions[i]) < 10 && calcPointDistance(camera.position, monsterGroup.position) > 15) {
                             console.log("JUMPSCARE");
                             let index = Math.floor(Math.random() * 2);
                             jumpscare(index);
@@ -1385,7 +1413,7 @@
 
                                 previousPos.shift();
                                 distance -= 1;
-                                if (calcPointDistance(monsterGroup.position, camera.position) < 30) {
+                                if (calcPointDistance(monsterGroup.position, camera.position) < 1000) { ///30
                                     console.log("caught");
                                     let index = Math.floor(Math.random() * 3);
                                     play(caughtSound[index]);
@@ -1431,12 +1459,21 @@
                             console.log('monstergroup');
                             caught = false;
 
-                            //monsterGroup.position.set(camera.position);
+
 
                         }
                         if (lives == 0) {
-                            gameOver(0);
-                            gameOverBool = true;
+                      
+                            // gameOverBool = true;
+                            gameState =2;
+                            heartbeatAudio.pause();
+                            heartbeatAudio.currentTime = 0;
+                            gamePaused = true;
+                            // setTimeout(() => {
+                            //     unpause.style.display = 'block';
+                            // }, 1000)
+                            //instructions.style.display = '';
+                            controls.unlock();
 
                         }
                     }
@@ -1581,7 +1618,9 @@
                     else if (keyCode == 68) movement = "right";
                     else if (keyCode == 83) movement = "backward";
                     else if (keyCode == 70) {
+                        play('sounds/click.mp3')
                         spotLightOn = !spotLightOn;
+
                         if (spotLightOn == false) {
                             spotLight.intensity = 0;
                             spotLightOn = false;
@@ -1643,7 +1682,8 @@
                 starGroup.children[starsCollected].material.color.setHex(0xffff00);
                 if (starsCollected == 5) {
                     starGroup.children[0].material.color.setHex(0xffff00);
-                    gameOver(1);
+                  //  gameOver(1);
+                  gameState=1;
                 }
             }
             //If the user is out of bounds then move them in the opposite direction of the way they are trying to walk
@@ -1656,15 +1696,15 @@
             }
         };
 
-        function gameOver(state) {
-            gameOverBool = true;
-            if (state == 1) {
-                gameState = 1;
-            }
-            else {
-                gameState = 0;
-            }
-        }
+        // function gameOver(state) {
+        //     gameOverBool = true;
+        //     if (state == 1) {
+        //         gameState = 1; 
+        //     }
+        //     else {
+        //         gameState = 0;
+        //     }
+        // }
 
 
 
