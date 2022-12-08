@@ -1,0 +1,214 @@
+<html>
+
+<head>
+    <title>Three.js Geometries Example w/ Vertex Shader</title>
+</head>
+
+<body>
+
+    <canvas id="myCanvas" width="1000" height="500"></canvas>
+    <script type="module">
+        import * as THREE from "http://cs.merrimack.edu/~stuetzlec/three.js-master/build/three.module.js";
+        import { OrbitControls } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/controls/OrbitControls.js'
+
+
+        // function Particle() {
+        //     this.origin = new THREE.Vector3(random(0, 2), 0, random(0, 2));
+        //     this.speed = Math.random() * 2;
+        //     this.mass = Math.random() * maxSize + minSize;
+        //     this.direction = new THREE.Vector3(random(0, spread), (Math.random() * 2 + 1) / (this.mass * modulator), random(0, spread));
+
+
+        //     this.geometry = new THREE.SphereGeometry(this.mass / scaler, 16, 16);
+        //     this.material = new THREE.MeshBasicMaterial({ color: colors[Math.floor(Math.random() * colors.length)], opacity: .5, transparent: true });
+        //     this.mesh = new THREE.Mesh(this.geometry, this.material);
+        //     this.mesh.position.set(this.origin.x, this.origin.y, this.origin.z);
+        //     scene.add(this.mesh);
+        // }
+
+
+        var scene = new THREE.Scene();
+
+        var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 500);
+        camera.position.z = 100;
+        camera.lookAt(new THREE.Vector3(0.0, 0.0, 0.0));
+        scene.add(camera);
+
+        var renderer = new THREE.WebGLRenderer({ canvas: myCanvas, antialias: true });
+        renderer.setClearColor(0x000000);
+        renderer.setPixelRatio(document.getElementById('myCanvas').devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        let loader = new THREE.TextureLoader();
+
+
+
+
+        function random(min, max) {
+            let num = Math.random() * max + min;
+            let rand = Math.random();
+            if (rand > .5) {
+                num *= -1;
+            }
+            return num;
+        }
+
+
+
+
+        function Particle(pos) {
+            this.size = Math.random() * maxPSize + minPSize;
+            this.geometry = new THREE.SphereGeometry(this.size, 16, 16);
+            this.material = new THREE.MeshBasicMaterial({ color: fireColors[Math.floor(Math.random()*fireColors.length)], opacity: .5, transparent: true });
+            this.mesh = new THREE.Mesh(this.geometry, this.material);
+            this.position = new THREE.Vector3(pos.x + random(0, spawnSpread), pos.y, pos.z + random(0, spawnSpread));
+            this.mesh.position.set(this.position.x, this.position.y, this.position.z);
+            this.direction = new THREE.Vector3(random(0, sidewaysSpread) , Math.random() / this.size * overallSpeed, random(0, sidewaysSpread));
+
+            //console.log(this.mesh.position);
+            scene.add(this.mesh);
+        }
+
+
+        function Log(rotationSide, pos) {
+            const geometry = new THREE.CylinderGeometry(5, 5, 30, 32);
+            const material = new THREE.MeshBasicMaterial({ color: 0x964B00 }); //, map: loader.load("wood/wood.jpg") 
+            const cylinder = new THREE.Mesh(geometry, material);
+            cylinder.position.set(pos.x, pos.y, pos.z);
+
+            if (rotationSide == 1) {
+                cylinder.rotation.z = 1.4;
+            }
+            else {
+                cylinder.rotation.x = 1.6;
+            }
+            scene.add(cylinder);
+            return cylinder;
+        }
+
+
+
+        let fireColors = [0xff0000, 0xFFA500];
+        // position of campfire
+        let left = new THREE.Vector3(0, 0, 0);
+        let right = new THREE.Vector3(50, 20, 0);
+
+        // count of fire particles
+        let pCount = 100;
+
+        // height limit for the campfire
+        let heightLimit = 50;
+        let heightLimit2 = 50;
+
+        // how far on either side the particle can spawn 
+        let spawnSpread = 5;
+
+        let sidewaysSpread = .05;
+
+        // min and max particle size
+        let minPSize = .5;
+        let maxPSize = 4;
+
+        // speed of the particles as a whole
+        let overallSpeed = 1;
+
+        // rate that points disappear (baseline, used in combination with size later)
+        let verticalFade = 10;
+        // the rate that the fire goes out at 
+        let overallFade = .5; //.1;
+        let timeStep = 50;
+
+        let campFires = [];
+
+
+        function CampFire(pos, heightLimit) {
+            this.particles = [];
+            this.height = heightLimit;
+            this.position = new THREE.Vector3(pos.x, pos.y, pos.z);
+            this.fade = false;
+
+            for (let i = 0; i < pCount; i++) {
+                let test = new Particle(pos);
+                this.particles.push(test);
+            }
+            this.log1 = Log(1, pos);
+            this.log2 = Log(2, pos);
+        }
+
+        let fire = new CampFire(left, heightLimit);
+        campFires.push(fire);
+        fire.fade = true;
+
+        let fire2 = new CampFire(right, heightLimit2);
+        campFires.push(fire2);
+
+        let fire3 = new CampFire(new THREE.Vector3(-50, -50, -50), 50);
+        campFires.push(fire3);
+
+
+        let delta;
+        let clock = new THREE.Clock();
+
+        function animate() {
+            delta = clock.getDelta();
+            timeStep += delta;
+            //console.log(timeStep);
+
+            controls.update();
+
+            for (let c = 0; c < campFires.length; c++) {
+                for (let p = 0; p < campFires[c].particles.length; p++) {
+                    let cfp = campFires[c].particles[p];
+                    cfp.mesh.translateY(campFires[c].particles[p].direction.y);
+
+                    cfp.mesh.translateX(cfp.direction.x / cfp.size);
+                    cfp.mesh.translateZ(cfp.direction.z / cfp.size);
+                    if (cfp.mesh.position.y > campFires[c].position.y + campFires[c].height - cfp.size * verticalFade 
+                    || cfp.mesh.position.x > campFires[c].position.x + 10
+                    || cfp.mesh.position.x < campFires[c].position.x - 10
+                    || cfp.mesh.position.z > campFires[c].position.z + 10
+                    || cfp.mesh.position.z < campFires[c].position.z - 10
+                    ) {
+                        cfp.mesh.position.set(cfp.position.x, cfp.position.y, cfp.position.z);
+                    }
+                }
+                if (campFires[c].height > 0 && campFires[c].fade == true) { //timeStep > .2 &&
+                    campFires[c].height -= overallFade;
+                    //timeStep = 0;
+                }
+                if (campFires[c].height <= 0){
+                    for (let p = 0; p < campFires[c].particles.length; p++) {
+                        console.log( campFires[c].particles[p]);
+                        campFires[c].particles[p].mesh.material.color.setHex(0x000000);
+                    }
+                    console.log("fire out");
+                    campFires.splice(c, 1);
+                }
+                // else if (campFires[c].height <= 0) {
+                //     for (let p = 0; p < campFires[c].particles.length; p++) {
+                //         scene.remove(campFires[c].particles[p]);
+                //         campFires[c].particles[p].material.dispose();
+                //         campFires[c].particles[p].geometry.dispose();
+                //         campFires[c].particles.splice(p, 1);
+                //         console.log(campFires[c].particles.length);
+                //     }
+                // }
+            }
+
+
+
+
+
+
+
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+
+        animate();
+        renderer.render(scene, camera);
+    </script>
+</body>
+
+</html>
