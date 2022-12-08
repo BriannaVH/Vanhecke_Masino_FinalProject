@@ -37,6 +37,8 @@ let lightness = 0;
 let k = .02;
 let jumpscare1;
 let jumpscare2;
+let inJumpscare = false;
+let jumpscareLookAt;
 
  // particles 
  let movementSpeeds = 40;

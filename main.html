@@ -200,7 +200,6 @@
             }, 1000)
             //instructions.style.display = '';
             controls.unlock();
-
         });
 
         let addShiba = false;
@@ -277,12 +276,25 @@
                     jumpscare2.position.setZ(1000);
                 }
             );
-          
+
 
         }
 
 
         function jumpscare(monster, index) {
+
+            inJumpscare =true;
+       
+            scene.fog.density = .00033;
+
+            setTimeout(function () {
+                inJumpscare =false;
+               if (index !=0){
+                monster.position.set(0,-100,0);
+               }
+               scene.fog.density = 0;
+            }, 4000);
+       
 
             let dist = 80;
             let lookAtHeight = 50;
@@ -327,6 +339,7 @@
             //jumpscare1.lookAt(camera.position);
             let camlookat = new THREE.Vector3(monster.position.x, monster.position.y + lookAtHeight, monster.position.z);
             camera.lookAt(camlookat);
+            jumpscareLookAt = camlookat;
             monster.lookAt(camera.position.x, camera.position.y + monsterLookAtHeight, camera.position.z);
         }
 
@@ -1162,6 +1175,11 @@
         //The animate function is a function which is continuously called for every frame of the program
         function animate() {
 
+            if (inJumpscare == true){
+                camera.lookAt(jumpscareLookAt);
+
+            }
+
             monsterGroup.lookAt(camera.position.x, camera.position.y - 30, camera.position.z);
 
             // console.log(scales, 'scales');
@@ -1503,25 +1521,28 @@
         //A function which determines which way the user is moving
         function onDocumentKeyDown(e) {
             if (gamePaused == false) {
-                movement = 0;
-                var keyCode = e.which || e.keyCode; //Gets the key code
-                //Sets the direction the user is moving based on which key the user pressed
-                if (keyCode == 87) movement = "forward";
-                else if (keyCode == 65) movement = "left";
-                else if (keyCode == 68) movement = "right";
-                else if (keyCode == 83) movement = "backward";
-                else if (keyCode == 70) {
-                    spotLightOn = !spotLightOn;
-                    if (spotLightOn == false) {
-                        spotLight.intensity = 0;
-                        spotLightOn = false;
+                if (inJumpscare == false) {
+                    movement = 0;
+                    var keyCode = e.which || e.keyCode; //Gets the key code
+                    //Sets the direction the user is moving based on which key the user pressed
+                    if (keyCode == 87) movement = "forward";
+                    else if (keyCode == 65) movement = "left";
+                    else if (keyCode == 68) movement = "right";
+                    else if (keyCode == 83) movement = "backward";
+                    else if (keyCode == 70) {
+                        spotLightOn = !spotLightOn;
+                        if (spotLightOn == false) {
+                            spotLight.intensity = 0;
+                            spotLightOn = false;
+                        }
+                        else {
+                            spotLight.intensity = 1;
+                            spotLightOn = true;
+                        }
                     }
-                    else {
-                        spotLight.intensity = 1;
-                        spotLightOn = true;
-                    }
+                    if (movement != 0) moveAround(); //If the user is moving then call the moveAround function
                 }
-                if (movement != 0) moveAround(); //If the user is moving then call the moveAround function
+
             }
         }
 
