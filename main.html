@@ -144,23 +144,11 @@
         renderer.shadowMap.enabled = true; //Enables shadow map
         renderer.shadowMapSoft = true; //Specifies type of shadow
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        // renderer.outputEncoding = THREE.sRGBEncoding;
-        // renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        // renderer.toneMappingExposure = 1.25;
+
 
         let composer = new EffectComposer(renderer);
 
 
-        // let bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85)
-        // bloomPass.threshold = 0.21;
-        // bloomPass.strength = 1.2;
-        // bloomPass.radius = 0.55;
-        // bloomPass.renderToScreen = true;
-
-        // let renderScene = new RenderPass(sceneHUD, camera);
-
-        //composer.addPass(renderScene)
-        //composer.addPass(bloomPass)
 
 
         document.getElementById("button").onclick = function () {
@@ -220,8 +208,6 @@
 
             //   Instantiate a loader
             const Mloader = new GLTFLoader();
-
-
             // Load a glTF resource
             Mloader.load(
                 // resource URL
@@ -245,6 +231,104 @@
         }
 
 
+        function makeModels() {
+
+            //   Instantiate a loader
+            const Gloader = new GLTFLoader();
+            // Load a glTF resource
+            Gloader.load(
+                // resource URL
+                'MaskModel/scene.gltf',
+                // called when the resource is loaded
+                function (gltf) {
+                    jumpscare1 = gltf.scene;
+                    jumpscare1.scale.set(150, 150, 150);
+                    //console.log(dog);
+                    scene.add(jumpscare1);
+                    gltf.animations; // Array<THREE.AnimationClip>
+                    gltf.scene; // THREE.Group
+                    gltf.scenes; // Array<THREE.Group>
+                    gltf.cameras; // Array<THREE.Camera>
+                    gltf.asset; // Object
+                    jumpscare1.position.setX(Math.random() * 380);
+                    jumpscare1.position.setY(1000);
+                    jumpscare1.position.setZ(1000);
+                }
+            );
+
+            const Bloader = new GLTFLoader();
+            // Load a glTF resource
+            Gloader.load(
+                // resource URL
+                'scaryThingModel/scene.gltf',
+                // called when the resource is loaded
+                function (gltf) {
+                    jumpscare2 = gltf.scene;
+                    jumpscare2.scale.set(10, 10, 10);
+                    //console.log(dog);
+                    scene.add(jumpscare2);
+                    gltf.animations; // Array<THREE.AnimationClip>
+                    gltf.scene; // THREE.Group
+                    gltf.scenes; // Array<THREE.Group>
+                    gltf.cameras; // Array<THREE.Camera>
+                    gltf.asset; // Object
+                    jumpscare2.position.setX(Math.random() * 380);
+                    jumpscare2.position.setY(1000);
+                    jumpscare2.position.setZ(1000);
+                }
+            );
+          
+
+        }
+
+
+        function jumpscare(monster, index) {
+
+            let dist = 80;
+            let lookAtHeight = 50;
+            let monsterLookAtHeight = 1;
+            let monsterHeight;
+            if (index == 0) {
+                dist = 80;
+                lookAtHeight = 50;
+                monsterLookAtHeight = 1;
+                monsterHeight = 40;
+            }
+            else if (index == 1) {
+                dist = 30;
+                lookAtHeight = 20;
+                monsterLookAtHeight = -10;
+                monsterHeight = 40;
+            }
+            else if (index == 2) {
+                dist = 10;
+                lookAtHeight = 30;
+                monsterLookAtHeight = -20;
+                monsterHeight = 15;
+            }
+
+
+            console.log(monster.position, 'monster');
+
+            let rayHeight = new THREE.Raycaster();
+            let rayDirection = new THREE.Vector3(0, -1, 0);//Gives direction for raycaster
+
+            let intersectHeight = rayHeight.intersectObject(terrainShadow); //Finds where the ray intersects with the 
+
+            monster.position.set(camera.position.x + dist, camera.position.y, camera.position.z);
+            rayHeight.ray.set(monster.position, rayDirection.normalize()); //Has ray cast downwards from the treePos
+            let yPos;
+            if (intersectHeight.length != 0) {
+                yPos = intersectHeight[0].point.y; //Sets the yPos to where the ray intersected with the terrain
+            }
+
+            monster.position.y = yPos + monsterHeight;
+            console.log(monster.position, ',monster pos');
+            //jumpscare1.lookAt(camera.position);
+            let camlookat = new THREE.Vector3(monster.position.x, monster.position.y + lookAtHeight, monster.position.z);
+            camera.lookAt(camlookat);
+            monster.lookAt(camera.position.x, camera.position.y + monsterLookAtHeight, camera.position.z);
+        }
 
 
 
@@ -626,7 +710,7 @@
 
                 console.log("easy");
                 distance = 60; //60
-                monsterSpeed = .06;
+                monsterSpeed = .0001;//.06
                 stamina = 100;
                 increment = 2;
             }
@@ -1078,11 +1162,13 @@
         //The animate function is a function which is continuously called for every frame of the program
         function animate() {
 
+            monsterGroup.lookAt(camera.position.x, camera.position.y - 30, camera.position.z);
+
             // console.log(scales, 'scales');
             if (gamePaused == false) {
                 if (prettyStars.length != 0) {
                     for (let i = 0; i < prettyStars.length; i++) {
-                      //  console.log("INININININ");
+                        //  console.log("INININININ");
                         lightness > 80 ? lightness = 50 : lightness++;
                         if (Math.random() > .5) {
                             prettyStars[i].material.color = new THREE.Color("hsl(255, 100%, " + lightness + "%)");
@@ -1228,7 +1314,7 @@
                             if (timer > monsterSpeed) {
                                 timer = 0;
                                 monsterGroup.position.set(previousPos[0].x, previousPos[0].y, previousPos[0].z);
-                                monsterGroup.lookAt(camera.position);
+
                                 previousPos.shift();
                                 distance -= 1;
                                 if (calcPointDistance(monsterGroup.position, camera.position) < 30) {
@@ -1273,7 +1359,10 @@
                             lives -= 1;
                             heartArray[lives].material.color.set(0x000000);
                             previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z));
+                            jumpscare(monsterGroup, 0);
+                            console.log('monstergroup');
                             caught = false;
+
                             //monsterGroup.position.set(camera.position);
 
                         }
@@ -1576,6 +1665,7 @@
         let staminaBar = initStaminaBar();
         let monster = initMonster();
         initCursor();
+        makeModels();
         initLightning();
         initWorld();
         initFog();
@@ -1597,8 +1687,8 @@
 
 
 
-        function makeFire(){
-            
+        function makeFire() {
+
         }
 
 

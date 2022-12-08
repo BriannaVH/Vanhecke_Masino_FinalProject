@@ -35,6 +35,8 @@ let timerFlicker=0;
 let maxFlicker = .5;
 let lightness = 0;
 let k = .02;
+let jumpscare1;
+let jumpscare2;
 
  // particles 
  let movementSpeeds = 40;
