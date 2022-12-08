@@ -1,0 +1,11 @@
+Model Information:
+* title:	Is Something Wrong?
+* source:	https://sketchfab.com/3d-models/is-something-wrong-3188ff2f3d0043f6a7ba282984f64ef6
+* author:	Adan (https://sketchfab.com/Apdigivid.)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Is Something Wrong?" (https://sketchfab.com/3d-models/is-something-wrong-3188ff2f3d0043f6a7ba282984f64ef6) by Adan (https://sketchfab.com/Apdigivid.) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
