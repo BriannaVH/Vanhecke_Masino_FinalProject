@@ -283,18 +283,19 @@
 
         function jumpscare(monster, index) {
 
-            inJumpscare =true;
-       
-            scene.fog.density = .00033;
+            inJumpscare = true;
+            scene.fog.density = .003;
+            //  scene.fog.density = 1;
+
 
             setTimeout(function () {
-                inJumpscare =false;
-               if (index !=0){
-                monster.position.set(0,-100,0);
-               }
-               scene.fog.density = 0;
+                inJumpscare = false;
+                if (index != 0) {
+                    monster.position.set(0, -100, 0);
+                }
+                scene.fog.density = 0;
             }, 4000);
-       
+
 
             let dist = 80;
             let lookAtHeight = 50;
@@ -1171,13 +1172,33 @@
         }
 
 
-
+        let rain = 8;
         //The animate function is a function which is continuously called for every frame of the program
         function animate() {
 
-            if (inJumpscare == true){
-                camera.lookAt(jumpscareLookAt);
+            delta = clock.getDelta();
+            rain += delta;
 
+            if (rain >= 4) {
+                //console.log("thunder playing");
+                play(thunderNoises[1]);
+
+                rain = 0;
+            }
+
+
+
+            timerThunder += delta;
+            if (timerThunder >= maxThunder) {
+                //console.log("thunder playing");
+                let index = Math.floor(Math.random() * 4);
+                play(thunderNoises[index]);
+                timerThunder = 0;
+                maxThunder = Math.random() * 5 + 2;
+            }
+
+            if (inJumpscare == true) {
+                camera.lookAt(jumpscareLookAt);
             }
 
             monsterGroup.lookAt(camera.position.x, camera.position.y - 30, camera.position.z);
@@ -1208,7 +1229,7 @@
 
                 scales = 2.015 * (stamina - 5) * .01;
                 console.log(gameState, 'game state');
-                delta = clock.getDelta();
+               
                 if (moving == true && stamina > 0) {
                     if (stamina > maxStamina * .1) {
                         staminaBar.scale.x = scales;
@@ -1305,14 +1326,6 @@
                 }
                 if (gameState == 0) {
 
-                    timerThunder += delta;
-                    if (timerThunder >= maxThunder) {
-                        //console.log("thunder playing");
-                        let index = Math.round(Math.random() * 4);
-                        play(thunderNoises[index]);
-                        timerThunder = 0;
-                        maxThunder = Math.random() * 5 + 2;
-                    }
 
                     gameTime += delta;
                     if (gameTime > increment) {
@@ -1337,14 +1350,14 @@
                                 distance -= 1;
                                 if (calcPointDistance(monsterGroup.position, camera.position) < 30) {
                                     console.log("caught");
-                                    let index = Math.round(Math.random() * 3);
+                                    let index = Math.floor(Math.random() * 3);
                                     play(caughtSound[index]);
                                     caught = true;
                                 }
                                 else if (calcPointDistance(monsterGroup.position, camera.position) < 150) {
                                     //play('sounds/heartbeat.wav');
                                     heartbeatAudio.play();
-                                    heartbeatAudio.volume = .5;
+                                    heartbeatAudio.volume = 1;
                                 }
                                 else if (calcPointDistance(monsterGroup.position, camera.position) > 150) {
                                     heartbeatAudio.pause();
@@ -1398,7 +1411,7 @@
                         scene.remove(monsterGroup);
                         monsterGroup.traverse(monsterGroup => monsterGroup.dispose?.());
                         scene.remove(storm);
-                        scene.fog.intensity = 0;
+                        scene.fog.density = 0;
                         makeShiba(shibaPosition);
 
                         shibaCounter += 1;
@@ -1675,7 +1688,7 @@
             const geometry = new THREE.PlaneGeometry(100, 5);
             const hmaterial = new THREE.MeshBasicMaterial({ color: 0x5CFF5C, side: THREE.DoubleSide });
             const mesh = new THREE.Mesh(geometry, hmaterial);
-            mesh.position.set(windowWidth - (windowWidth * .6), windowHeight - (windowHeight * 1.42), 0);
+            mesh.position.set(windowWidth - (windowWidth * .65), windowHeight - (windowHeight * 1.42), 0);
             mesh.scale.set(2.015 * (stamina - 5) * .01, 4);
             sceneHUD.add(mesh);
             return mesh;
