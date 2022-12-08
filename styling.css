@@ -29,10 +29,41 @@
     text-align: center;
     /* top: -80%; */
     font-size: 25px;
+    color: white;
     font-family: "Serif", "Georgia", monospace;
     cursor: pointer;
     
 }
+
+
+#lost {
+    position: fixed;
+    /* width: 1000px; */
+    /* height: 1000px;
+    margin: auto;
+    width: 50%;
+    padding: 10px; */
+    width: 100px;
+    height: 100px;
+    position: absolute;
+    top: 30%;
+    left: 40%;
+    margin: -50px 0 0 -50px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    text-align: center;
+    /* top: -80%; */
+    font-size: 25px;
+    color: white;
+    font-family: "Serif", "Georgia", monospace;
+    cursor: pointer;
+    
+}
+
 
 
 
@@ -78,6 +109,8 @@
     top: 50%;
     font-family: "Serif", "Georgia", monospace;
 }
+
+
 
 
 .greenText {
