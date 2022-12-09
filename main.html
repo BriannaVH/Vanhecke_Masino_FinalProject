@@ -1,4 +1,5 @@
 <html>
+<!-- Zara Masino & Brianna Van Hecke -->
 
 <head>
     <title>Final Project</title>
@@ -7,7 +8,6 @@
     <!-- <link type="text/css" rel="stylesheet" href="main.css"> -->
 </head>
 
-<!-- Zara Masino & Brianna Van Hecke -->
 
 <div id="blocker">
 </div>
@@ -74,11 +74,11 @@
         import { OutlinePass } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/OutlinePass.js'
         import { RenderPass } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/RenderPass.js'
         import { EffectComposer } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/EffectComposer.js'
-       // import { UnrealBloomPass } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/UnrealBloomPass.js';
+        // import { UnrealBloomPass } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/UnrealBloomPass.js';
         import { GLTFLoader } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/loaders/GLTFLoader.js';
 
-       // import { FlakesTexture } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/textures/FlakesTexture.js';
-       // import { RGBELoader } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/loaders/RGBELoader.js';
+        // import { FlakesTexture } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/textures/FlakesTexture.js';
+        // import { RGBELoader } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/loaders/RGBELoader.js';
 
 
 
@@ -918,7 +918,8 @@
         //Initializes Cursor
         function initCursor() {
             cursorGeom = new THREE.SphereGeometry(0.02, 16, 16); //Creates a cursor geom
-            cursorMat = new THREE.MeshBasicMaterial({ color: 0xff0000 }); //Cursor material with color
+            cursorMat = new THREE.MeshBasicMaterial({ transparent: true }); //Cursor material with color
+            cursorMat.opacity = 0;
             cursor = new THREE.Mesh(cursorGeom, cursorMat); //Creates mesh
             scene.add(cursor); //Adds cursor to the scene
             spheres.push(cursor); //Adds cursor to the spheres array
@@ -991,7 +992,7 @@
                 const sphere = new THREE.Mesh(geometry, material);
                 sphere.position.set(position.x, position.y, position.z);
                 starShards.push(sphere);
-                worldItems.push(sphere);
+                //worldItems.push(sphere);
                 scene.add(sphere);
             }
         }
@@ -1028,7 +1029,7 @@
                 newTree.castShadow = true;
                 newTree.receiveShadow = true;
                 //Pushes tree created onto the worldItems array and trees array
-                worldItems.push(newTree);
+                //worldItems.push(newTree);
                 trees.push(newTree);
 
                 scene.add(newTree);
@@ -1134,7 +1135,7 @@
             //how hilly a certain part is
             water.receiveShadow = true; //Water can receive shadows
             scene.add(water); //Adds water to scene
-            worldItems.push(water); //Adds water to worldItems so that the cursor will recognize the water and not disappear
+            // worldItems.push(water); //Adds water to worldItems so that the cursor will recognize the water and not disappear
 
             terrainGeom = new THREE.PlaneBufferGeometry(800, 800, 256, 256); //Creates terrain geometry
             terrainMat = new THREE.MeshPhysicalMaterial({
@@ -1172,7 +1173,7 @@
 
 
             terrain.castShadow = true;
-            worldItems.push(terrain);
+            //worldItems.push(terrain);
         }
 
         //Creates sun and moon bulblights
@@ -1180,7 +1181,7 @@
             moon = new initLights(moonColor[0], 0, 280, 0, .1);
             renderer.setClearColor(skyColors[2]);
             world.material.color.setHex(skyColors[2]);
-            worldItems.push(moon.bulbLight);
+            //worldItems.push(moon.bulbLight);
         }
 
 
@@ -1275,52 +1276,52 @@
             }
         }
 
-        function campFireLogic(){
-                if (calcPointDistance(camera.position, campfire.position) < 100 && campfire.height > 0){
-                    campfire.fade = true;
-                    console.log("fading");
+        function campFireLogic() {
+            if (calcPointDistance(camera.position, campfire.position) < 100 && campfire.height > 0) {
+                campfire.fade = true;
+                console.log("fading");
+            }
+            else {
+                campfire.fade = false;
+                console.log("steady flame");
+            }
+            //   for (let c = 0; c < campFires.length; c++) {
+            for (let p = 0; p < campfire.particles.length; p++) {
+                let cfp = campfire.particles[p];
+                cfp.mesh.translateY(campfire.particles[p].direction.y);
+
+                cfp.mesh.translateX(wind / cfp.size);
+                cfp.mesh.translateZ(wind / cfp.size);
+                if (cfp.mesh.position.y > campfire.position.y + campfire.height - cfp.size * verticalFade
+                    || cfp.mesh.position.x > campfire.position.x + 10
+                    || cfp.mesh.position.x < campfire.position.x - 10
+                    || cfp.mesh.position.z > campfire.position.z + 10
+                    || cfp.mesh.position.z < campfire.position.z - 10
+                ) {
+                    cfp.mesh.position.set(cfp.position.x, cfp.position.y, cfp.position.z);
                 }
-                else {
-                    campfire.fade = false;
-                    console.log("steady flame");
-                }
-         //   for (let c = 0; c < campFires.length; c++) {
+            }
+            if (campfire.height > 0 && campfire.fade == true) { //timeStep > .2 &&
+                campfire.height -= overallFade;
+                //timeStep = 0;
+            }
+            if (campfire.height <= 0) {
                 for (let p = 0; p < campfire.particles.length; p++) {
-                    let cfp = campfire.particles[p];
-                    cfp.mesh.translateY(campfire.particles[p].direction.y);
-
-                    cfp.mesh.translateX(wind / cfp.size);
-                    cfp.mesh.translateZ(wind / cfp.size);
-                    if (cfp.mesh.position.y > campfire.position.y + campfire.height - cfp.size * verticalFade
-                        || cfp.mesh.position.x > campfire.position.x + 10
-                        || cfp.mesh.position.x < campfire.position.x - 10
-                        || cfp.mesh.position.z > campfire.position.z + 10
-                        || cfp.mesh.position.z < campfire.position.z - 10
-                    ) {
-                        cfp.mesh.position.set(cfp.position.x, cfp.position.y, cfp.position.z);
-                    }
+                    //console.log(campFires[c].particles[p]);
+                    campfire.particles[p].mesh.material.color.setHex(0x000000);
+                    campfire.fade = false;
                 }
-                if (campfire.height > 0 && campfire.fade == true) { //timeStep > .2 &&
-                    campfire.height -= overallFade;
-                    //timeStep = 0;
-                }
-                if (campfire.height <= 0) {
-                    for (let p = 0; p < campfire.particles.length; p++) {
-                        //console.log(campFires[c].particles[p]);
-                        campfire.particles[p].mesh.material.color.setHex(0x000000);
-                        campfire.fade = false;
-                    }
-                    console.log("fire out");
-                }
-
+                console.log("fire out");
             }
 
-       // }
+        }
 
-       let wind = 0;
-       let windTimer = 0;
+        // }
 
-      
+        let wind = 0;
+        let windTimer = 0;
+
+
         //The animate function is a function which is continuously called for every frame of the program
         function animate() {
             // console.log('still running')
@@ -1330,38 +1331,43 @@
             timerThunder += delta;
             monsterGroup.lookAt(camera.position.x, camera.position.y - 30, camera.position.z);
 
-            if (windTimer > 3){
+            if (windTimer > 3) {
                 console.log("wind changes");
-                wind = newRandom(0,.5);
+                wind = newRandom(0, .5);
                 windTimer = 0;
             }
 
             campFireLogic();
 
-           
-
-            if (rain >= 4) {
-                play(thunderNoises[1]);
-                rain = 0;
-            }
 
 
-            
-            if (timerThunder >= maxThunder) {
-                //console.log("thunder playing");
-                let index = Math.floor(Math.random() * 4);
-                play(thunderNoises[index]);
-                timerThunder = 0;
-                maxThunder = Math.random() * 5 + 2;
-            }
+
+
+
+
+
 
             if (inJumpscare == true) {
                 camera.lookAt(jumpscareLookAt);
             }
 
-          
+
             // console.log(scales, 'scales');
             if (gamePaused == false) {
+
+                if (gameState != 1) {
+                    if (timerThunder >= maxThunder) {
+                        //console.log("thunder playing");
+                        let index = Math.floor(Math.random() * 4);
+                        play(thunderNoises[index]);
+                        timerThunder = 0;
+                        maxThunder = Math.random() * 5 + 2;
+                    }
+                    if (rain >= 4) {
+                        play(thunderNoises[1]);
+                        rain = 0;
+                    }
+                }
                 if (jumpscarePositions.length != 0) {
                     //console.log('IN JUMPSCAREPOSITIONS');
                     for (let i = 0; i < jumpscarePositions.length; i++) {
@@ -1494,6 +1500,7 @@
 
                 }
                 if (gameState == 0) {
+
                     gameTime += delta;
                     if (gameTime > increment) {
                         monsterSpeed -= .01;
@@ -1576,6 +1583,13 @@
                 else if (gameState == 1) {
                     jumpscarePositions = [];
                     if (shibaCounter == 0) {
+                        let index = Math.floor(Math.random() * 2);
+                        setTimeout(() => {
+
+                            play(winSounds[index]);
+                            console.log("PLAY MUSIC");
+
+                        }, 5000)
                         let shibaPosition = monsterGroup.children[0].position;
                         scene.remove(monsterGroup);
                         monsterGroup.traverse(monsterGroup => monsterGroup.dispose?.());
@@ -1661,7 +1675,7 @@
                 // update the position of the sphere to be at the point of the raycaster intersection
                 spheres[0].position.copy(intersection.point);
                 // scale the sphere so that the size is consistant 
-                cursor.scale.set(intersection.distance * .5, intersection.distance * .5, intersection.distance * .5)
+                cursor.scale.set(.0001);
                 toggle = 0;
             }
             //increase toggle by delta
@@ -1737,7 +1751,7 @@
             if (movement == "right") camera.translateX(speed);
 
             for (let t = 0; t < starShards.length; t++) { //For the length of the array containing all of the trees
-                if (calcPointDistance(camera.position, starShards[t].position) <= 4) { //4
+                if (calcPointDistance(camera.position, starShards[t].position) <= 1000) { //4
                     starHit = t; //Sets boolean "hit" to true
                 }
             }
@@ -1768,6 +1782,7 @@
                     starGroup.children[0].material.color.setHex(0xffff00);
                     //  gameOver(1);
                     gameState = 1;
+
                 }
             }
             //If the user is out of bounds then move them in the opposite direction of the way they are trying to walk
@@ -1865,10 +1880,10 @@
 
 
         //for (let i = 0; i < 3; i++) {
-            let firePosition = randomizePositions(300, 50);
-            let campfire = new CampFire(firePosition, heightLimit);
-          //  campFires.push(fire);
-       // }
+        let firePosition = randomizePositions(300, 50);
+        let campfire = new CampFire(firePosition, heightLimit);
+        //  campFires.push(fire);
+        // }
         //campFires[0].fade = true;
 
 
