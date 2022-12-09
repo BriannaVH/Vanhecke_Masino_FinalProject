@@ -17,7 +17,7 @@
     <!-- <p style="font-size:60">
         Monster&nbsp;Bash
     </p> -->
-    <h1 style = "font-size:60"> Monster&nbsp;Mash</h1>
+    <h1 style="font-size:60"> Monster&nbsp;Mash</h1>
     <p style="font-size:20px">
         Run&nbsp;from&nbsp;the&nbsp;monster and&nbsp;collect&nbsp;the&nbsp;star&nbsp;shards!<br />
         <br />
@@ -79,12 +79,7 @@
         import { OutlinePass } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/OutlinePass.js'
         import { RenderPass } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/RenderPass.js'
         import { EffectComposer } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/EffectComposer.js'
-        // import { UnrealBloomPass } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/UnrealBloomPass.js';
         import { GLTFLoader } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/loaders/GLTFLoader.js';
-
-        // import { FlakesTexture } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/textures/FlakesTexture.js';
-        // import { RGBELoader } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/loaders/RGBELoader.js';
-
 
 
         //Variable Declaration
@@ -175,7 +170,7 @@
         function Particle(pos) {
             this.size = Math.random() * maxPSize + minPSize;
             this.geometry = new THREE.DodecahedronGeometry(this.size, 0);
-            this.material = new THREE.MeshBasicMaterial({ color: fireColors[Math.floor(Math.random() * fireColors.length)], map: loader.load("star/testfire.jpg"), opacity: .5, transparent: true });
+            this.material = new THREE.MeshPhongMaterial({ color: fireColors[Math.floor(Math.random() * fireColors.length)], map: loader.load("star/testfire.jpg"), opacity: .5, transparent: true });
             this.mesh = new THREE.Mesh(this.geometry, this.material);
             this.position = new THREE.Vector3(pos.x + newRandom(0, spawnSpread), pos.y, pos.z + newRandom(0, spawnSpread));
             this.mesh.position.set(this.position.x, this.position.y, this.position.z);
@@ -188,7 +183,7 @@
 
         function Log(rotationSide, pos) {
             const geometry = new THREE.CylinderGeometry(5, 5, 30, 32);
-            const material = new THREE.MeshBasicMaterial({ color: 0x964B00, map: loader.load("star/wood.jpg") }); //, map: loader.load("wood/wood.jpg") 
+            const material = new THREE.MeshPhongMaterial({ color: 0x964B00, map: loader.load("star/wood.jpg") }); //, map: loader.load("wood/wood.jpg") 
             const cylinder = new THREE.Mesh(geometry, material);
             cylinder.position.set(pos.x, pos.y, pos.z);
 
@@ -265,7 +260,6 @@
             gamePaused = true;
             if (gameState == 0 || gameState == 1) {
                 blocker.style.display = 'block';
-                //console.log(gameState, 'gamestate');
                 setTimeout(() => {
                     unpause.style.display = 'block';
 
@@ -279,7 +273,6 @@
                 }, 4000)
             }
 
-            //instructions.style.display = '';
             controls.unlock();
         });
 
@@ -392,6 +385,8 @@
             let monsterHeight;
             let monster;
             if (index == -1) {
+                let index = Math.floor(Math.random() * 3);
+                play(caughtSound[index]);
                 dist = 80;
                 lookAtHeight = 50;
                 monsterLookAtHeight = 1;
@@ -850,8 +845,7 @@
             let starGroup = new THREE.Group();
             var geometry = new THREE.CircleGeometry(25, 5)
             var material = new THREE.MeshBasicMaterial({
-                color: color, side: THREE.DoubleSide, metalness: .5,
-                roughness: .5
+                color: color, side: THREE.DoubleSide
             })
 
             var circle = new THREE.Mesh(geometry, material)
@@ -929,8 +923,7 @@
         function initWorld() {
             worldGeom = new THREE.SphereGeometry(550, 32, 32); //Creates world Geometry (is a sphere)
             worldMat = new THREE.MeshBasicMaterial({
-                color: 0xADD8E6, //Gives specific color
-                wireframe: false,
+                color: 0xADD8E6,
                 side: THREE.DoubleSide, //Gives the sphere two sides so it is visible from inside and outside
                 map: loader.load("skies/cloud3.jpg")
             }); //Textures the sphere with clouds
@@ -1318,50 +1311,259 @@
 
         // }
 
-        let wind = 0;
-    
-        let spawningIn = true;
-        let windTimer = 0;
+       
 
 
-        //The animate function is a function which is continuously called for every frame of the program
-        function animate() {
-            // console.log('still running')
-            delta = clock.getDelta();
-            rain += delta;
-            windTimer += delta;
-            timerThunder += delta;
-            monsterGroup.lookAt(camera.position.x, camera.position.y - 30, camera.position.z);
-
+        function windLogic() {
             if (windTimer > 3) {
                 console.log("wind changes");
                 wind = newRandom(0, .5);
                 windTimer = 0;
             }
 
+        }
+
+        function thunderAndRain() {
+            if (timerThunder >= maxThunder) {
+                //console.log("thunder playing");
+                let index = Math.floor(Math.random() * 4);
+                play(thunderNoises[index]);
+                timerThunder = 0;
+                maxThunder = Math.random() * 5 + 2;
+            }
+            if (rain >= 4) {
+                play(thunderNoises[1]);
+                rain = 0;
+            }
+        }
+
+        function staminaLogic() {
+            if (stamina > maxStamina * .5) {
+                staminaBar.material.color.set(0x5CFF5C);
+            }
+            else if (stamina < maxStamina * .2) {
+                staminaBar.material.color.set(0xDF362D);
+            }
+            else {
+                staminaBar.material.color.set(0xFFC55C);
+            }
+
+            scales = 2.015 * (stamina - 5) * .01;
+            if (moving == true && stamina > 0) {
+                if (stamina > maxStamina * .1) {
+                    staminaBar.scale.x = scales;
+                }
+                stamina -= fitness;
+                if (gameState == 0) {
+                    scene.fog.density += .00003;
+                }
+            }
+            else if (moving == false && stamina < maxStamina && stamina >= 0) {
+                staminaBar.scale.x = scales;
+                stamina += fitness * 5;
+                if (gameState == 0) {
+                    scene.fog.density -= .00003 * 5;
+                }
+            }
+        }
+
+
+        function movingStarShardLogic() {
+            if (movingStarShard.length != 0) {
+                for (let i = 0; i < movingStarShard.length; i++) {
+                    if (movingStarShard[i].position.y <= 450) {
+                        movingStarShard[i].translateY(5);
+                    }
+                    else {
+                        addStars();
+                        parts.push(new ExplodeAnimation(movingStarShard[i].position.x, movingStarShard[i].position.y, movingStarShard[i].position.z));
+                        scene.remove(movingStarShard[i]);
+                        movingStarShard[i].material.dispose();
+                        movingStarShard[i].geometry.dispose();
+                        movingStarShard.splice(i, 1);
+                    }
+                }
+            }
+        }
+
+        function cameraPositioning() {
+            let ray = new THREE.Raycaster();
+            var rayPos = new THREE.Vector3();
+            rayPos.set(camera.position.x, camera.position.y, camera.position.z);
+            var rayDir = new THREE.Vector3(0, -1, 0);
+            ray.set(rayPos, rayDir);
+            // keeps track of where the ray intersects the terrain
+            let intersect = ray.intersectObject(terrain);
+            // if the raycaster is intersecting the terrain
+            if (intersect.length != 0) {
+                camera.position.y = (intersect[0].point.y + 20)
+            }
+            // in an edge case where the camera cannot find the terrain during loading, set the camera height to 50
+            else {
+                camera.position.y = 50;
+            }
+        }
+
+        function skyStars() {
+            if (prettyStars.length != 0) {
+                for (let i = 0; i < prettyStars.length; i++) {
+                    //  console.log("INININININ");
+                    lightness > 80 ? lightness = 50 : lightness++;
+                    if (Math.random() > .5) {
+                        prettyStars[i].material.color = new THREE.Color("hsl(255, 100%, " + lightness + "%)");
+                    }
+                }
+            }
+
+            for (let i = 0; i < shootingStars.length; i++) {
+                shootingStars[i].translateX(starXDirs[i]);
+                shootingStars[i].translateZ(starZDirs[i]);
+            }
+        }
+
+        function caughtReset() {
+            if (level == 'hard') {
+                distance = 50;
+                monsterSpeed = .03;
+            }
+            else if (level == 'medium') {
+                distance = 50;
+                monsterSpeed = .06;
+            }
+            else {
+                distance = 60;
+                monsterSpeed = .06;
+            }
+            previousPos = [];
+            distance = distance * .8;
+            previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z));
+
+        }
+
+
+        function monsterLogic() {
+            if (previousPos.length > distance && campfire.fade == false) {
+                if (spawningIn == true) {
+                    play("sounds/close/spawn.mp3");
+                    spawningIn = false;
+                }
+                timer += delta;
+                if (timer > monsterSpeed && inJumpscare == false) {
+                    timer = 0;
+                    monsterGroup.position.set(previousPos[0].x, previousPos[0].y, previousPos[0].z);
+                    previousPos.shift();
+                    distance -= 1;
+                    if (calcPointDistance(monsterGroup.position, camera.position) < 15) { ///30
+                        console.log("caught");
+
+                        caught = true;
+                    }
+                    else if (calcPointDistance(monsterGroup.position, camera.position) < 150) {
+                        heartbeatAudio.play();
+                        heartbeatAudio.volume = 1;
+                    }
+                    else if (calcPointDistance(monsterGroup.position, camera.position) > 150) {
+                        heartbeatAudio.pause();
+                        heartbeatAudio.currentTime = 0;
+                    }
+                }
+            }
+        }
+
+        function lostLogic() {
+            scene.fog.density = .005;
+            scene.fog.near = 10;
+            scene.fog.color.set(0x000000);
+            gameState = 2;
+            heartbeatAudio.pause();
+            heartbeatAudio.currentTime = 0;
+            gamePaused = true;
+            controls.unlock();
+        }
+
+        function winAndCleanup() {
+            heartbeatAudio.pause();
+            heartbeatAudio.currentTime = 0;
+            jumpscarePositions = [];
+            let length = previousPos.length;
+            console.log(length);
+            if (length > 10) {
+                previousPos = previousPos.splice(10, previousPos.length - 10);
+            }
+            scene.remove(monsterGroup);
+            monsterGroup.traverse(monsterGroup => monsterGroup.dispose?.());
+            scene.remove(storm);
+            scene.fog.density = 0;
+            makeShiba(previousPos);
+            shibaCounter += 1;
+            let index = Math.floor(Math.random() * 2);
+            play(winSounds[index]);
+        }
+
+
+        function endStarAnimation() {
+            let counter = 0;
+            if (prettyStars.length > 0) {
+                for (let i = 0; i < prettyStars.length; i++) {
+                    prettyStars[i].translateX(k * (createRandomPosOrNeg(300, 0) - prettyStars[i].position.x));
+                    prettyStars[i].translateY(k * (270 - prettyStars[i].position.y));
+                    prettyStars[i].translateZ(k * (createRandomPosOrNeg(300, 0) - prettyStars[i].position.z));
+                    prettyStars[i].scale.set(Math.random() * 30 + 10, Math.random() * 30 + 10);
+                    if (calcPointDistance(prettyStars[i].position, moon.bulbLight.position) <= 50) {
+                        counter++;
+                    }
+                }
+            }
+            if (counter > prettyStars.length * .95) {
+                moon.bulbLight.intensity = 2;
+                moon.bulbMat.dispose();
+                moon.bulbGeometry.dispose();
+                moon.bulbLight.color.setHex(0xffff00);
+                moon.bulbMat.color.setHex(0xffff00);
+                if (number == 0) {
+                    endStar = initStarIcon(0xffff00, .5);
+                    endStar.position.set(0, 280, 0);
+                    endStar.lookAt(camera.position);
+                    scene.add(endStar);
+                    number += 1;
+                }
+                for (let i = 0; i < prettyStars.length; i++) {
+                    scene.remove(prettyStars[i]);
+                    prettyStars[i].material.dispose();
+                    prettyStars[i].geometry.dispose();
+                    prettyStars.splice(i, 1);
+                }
+                renderer.setClearColor(0xffffff);
+                world.material.color.setHex(0xffffff);
+            }
+            else if (counter > prettyStars.length * .9) {
+                moon.bulbLight.color.setHex(0xffffff);
+                moon.bulbMat.color.setHex(0xffff00);
+            }
+        }
+
+
+        //The animate function is a function which is continuously called for every frame of the program
+        function animate() {
+
+            delta = clock.getDelta();
+            rain += delta;
+            windTimer += delta;
+            timerThunder += delta;
+
+
+            windLogic();
             campFireLogic();
 
-
+            monsterGroup.lookAt(camera.position.x, camera.position.y - 30, camera.position.z);
             if (inJumpscare == true) {
                 camera.lookAt(jumpscareLookAt);
             }
 
-
             // console.log(scales, 'scales');
             if (gamePaused == false) {
-
                 if (gameState != 1) {
-                    if (timerThunder >= maxThunder) {
-                        //console.log("thunder playing");
-                        let index = Math.floor(Math.random() * 4);
-                        play(thunderNoises[index]);
-                        timerThunder = 0;
-                        maxThunder = Math.random() * 5 + 2;
-                    }
-                    if (rain >= 4) {
-                        play(thunderNoises[1]);
-                        rain = 0;
-                    }
+                    thunderAndRain();
                 }
                 if (jumpscarePositions.length != 0) {
                     //console.log('IN JUMPSCAREPOSITIONS');
@@ -1379,101 +1581,22 @@
 
 
 
-                if (prettyStars.length != 0) {
-                    for (let i = 0; i < prettyStars.length; i++) {
-                        //  console.log("INININININ");
-                        lightness > 80 ? lightness = 50 : lightness++;
-                        if (Math.random() > .5) {
-                            prettyStars[i].material.color = new THREE.Color("hsl(255, 100%, " + lightness + "%)");
-                        }
-                    }
-                }
+                skyStars();
                 if (typeof endStar != 'undefined') {
                     endStar.lookAt(camera.position);
                 }
-                if (stamina > maxStamina * .5) {
-                    staminaBar.material.color.set(0x5CFF5C);
-                }
-                else if (stamina < maxStamina * .2) {
-                    staminaBar.material.color.set(0xDF362D);
-                }
-                else {
-                    staminaBar.material.color.set(0xFFC55C);
-                }
 
-                scales = 2.015 * (stamina - 5) * .01;
-                //console.log(gameState, 'game state');
-
-                if (moving == true && stamina > 0) {
-                    if (stamina > maxStamina * .1) {
-                        staminaBar.scale.x = scales;
-                    }
-                    stamina -= fitness;
-                    if (gameState == 0) {
-                        scene.fog.density += .00003;
-                    }
-                }
-                else if (moving == false && stamina < maxStamina && stamina >= 0) {
-                    staminaBar.scale.x = scales;
-                    stamina += fitness * 5;
-                    if (gameState == 0) {
-                        scene.fog.density -= .00003 * 5;
-                    }
-
-                }
-
+                staminaLogic();
                 evolveSmoke();
-
-                if (movingStarShard.length != 0) {
-                    for (let i = 0; i < movingStarShard.length; i++) {
-                        if (movingStarShard[i].position.y <= 450) {
-                            movingStarShard[i].translateY(5);
-                        }
-                        else {
-                            addStars();
-                            parts.push(new ExplodeAnimation(movingStarShard[i].position.x, movingStarShard[i].position.y, movingStarShard[i].position.z));
-                            scene.remove(movingStarShard[i]);
-                            movingStarShard[i].material.dispose();
-                            movingStarShard[i].geometry.dispose();
-                            movingStarShard.splice(i, 1);
-                        }
-                    }
-                }
+                movingStarShardLogic();
 
                 var pCount = parts.length;
                 while (pCount--) {
                     parts[pCount].update(); //Keeps exploding the particles
                 }
 
-                //Adds .2 to the change variable and then gets the sin of that value
-                change += .1;
-                sinwave = Math.sin(change);
-
                 //Creates a raycaster at the camera position that casts in the -y direction
-                let ray = new THREE.Raycaster();
-                var rayPos = new THREE.Vector3();
-                rayPos.set(camera.position.x, camera.position.y, camera.position.z);
-                var rayDir = new THREE.Vector3(0, -1, 0);
-                ray.set(rayPos, rayDir);
-                // keeps track of where the ray intersects the terrain
-                let intersect = ray.intersectObject(terrain);
-                // if the raycaster is intersecting the terrain
-                if (intersect.length != 0) {
-                    // if the person is moving
-                    // if (moving == true) {
-                    //     // set displacement to our sin*.2 and set the camera y to the intersection y value plus 20 and the displacement
-                    //     displacement = sinwave * .2;
-                    //     camera.position.y = (intersect[0].point.y + 20) + displacement * camera.position.y;
-                    // }
-                    // //otherwise the camera is just 20 above the terrain y so the camera should not bob
-                  //  else {
-                        camera.position.y = (intersect[0].point.y + 20)
-                   // }
-                }
-                // in an edge case where the camera cannot find the terrain during loading, set the camera height to 50
-                else {
-                    camera.position.y = 50;
-                }
+                cameraPositioning();
 
 
                 // if the camera is locked in 
@@ -1485,122 +1608,37 @@
                     humanGroup.position.x = (camera.position.x);
                     // make the group rotation match the camera rotation
                     humanGroup.setRotationFromMatrix(camera.matrix);
-
                 }
-                for (let i = 0; i < shootingStars.length; i++) {
-                    shootingStars[i].translateX(starXDirs[i]);
-                    shootingStars[i].translateZ(starZDirs[i]);
 
-                    //console.log(shootingStars[i]);
-
-                }
                 if (gameState == 0) {
-
                     gameTime += delta;
                     if (gameTime > increment) {
                         monsterSpeed -= .01;
                         gameTime = 0;
                     }
-                    // console.log(delta);
                     if (caught == false) {
                         if (calcPointDistance(camera.position, previousPos[previousPos.length - 1]) != 0) {
-                            //console.log("INNIT ", previousPos);
                             previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z))
                         }
-                        if (previousPos.length > distance && campfire.fade == false) {
-                            if (spawningIn == true){
-                                play("sounds/close/spawn.mp3");
-                                spawningIn = false;
-                            }
-                            //console.log("fire is not fading");
-                            timer += delta;
-                            if (timer > monsterSpeed && inJumpscare == false) {
-                                console.log("moster moving");
-                                timer = 0;
-                                monsterGroup.position.set(previousPos[0].x, previousPos[0].y, previousPos[0].z);
-                                previousPos.shift();
-                                distance -= 1;
-                                if (calcPointDistance(monsterGroup.position, camera.position) < 15) { ///30
-                                    console.log("caught");
-                                    let index = Math.floor(Math.random() * 3);
-                                    play(caughtSound[index]);
-                                    caught = true;
-                                }
-                                else if (calcPointDistance(monsterGroup.position, camera.position) < 150) {
-                                    //play('sounds/heartbeat.wav');
-                                    heartbeatAudio.play();
-                                    heartbeatAudio.volume = 1;
-                                }
-                                else if (calcPointDistance(monsterGroup.position, camera.position) > 150) {
-                                    heartbeatAudio.pause();
-                                    heartbeatAudio.currentTime = 0;
-                                }
-                            }
-                        }
-
+                        monsterLogic();
                     }
-                    else if (caught == true) { //Calcs whether the camera and a
-                        //certain tree are too close together
+                    else if (caught == true) {
                         if (gameState == 0) {
-                            if (level == 'hard') {
-                                distance = 50;
-                                monsterSpeed = .03;
-                            }
-                            else if (level == 'medium') {
-                                distance = 50;
-                                monsterSpeed = .06;
-                            }
-                            else {
-                                distance = 60;
-                                monsterSpeed = .06;
-                            }
-                            // hit = true; //Sets boolean "hit" to true
-                            //console.log("pp ", previousPos);
-                            //console.log("d ", distance);
-                            previousPos = [];
-                            distance = distance * .8;
                             lives -= 1;
                             heartArray[lives].material.color.set(0x000000);
-                            previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z));
                             jumpscare(-1);
-                            //console.log('monstergroup');
+                            caughtReset();
                             caught = false;
                         }
                         if (lives == 0) {
-                            // gameOverBool = true;
-                            scene.fog.density = .005;
-                            scene.fog.near = 10;
-                            scene.fog.color.set(0x000000);
-                            gameState = 2;
-                            heartbeatAudio.pause();
-                            heartbeatAudio.currentTime = 0;
-                            gamePaused = true;
-                            controls.unlock();
+                            lostLogic();
                         }
                     }
                 }
                 else if (gameState == 1) {
-                    jumpscarePositions = [];
-
                     if (shibaCounter == 0) {
-                        let length = previousPos.length;
-                        console.log(length);
-                        if (length > 10){
-                            previousPos = previousPos.splice(10, previousPos.length - 10);
-                        }
-                        
-                        // previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z))
-                       // let shibaPosition = monsterGroup.children[0].position;
-                        scene.remove(monsterGroup);
-                        monsterGroup.traverse(monsterGroup => monsterGroup.dispose?.());
-                        scene.remove(storm);
-                        scene.fog.density = 0;
-                        makeShiba(previousPos);
-                        shibaCounter += 1;
-                        let index = Math.floor(Math.random()*2);
-                        play(winSounds[index]);
+                        winAndCleanup();
                     }
-                    //console.log("dog ", dog);
                     if (typeof dog != 'undefined') {
                         if (calcPointDistance(camera.position, previousPos[previousPos.length - 1]) != 0) {
                             previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z))
@@ -1609,54 +1647,9 @@
                             dog.position.set(previousPos[previousPos.length - 10].x, previousPos[previousPos.length - 10].y, previousPos[previousPos.length - 10].z)
                             previousPos.shift();
                         }
-
                         dog.lookAt(camera.position);
-
                     }
-                    heartbeatAudio.pause();
-                    heartbeatAudio.currentTime = 0;
-                    let counter = 0;
-                    if (prettyStars.length > 0) {
-                        for (let i = 0; i < prettyStars.length; i++) {
-                            // console.log(spheres[i].shape.position);
-                            prettyStars[i].translateX(k * (createRandomPosOrNeg(300, 0) - prettyStars[i].position.x));
-                            prettyStars[i].translateY(k * (270 - prettyStars[i].position.y));
-                            prettyStars[i].translateZ(k * (createRandomPosOrNeg(300, 0) - prettyStars[i].position.z));
-                            prettyStars[i].scale.set(Math.random() * 30 + 10, Math.random() * 30 + 10);
-                            if (calcPointDistance(prettyStars[i].position, moon.bulbLight.position) <= 50) {
-                                counter++;
-                            }
-                        }
-                    }
-                    if (counter > prettyStars.length * .95) {
-                        moon.bulbLight.intensity = 2;
-                        moon.bulbMat.dispose();
-                        moon.bulbGeometry.dispose();
-                        //moon.bulbMat.emissive.set(0xffff00);
-                        moon.bulbLight.color.setHex(0xffff00);
-                        //moon.bulbMat.emissive.set(0xffff00);
-                        moon.bulbMat.color.setHex(0xffff00);
-                        if (number == 0) {
-                            endStar = initStarIcon(0xffff00, .5);
-                            endStar.position.set(0, 280, 0);
-                            endStar.lookAt(camera.position);
-                            scene.add(endStar);
-                            number += 1;
-                        }
-                        // console.log(endStar);
-                        for (let i = 0; i < prettyStars.length; i++) {
-                            scene.remove(prettyStars[i]);
-                            prettyStars[i].material.dispose();
-                            prettyStars[i].geometry.dispose();
-                            prettyStars.splice(i, 1);
-                        }
-                        renderer.setClearColor(0xffffff);
-                        world.material.color.setHex(0xffffff);
-                    }
-                    else if (counter > prettyStars.length * .9) {
-                        moon.bulbLight.color.setHex(0xffffff);
-                        moon.bulbMat.color.setHex(0xffff00);
-                    }
+                    endStarAnimation();
                 }
                 hudTexture.needsUpdate = true;
                 // Render HUD on top of the scene.
@@ -1729,7 +1722,6 @@
                     else if (keyCode == 70) {
                         play('sounds/click.mp3')
                         spotLightOn = !spotLightOn;
-
                         if (spotLightOn == false) {
                             spotLight.intensity = 0;
                             spotLightOn = false;
@@ -1802,7 +1794,6 @@
                 if (movement == "left") camera.translateX(speed);
                 if (movement == "backward") camera.translateZ(-speed);
                 if (movement == "right") camera.translateX(-speed);
-
             }
         };
 
@@ -1890,12 +1881,9 @@
 
 
 
-        //for (let i = 0; i < 3; i++) {
         let firePosition = randomizePositions(300, 50);
         let campfire = new CampFire(firePosition, heightLimit);
-        //  campFires.push(fire);
-        // }
-        //campFires[0].fade = true;
+
 
 
 

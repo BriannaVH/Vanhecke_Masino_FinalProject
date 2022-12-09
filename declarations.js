@@ -8,7 +8,9 @@ let winSounds = ['sounds/gameOver/win.mp3', 'sounds/gameOver/win2.wav'];
 
 
  
-
+let wind = 0;
+let spawningIn = true;
+let windTimer = 0;
 let currentTime = 0;
 let shootingStars = [];
 let caught = false;
