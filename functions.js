@@ -20,7 +20,7 @@
 
     function play(path) {
         audio = new Audio(path);
-        audio.volume = .2;
+        audio.volume = 1;
         audio.play();
     }
 

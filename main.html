@@ -14,13 +14,18 @@
 
 
 <div id="instructions">
-    <p style="font-size:60">
+    <!-- <p style="font-size:60">
         Monster&nbsp;Bash
-    </p>
+    </p> -->
+    <h1 style = "font-size:60"> Monster&nbsp;Mash</h1>
     <p style="font-size:20px">
-        Instructions<br />
+        Run&nbsp;from&nbsp;the&nbsp;monster and&nbsp;collect&nbsp;the&nbsp;star&nbsp;shards!<br />
         <br />
-        More Instructions
+        Hide&nbsp;near&nbsp;the&nbsp;safety of&nbsp;the&nbsp;fire, but&nbsp;not&nbsp;too&nbsp;long!<br />
+        <br />
+        Move:&nbsp;WASD
+        <br />
+        Flashlight:&nbsp;F
     </p>
 </div>
 
@@ -35,7 +40,7 @@
 
 <div class="dropdown" , id="gameControls">
     <div id="selectbutton">
-        <select class="dropbtn" name="difficulty" id="selectButton2"
+        <select class="greenText" name="difficulty" id="selectButton2"
             onchange="this.className=this.options[this.selectedIndex].className" class="greenText">>
             <option value="easy" class="greenText" value="easy">Easy</option>
             <option value="medium" class="blueText" value="medium">Medium</option>
@@ -360,7 +365,7 @@
         }
 
         function placeJumpscares() {
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < 8; i++) {
                 let position = randomizePositions(380, 40); //380
                 jumpscarePositions.push(new THREE.Vector3(position.x, position.y, position.z));
                 // const geometry = new THREE.SphereGeometry(30, 32, 32);
@@ -375,6 +380,7 @@
         function jumpscare(index) {
 
             inJumpscare = true;
+            spawningIn = true;
 
             scene.fog.density = .003;
 
@@ -393,20 +399,20 @@
                 monster = monsterGroup;
             }
             else if (index == 0) {
+                play('sounds/jumpscares/clown.mp3');
                 dist = 30;
                 lookAtHeight = 20;
                 monsterLookAtHeight = -10;
                 monsterHeight = 40;
                 monster = jumpscare1;
-                play('sounds/jumpscares/clown.mp3');
             }
             else if (index == 1) {
+                play('sounds/jumpscares/childLaugh.mp3');
                 dist = 90;
                 lookAtHeight = 0;
                 monsterLookAtHeight = 60;
                 monsterHeight = 100;
                 monster = jumpscare2;
-                play('sounds/jumpscares/childLaugh.mp3');
             }
 
             setTimeout(function () {
@@ -415,14 +421,8 @@
                     monster.position.set(0, -500, 0);
                 }
 
-                //  }
-
                 scene.fog.density = 0;
             }, 4000);
-
-
-
-            //  console.log(monster.position, 'monster');
 
             let rayHeight = new THREE.Raycaster();
             let rayDirection = new THREE.Vector3(0, -1, 0);//Gives direction for raycaster
@@ -839,8 +839,8 @@
             }
             else if (level == "hard") {
                 console.log("hard");
-                distance = 100;
-                monsterSpeed = .03;
+                distance = 60;
+                monsterSpeed = .05;
                 stamina = 70;
                 increment = 1;
             }
@@ -1000,7 +1000,7 @@
         // A function that makes the trees for the scene. There are 3 types of wood and 3 grammars
         function initTrees() {
             //Iterates for 30 times
-            for (let i = 0; i < 30; i++) {
+            for (let i = 0; i < 15; i++) {
                 let params;
                 let rules;
                 //Make oak trees for 10 iterations
@@ -1319,6 +1319,8 @@
         // }
 
         let wind = 0;
+    
+        let spawningIn = true;
         let windTimer = 0;
 
 
@@ -1338,13 +1340,6 @@
             }
 
             campFireLogic();
-
-
-
-
-
-
-
 
 
             if (inJumpscare == true) {
@@ -1373,7 +1368,7 @@
                     for (let i = 0; i < jumpscarePositions.length; i++) {
                         //let pos1 = new THREE.Vector3(jumpscarePositions[i].x, jumpscarePositions[i].y, jumpscarePositions[i].z);
                         //console.log(jumpscarePositions[i], 'hsc');
-                        if (calcPointDistance(camera.position, jumpscarePositions[i]) < 30 && calcPointDistance(camera.position, monsterGroup.position) > 30) {
+                        if (calcPointDistance(camera.position, jumpscarePositions[i]) < 30 && calcPointDistance(camera.position, monsterGroup.position) > 15) {
                             console.log("JUMPSCARE");
                             let index = Math.floor(Math.random() * 2);
                             jumpscare(index);
@@ -1465,15 +1460,15 @@
                 // if the raycaster is intersecting the terrain
                 if (intersect.length != 0) {
                     // if the person is moving
-                    if (moving == true) {
-                        // set displacement to our sin*.2 and set the camera y to the intersection y value plus 20 and the displacement
-                        displacement = sinwave * .2;
-                        camera.position.y = (intersect[0].point.y + 20) + displacement * camera.position.y;
-                    }
-                    //otherwise the camera is just 20 above the terrain y so the camera should not bob
-                    else {
+                    // if (moving == true) {
+                    //     // set displacement to our sin*.2 and set the camera y to the intersection y value plus 20 and the displacement
+                    //     displacement = sinwave * .2;
+                    //     camera.position.y = (intersect[0].point.y + 20) + displacement * camera.position.y;
+                    // }
+                    // //otherwise the camera is just 20 above the terrain y so the camera should not bob
+                  //  else {
                         camera.position.y = (intersect[0].point.y + 20)
-                    }
+                   // }
                 }
                 // in an edge case where the camera cannot find the terrain during loading, set the camera height to 50
                 else {
@@ -1513,7 +1508,11 @@
                             previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z))
                         }
                         if (previousPos.length > distance && campfire.fade == false) {
-                            console.log("fire is not fading");
+                            if (spawningIn == true){
+                                play("sounds/close/spawn.mp3");
+                                spawningIn = false;
+                            }
+                            //console.log("fire is not fading");
                             timer += delta;
                             if (timer > monsterSpeed && inJumpscare == false) {
                                 console.log("moster moving");
@@ -1521,7 +1520,7 @@
                                 monsterGroup.position.set(previousPos[0].x, previousPos[0].y, previousPos[0].z);
                                 previousPos.shift();
                                 distance -= 1;
-                                if (calcPointDistance(monsterGroup.position, camera.position) < 30) { ///30
+                                if (calcPointDistance(monsterGroup.position, camera.position) < 15) { ///30
                                     console.log("caught");
                                     let index = Math.floor(Math.random() * 3);
                                     play(caughtSound[index]);
@@ -1544,7 +1543,7 @@
                         //certain tree are too close together
                         if (gameState == 0) {
                             if (level == 'hard') {
-                                distance = 100;
+                                distance = 50;
                                 monsterSpeed = .03;
                             }
                             else if (level == 'medium') {
@@ -1586,15 +1585,20 @@
                     if (shibaCounter == 0) {
                         let length = previousPos.length;
                         console.log(length);
-                        previousPos = previousPos.splice(10, previousPos.length - 10);
+                        if (length > 10){
+                            previousPos = previousPos.splice(10, previousPos.length - 10);
+                        }
+                        
                         // previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z))
-                        let shibaPosition = monsterGroup.children[0].position;
+                       // let shibaPosition = monsterGroup.children[0].position;
                         scene.remove(monsterGroup);
                         monsterGroup.traverse(monsterGroup => monsterGroup.dispose?.());
                         scene.remove(storm);
                         scene.fog.density = 0;
                         makeShiba(previousPos);
                         shibaCounter += 1;
+                        let index = Math.floor(Math.random()*2);
+                        play(winSounds[index]);
                     }
                     //console.log("dog ", dog);
                     if (typeof dog != 'undefined') {
@@ -1758,7 +1762,7 @@
             if (movement == "right") camera.translateX(speed);
 
             for (let t = 0; t < starShards.length; t++) { //For the length of the array containing all of the trees
-                if (calcPointDistance(camera.position, starShards[t].position) <= 300) { //4
+                if (calcPointDistance(camera.position, starShards[t].position) <= 4) { //4
                     starHit = t; //Sets boolean "hit" to true
                 }
             }
