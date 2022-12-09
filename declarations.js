@@ -131,6 +131,7 @@ let playEndMusic = false;
   let number=0;
   let dog;
   let light;
+  let rain = 8;
 
 
 

@@ -8,7 +8,6 @@
 </head>
 
 <!-- Zara Masino & Brianna Van Hecke -->
-<!-- We did the head bob & made the user casts a shadow  -->
 
 <div id="blocker">
 </div>
@@ -31,9 +30,6 @@
         Lost&nbsp;Game
     </p>
 </div>
-
-
-
 
 
 
@@ -78,11 +74,11 @@
         import { OutlinePass } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/OutlinePass.js'
         import { RenderPass } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/RenderPass.js'
         import { EffectComposer } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/EffectComposer.js'
-        import { UnrealBloomPass } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/UnrealBloomPass.js';
+       // import { UnrealBloomPass } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/UnrealBloomPass.js';
         import { GLTFLoader } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/loaders/GLTFLoader.js';
 
-        import { FlakesTexture } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/textures/FlakesTexture.js';
-        import { RGBELoader } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/loaders/RGBELoader.js';
+       // import { FlakesTexture } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/textures/FlakesTexture.js';
+       // import { RGBELoader } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/loaders/RGBELoader.js';
 
 
 
@@ -262,7 +258,7 @@
             heartbeatAudio.pause();
             heartbeatAudio.currentTime = 0;
             gamePaused = true;
-            if (gameState == 0) {
+            if (gameState == 0 || gameState == 1) {
                 blocker.style.display = 'block';
                 //console.log(gameState, 'gamestate');
                 setTimeout(() => {
@@ -270,15 +266,11 @@
 
                 }, 1000)
             }
-            else {
+            else if (gameState == 2) {
                 setTimeout(() => {
-
                     blocker.style.display = 'block';
                     lost.style.display = 'block';
                     play('sounds/gameOver/smash.mp3')
-
-
-
                 }, 4000)
             }
 
@@ -368,14 +360,14 @@
         }
 
         function placeJumpscares() {
-            for (let i = 0; i < 15; i++) {
+            for (let i = 0; i < 5; i++) {
                 let position = randomizePositions(380, 40); //380
                 jumpscarePositions.push(new THREE.Vector3(position.x, position.y, position.z));
-                const geometry = new THREE.SphereGeometry(30, 32, 32);
-                const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
-                const sphere = new THREE.Mesh(geometry, material);
-                scene.add(sphere);
-                sphere.position.set(position.x, position.y, position.z);
+                // const geometry = new THREE.SphereGeometry(30, 32, 32);
+                // const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+                // const sphere = new THREE.Mesh(geometry, material);
+                // scene.add(sphere);
+                // sphere.position.set(position.x, position.y, position.z);
             }
         }
 
@@ -409,7 +401,7 @@
                 play('sounds/jumpscares/clown.mp3');
             }
             else if (index == 1) {
-                dist = 110;
+                dist = 90;
                 lookAtHeight = 0;
                 monsterLookAtHeight = 60;
                 monsterHeight = 100;
@@ -833,8 +825,8 @@
             if (level == "easy") {
 
                 console.log("easy");
-                distance = 60; //60
-                monsterSpeed = .0001;//.06
+                distance = 200; //60
+                monsterSpeed = .06;//.06
                 stamina = 100;
                 increment = 2;
             }
@@ -1283,19 +1275,7 @@
             }
         }
 
-
-        let rain = 8;
-        //The animate function is a function which is continuously called for every frame of the program
-        function animate() {
-
-
-
-
-            // console.log('still running')
-            delta = clock.getDelta();
-            rain += delta;
-
-
+        function campFireLogic(){
             for (let c = 0; c < campFires.length; c++) {
                 for (let p = 0; p < campFires[c].particles.length; p++) {
                     let cfp = campFires[c].particles[p];
@@ -1327,6 +1307,22 @@
 
             }
 
+        }
+
+
+      
+        //The animate function is a function which is continuously called for every frame of the program
+        function animate() {
+            // console.log('still running')
+            delta = clock.getDelta();
+            rain += delta;
+            timerThunder += delta;
+            monsterGroup.lookAt(camera.position.x, camera.position.y - 30, camera.position.z);
+
+
+            campFireLogic();
+
+           
 
             if (rain >= 4) {
                 play(thunderNoises[1]);
@@ -1334,7 +1330,7 @@
             }
 
 
-            timerThunder += delta;
+            
             if (timerThunder >= maxThunder) {
                 //console.log("thunder playing");
                 let index = Math.floor(Math.random() * 4);
@@ -1345,16 +1341,13 @@
 
             if (inJumpscare == true) {
                 camera.lookAt(jumpscareLookAt);
-
             }
 
-            monsterGroup.lookAt(camera.position.x, camera.position.y - 30, camera.position.z);
-
+          
             // console.log(scales, 'scales');
             if (gamePaused == false) {
-
                 if (jumpscarePositions.length != 0) {
-                    //   console.log('IN JUMPSCAREPOSITIONS');
+                    //console.log('IN JUMPSCAREPOSITIONS');
                     for (let i = 0; i < jumpscarePositions.length; i++) {
                         //let pos1 = new THREE.Vector3(jumpscarePositions[i].x, jumpscarePositions[i].y, jumpscarePositions[i].z);
                         //console.log(jumpscarePositions[i], 'hsc');
@@ -1418,7 +1411,6 @@
                     for (let i = 0; i < movingStarShard.length; i++) {
                         if (movingStarShard[i].position.y <= 450) {
                             movingStarShard[i].translateY(5);
-
                         }
                         else {
                             addStars();
@@ -1427,10 +1419,7 @@
                             movingStarShard[i].material.dispose();
                             movingStarShard[i].geometry.dispose();
                             movingStarShard.splice(i, 1);
-
-
                         }
-
                     }
                 }
 
@@ -1489,32 +1478,26 @@
 
                 }
                 if (gameState == 0) {
-
-
-
                     gameTime += delta;
                     if (gameTime > increment) {
                         monsterSpeed -= .01;
                         gameTime = 0;
                     }
-
                     // console.log(delta);
                     if (caught == false) {
                         if (calcPointDistance(camera.position, previousPos[previousPos.length - 1]) != 0) {
                             //   console.log("INNIT ", previousPos);
                             previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z))
                         }
-
                         if (previousPos.length > distance) {
                             timer += delta;
                             if (timer > monsterSpeed && inJumpscare == false) {
                                 console.log("moster moving");
                                 timer = 0;
                                 monsterGroup.position.set(previousPos[0].x, previousPos[0].y, previousPos[0].z);
-
                                 previousPos.shift();
                                 distance -= 1;
-                                if (calcPointDistance(monsterGroup.position, camera.position) < 1000) { ///30
+                                if (calcPointDistance(monsterGroup.position, camera.position) < 30) { ///30
                                     console.log("caught");
                                     let index = Math.floor(Math.random() * 3);
                                     play(caughtSound[index]);
@@ -1559,12 +1542,8 @@
                             jumpscare(-1);
                             //console.log('monstergroup');
                             caught = false;
-
-
-
                         }
                         if (lives == 0) {
-
                             // gameOverBool = true;
                             scene.fog.density = .005;
                             scene.fog.near = 10;
@@ -1574,10 +1553,8 @@
                             heartbeatAudio.currentTime = 0;
                             gamePaused = true;
                             controls.unlock();
-
                         }
                     }
-
                 }
                 else if (gameState == 1) {
                     jumpscarePositions = [];
@@ -1588,19 +1565,14 @@
                         scene.remove(storm);
                         scene.fog.density = 0;
                         makeShiba(shibaPosition);
-
                         shibaCounter += 1;
                     }
-                    console.log("dog ", dog)
+                    //console.log("dog ", dog);
                     if (typeof dog != 'undefined') {
-
                         dog.lookAt(camera.position);
                     }
                     heartbeatAudio.pause();
                     heartbeatAudio.currentTime = 0;
-
-
-
                     let counter = 0;
                     if (prettyStars.length > 0) {
                         for (let i = 0; i < prettyStars.length; i++) {
@@ -1609,11 +1581,10 @@
                             prettyStars[i].translateY(k * (270 - prettyStars[i].position.y));
                             prettyStars[i].translateZ(k * (createRandomPosOrNeg(300, 0) - prettyStars[i].position.z));
                             prettyStars[i].scale.set(Math.random() * 30 + 10, Math.random() * 30 + 10);
-                            if (calcPointDistance(prettyStars[i].position, moon.bulbLight.position) <= 20) {
+                            if (calcPointDistance(prettyStars[i].position, moon.bulbLight.position) <= 50) {
                                 counter++;
                             }
                         }
-
                     }
                     if (counter > prettyStars.length * .95) {
                         moon.bulbLight.intensity = 2;
@@ -1630,7 +1601,6 @@
                             scene.add(endStar);
                             number += 1;
                         }
-
                         // console.log(endStar);
                         for (let i = 0; i < prettyStars.length; i++) {
                             scene.remove(prettyStars[i]);
@@ -1645,9 +1615,7 @@
                         moon.bulbLight.color.setHex(0xffffff);
                         moon.bulbMat.color.setHex(0xffff00);
                     }
-
                 }
-
                 hudTexture.needsUpdate = true;
                 // Render HUD on top of the scene.
                 renderer.render(scene, camera);
@@ -1685,7 +1653,6 @@
             updateSize();
             requestAnimationFrame(render);
             // Rotate the sun and moon around the world 
-
 
             hudTexture.needsUpdate = true;
             // Render HUD on top of the scene.
@@ -1753,7 +1720,7 @@
             if (movement == "right") camera.translateX(speed);
 
             for (let t = 0; t < starShards.length; t++) { //For the length of the array containing all of the trees
-                if (calcPointDistance(camera.position, starShards[t].position) <= 4) { //2
+                if (calcPointDistance(camera.position, starShards[t].position) <= 1000) { //4
                     starHit = t; //Sets boolean "hit" to true
                 }
             }
@@ -1795,17 +1762,6 @@
 
             }
         };
-
-        // function gameOver(state) {
-        //     gameOverBool = true;
-        //     if (state == 1) {
-        //         gameState = 1; 
-        //     }
-        //     else {
-        //         gameState = 0;
-        //     }
-        // }
-
 
 
         function addStars() {
@@ -1878,12 +1834,7 @@
         let monster = initMonster();
         initCursor();
         makeModels();
-        // monstersArray.push(jumpscare1);
-        //     monstersArray.push(jumpscare2);
-        //     console.log(jumpscare1);
-        //     jumpscare(jumpscare1, 0);
-        // console.log(monstersArray, 'monsterAArary');
-
+  
         initLightning();
         initWorld();
         initFog();
@@ -1908,21 +1859,15 @@
 
 
 
-
         for (let i = 0; i < 3; i++) {
             initHeartIcon(heartPositions[i]);
         }
+
         let starBorderGroup = initStarIcon(0x000000, .6);
         let starGroup = initStarIcon(0x000000, .5);
         sceneHUD.add(starGroup);
         sceneHUD.add(starBorderGroup)
 
-
-
-
-        function makeFire() {
-
-        }
 
         placeJumpscares();
 
