@@ -290,7 +290,7 @@
                 // called when the resource is loaded
                 function (gltf) {
                     dog = gltf.scene;
-                    dog.scale.set(50, 50, 50);
+                    dog.scale.set(20, 20, 20);
                     //console.log(dog);
                     scene.add(dog);
                     gltf.animations; // Array<THREE.AnimationClip>
@@ -1373,7 +1373,7 @@
                     for (let i = 0; i < jumpscarePositions.length; i++) {
                         //let pos1 = new THREE.Vector3(jumpscarePositions[i].x, jumpscarePositions[i].y, jumpscarePositions[i].z);
                         //console.log(jumpscarePositions[i], 'hsc');
-                        if (calcPointDistance(camera.position, jumpscarePositions[i]) < 10 && calcPointDistance(camera.position, monsterGroup.position) > 15) {
+                        if (calcPointDistance(camera.position, jumpscarePositions[i]) < 30 && calcPointDistance(camera.position, monsterGroup.position) > 30) {
                             console.log("JUMPSCARE");
                             let index = Math.floor(Math.random() * 2);
                             jumpscare(index);
@@ -1582,25 +1582,32 @@
                 }
                 else if (gameState == 1) {
                     jumpscarePositions = [];
+
                     if (shibaCounter == 0) {
-                        let index = Math.floor(Math.random() * 2);
-                        setTimeout(() => {
-
-                            play(winSounds[index]);
-                            console.log("PLAY MUSIC");
-
-                        }, 5000)
+                        let length = previousPos.length;
+                        console.log(length);
+                        previousPos = previousPos.splice(10, previousPos.length - 10);
+                        // previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z))
                         let shibaPosition = monsterGroup.children[0].position;
                         scene.remove(monsterGroup);
                         monsterGroup.traverse(monsterGroup => monsterGroup.dispose?.());
                         scene.remove(storm);
                         scene.fog.density = 0;
-                        makeShiba(shibaPosition);
+                        makeShiba(previousPos);
                         shibaCounter += 1;
                     }
                     //console.log("dog ", dog);
                     if (typeof dog != 'undefined') {
+                        if (calcPointDistance(camera.position, previousPos[previousPos.length - 1]) != 0) {
+                            previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z))
+                        }
+                        if (previousPos.length > 10) {
+                            dog.position.set(previousPos[previousPos.length - 10].x, previousPos[previousPos.length - 10].y, previousPos[previousPos.length - 10].z)
+                            previousPos.shift();
+                        }
+
                         dog.lookAt(camera.position);
+
                     }
                     heartbeatAudio.pause();
                     heartbeatAudio.currentTime = 0;
@@ -1751,7 +1758,7 @@
             if (movement == "right") camera.translateX(speed);
 
             for (let t = 0; t < starShards.length; t++) { //For the length of the array containing all of the trees
-                if (calcPointDistance(camera.position, starShards[t].position) <= 1000) { //4
+                if (calcPointDistance(camera.position, starShards[t].position) <= 300) { //4
                     starHit = t; //Sets boolean "hit" to true
                 }
             }
