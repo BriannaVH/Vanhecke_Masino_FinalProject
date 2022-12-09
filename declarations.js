@@ -164,4 +164,4 @@ let playEndMusic = false;
   let overallFade = .1; //.1;
   let timeStep = 50;
 
-  let campFires = [];
+  //let campFires = [];

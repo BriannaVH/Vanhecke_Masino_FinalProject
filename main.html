@@ -1276,39 +1276,48 @@
         }
 
         function campFireLogic(){
-            for (let c = 0; c < campFires.length; c++) {
-                for (let p = 0; p < campFires[c].particles.length; p++) {
-                    let cfp = campFires[c].particles[p];
-                    cfp.mesh.translateY(campFires[c].particles[p].direction.y);
+                if (calcPointDistance(camera.position, campfire.position) < 100){
+                    campfire.fade = true;
+                    console.log("fading");
+                }
+                else {
+                    campfire.fade = false;
+                    console.log("steady flame");
+                }
+         //   for (let c = 0; c < campFires.length; c++) {
+                for (let p = 0; p < campfire.particles.length; p++) {
+                    let cfp = campfire.particles[p];
+                    cfp.mesh.translateY(campfire.particles[p].direction.y);
 
-                    cfp.mesh.translateX(cfp.direction.x / cfp.size);
-                    cfp.mesh.translateZ(cfp.direction.z / cfp.size);
-                    if (cfp.mesh.position.y > campFires[c].position.y + campFires[c].height - cfp.size * verticalFade
-                        || cfp.mesh.position.x > campFires[c].position.x + 10
-                        || cfp.mesh.position.x < campFires[c].position.x - 10
-                        || cfp.mesh.position.z > campFires[c].position.z + 10
-                        || cfp.mesh.position.z < campFires[c].position.z - 10
+                    cfp.mesh.translateX(wind / cfp.size);
+                    cfp.mesh.translateZ(wind / cfp.size);
+                    if (cfp.mesh.position.y > campfire.position.y + campfire.height - cfp.size * verticalFade
+                        || cfp.mesh.position.x > campfire.position.x + 10
+                        || cfp.mesh.position.x < campfire.position.x - 10
+                        || cfp.mesh.position.z > campfire.position.z + 10
+                        || cfp.mesh.position.z < campfire.position.z - 10
                     ) {
                         cfp.mesh.position.set(cfp.position.x, cfp.position.y, cfp.position.z);
                     }
                 }
-                if (campFires[c].height > 0 && campFires[c].fade == true) { //timeStep > .2 &&
-                    campFires[c].height -= overallFade;
+                if (campfire.height > 0 && campfire.fade == true) { //timeStep > .2 &&
+                    campfire.height -= overallFade;
                     //timeStep = 0;
                 }
-                if (campFires[c].height <= 0) {
-                    for (let p = 0; p < campFires[c].particles.length; p++) {
+                if (campfire.height <= 0) {
+                    for (let p = 0; p < campfire.particles.length; p++) {
                         //console.log(campFires[c].particles[p]);
-                        campFires[c].particles[p].mesh.material.color.setHex(0x000000);
+                        campfire.particles[p].mesh.material.color.setHex(0x000000);
                     }
                     console.log("fire out");
-                    campFires.splice(c, 1);
                 }
 
             }
 
-        }
+       // }
 
+       let wind = 0;
+       let windTimer = 0;
 
       
         //The animate function is a function which is continuously called for every frame of the program
@@ -1316,9 +1325,15 @@
             // console.log('still running')
             delta = clock.getDelta();
             rain += delta;
+            windTimer += delta;
             timerThunder += delta;
             monsterGroup.lookAt(camera.position.x, camera.position.y - 30, camera.position.z);
 
+            if (windTimer > 3){
+                console.log("wind changes");
+                wind = newRandom(0,.5);
+                windTimer = 0;
+            }
 
             campFireLogic();
 
@@ -1834,12 +1849,10 @@
         let monster = initMonster();
         initCursor();
         makeModels();
-  
         initLightning();
         initWorld();
         initFog();
         initTerrain();
-
         initMoon();
         initTrees();
         initStarShards(5);
@@ -1849,12 +1862,12 @@
 
 
 
-        for (let i = 0; i < 3; i++) {
-            let position = randomizePositions(300, 50);
-            let fire = new CampFire(position, heightLimit);
-            campFires.push(fire);
-        }
-        campFires[0].fade = true;
+        //for (let i = 0; i < 3; i++) {
+            let firePosition = randomizePositions(300, 50);
+            let campfire = new CampFire(firePosition, heightLimit);
+          //  campFires.push(fire);
+       // }
+        //campFires[0].fade = true;
 
 
 
