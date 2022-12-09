@@ -825,7 +825,7 @@
             if (level == "easy") {
 
                 console.log("easy");
-                distance = 200; //60
+                distance = 60; //60
                 monsterSpeed = .06;//.06
                 stamina = 100;
                 increment = 2;
@@ -1276,7 +1276,7 @@
         }
 
         function campFireLogic(){
-                if (calcPointDistance(camera.position, campfire.position) < 100){
+                if (calcPointDistance(camera.position, campfire.position) < 100 && campfire.height > 0){
                     campfire.fade = true;
                     console.log("fading");
                 }
@@ -1308,6 +1308,7 @@
                     for (let p = 0; p < campfire.particles.length; p++) {
                         //console.log(campFires[c].particles[p]);
                         campfire.particles[p].mesh.material.color.setHex(0x000000);
+                        campfire.fade = false;
                     }
                     console.log("fire out");
                 }
@@ -1501,10 +1502,11 @@
                     // console.log(delta);
                     if (caught == false) {
                         if (calcPointDistance(camera.position, previousPos[previousPos.length - 1]) != 0) {
-                            //   console.log("INNIT ", previousPos);
+                            //console.log("INNIT ", previousPos);
                             previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z))
                         }
-                        if (previousPos.length > distance) {
+                        if (previousPos.length > distance && campfire.fade == false) {
+                            console.log("fire is not fading");
                             timer += delta;
                             if (timer > monsterSpeed && inJumpscare == false) {
                                 console.log("moster moving");
@@ -1735,7 +1737,7 @@
             if (movement == "right") camera.translateX(speed);
 
             for (let t = 0; t < starShards.length; t++) { //For the length of the array containing all of the trees
-                if (calcPointDistance(camera.position, starShards[t].position) <= 1000) { //4
+                if (calcPointDistance(camera.position, starShards[t].position) <= 4) { //4
                     starHit = t; //Sets boolean "hit" to true
                 }
             }
