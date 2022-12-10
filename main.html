@@ -82,6 +82,12 @@
         import { GLTFLoader } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/loaders/GLTFLoader.js';
 
 
+
+
+
+
+
+
         //Variable Declaration
 
         let scene = new THREE.Scene();
@@ -141,8 +147,8 @@
         previousPos.push(new THREE.Vector3(0, -200, 0));
 
 
-        let left = new THREE.Vector3(0, 50, 0);
-        let right = new THREE.Vector3(50, 20, 0);
+        // let left = new THREE.Vector3(0, 50, 0);
+        // let right = new THREE.Vector3(50, 20, 0);
 
         // game logic
         let heartPositions = [windowWidth - (windowWidth * .78), windowWidth - (windowWidth * .81), windowWidth - (windowWidth * .84)];
@@ -165,13 +171,21 @@
         let composer = new EffectComposer(renderer);
 
 
+        //let fireColors = [0xff0000, 0xFFA500];
+
+        let fireMat1 = new THREE.MeshBasicMaterial({ color: 0xff0000, map: loader.load("star/testfire.jpg"), opacity: .5, transparent: true });
+        let fireMat2 = new THREE.MeshBasicMaterial({ color: 0xFFA500, map: loader.load("star/testfire.jpg"), opacity: .5, transparent: true });
+        let fireMaterials = [fireMat1, fireMat2];
+
 
 
         function Particle(pos) {
             this.size = Math.random() * maxPSize + minPSize;
             this.geometry = new THREE.DodecahedronGeometry(this.size, 0);
-            this.material = new THREE.MeshPhongMaterial({ color: fireColors[Math.floor(Math.random() * fireColors.length)], map: loader.load("star/testfire.jpg"), opacity: .5, transparent: true });
+            this.material = fireMaterials[Math.floor(Math.random() * fireMaterials.length)];
+            //this.material = new THREE.MeshPhongMaterial({ color: fireColors[Math.floor(Math.random() * fireColors.length)], map: loader.load("star/testfire.jpg"), opacity: .5, transparent: true });
             this.mesh = new THREE.Mesh(this.geometry, this.material);
+            this.mesh.castShadow = true;
             this.position = new THREE.Vector3(pos.x + newRandom(0, spawnSpread), pos.y, pos.z + newRandom(0, spawnSpread));
             this.mesh.position.set(this.position.x, this.position.y, this.position.z);
             this.direction = new THREE.Vector3(newRandom(0, sidewaysSpread), Math.random() / this.size * overallSpeed, newRandom(0, sidewaysSpread));
@@ -185,8 +199,8 @@
             const geometry = new THREE.CylinderGeometry(5, 5, 30, 32);
             const material = new THREE.MeshPhongMaterial({ color: 0x964B00, map: loader.load("star/wood.jpg") }); //, map: loader.load("wood/wood.jpg") 
             const cylinder = new THREE.Mesh(geometry, material);
+            cylinder.castShadow = true;
             cylinder.position.set(pos.x, pos.y, pos.z);
-
             if (rotationSide == 1) {
                 cylinder.rotation.z = 1.4;
             }
@@ -198,10 +212,14 @@
         }
 
         function CampFire(pos, heightLimit) {
+
             this.particles = [];
             this.height = heightLimit;
             this.position = new THREE.Vector3(pos.x, pos.y, pos.z);
             this.fade = false;
+            this.light = new THREE.PointLight(0xffff00, 5, 100);
+            this.light.position.set(this.position.x, this.position.y + 50, this.position.z);
+            scene.add(this.light);
 
             for (let i = 0; i < pCount; i++) {
                 let test = new Particle(pos);
@@ -296,6 +314,7 @@
                     gltf.scenes; // Array<THREE.Group>
                     gltf.cameras; // Array<THREE.Camera>
                     gltf.asset; // Object
+                    gltf.scene.traverse(function(node){ if (node.isMesh) {node.castShadow = true;}});
                     dog.position.setX(position.x);
                     dog.position.setY(position.y);
                     dog.position.setZ(position.z);
@@ -358,7 +377,7 @@
         }
 
         function placeJumpscares() {
-            for (let i = 0; i < 8; i++) {
+            for (let i = 0; i < 8; i++) { //8
                 let position = randomizePositions(380, 40); //380
                 jumpscarePositions.push(new THREE.Vector3(position.x, position.y, position.z));
                 // const geometry = new THREE.SphereGeometry(30, 32, 32);
@@ -972,17 +991,21 @@
             scene.add(this.bulbLight); //Adds point light to the scene
         }
 
+
+        const starMaterial = new THREE.MeshPhysicalMaterial({
+            color: 0xffff00,
+            metalness: .75,
+            roughness: 0
+        });
+
         function initStarShards(numStars) {
             for (let i = 0; i < numStars; i++) {
                 let position = randomizePositions(380, 5); //380
                 const geometry = new THREE.ConeGeometry(10, 30, 3);
-                const material = new THREE.MeshPhysicalMaterial({
-                    color: 0xffff00,
-                    metalness: .75,
-                    roughness: 0
-                });
+                const material = starMaterial;
 
                 const sphere = new THREE.Mesh(geometry, material);
+                sphere.castShadows = true;
                 sphere.position.set(position.x, position.y, position.z);
                 starShards.push(sphere);
                 //worldItems.push(sphere);
@@ -1305,13 +1328,14 @@
                     campfire.fade = false;
                 }
                 console.log("fire out");
+                campfire.light.intensity = 0;
             }
 
         }
 
         // }
 
-       
+
 
 
         function windLogic() {
@@ -1486,7 +1510,7 @@
             heartbeatAudio.currentTime = 0;
             jumpscarePositions = [];
             let length = previousPos.length;
-            console.log(length);
+            //console.log(length);
             if (length > 10) {
                 previousPos = previousPos.splice(10, previousPos.length - 10);
             }
@@ -1555,6 +1579,8 @@
             windLogic();
             campFireLogic();
 
+            light.position.set(camera.position.x, camera.position.y, camera.position.z + 10);
+            //console.log(light);
             monsterGroup.lookAt(camera.position.x, camera.position.y - 30, camera.position.z);
             if (inJumpscare == true) {
                 camera.lookAt(jumpscareLookAt);
@@ -1723,11 +1749,11 @@
                         play('sounds/click.mp3')
                         spotLightOn = !spotLightOn;
                         if (spotLightOn == false) {
-                            spotLight.intensity = 0;
+                            light.intensity = 0;
                             spotLightOn = false;
                         }
                         else {
-                            spotLight.intensity = 1;
+                            light.intensity = 6;
                             spotLightOn = true;
                         }
                     }
@@ -1876,7 +1902,7 @@
         initTrees();
         initStarShards(5);
         initBody();
-        initFlashLight();
+        //initFlashLight();
 
 
 
@@ -1884,7 +1910,16 @@
         let firePosition = randomizePositions(300, 50);
         let campfire = new CampFire(firePosition, heightLimit);
 
-
+        const light = new THREE.PointLight(0xffff00, 6, 500, 4);
+        light.castShadow = true;
+        light.shadow.bias = .0005;
+        light.shadow.radius = 100;
+        light.shadow.mapSize.width = 2048;
+        light.shadow.mapSize.height = 2048;
+        
+        light.position.set(camera.position.x, camera.position.y, camera.position.z + 10);
+        scene.add(light);
+        spotLightOn = true;
 
 
 

@@ -1,7 +1,8 @@
-var audio;
+
+//let audio;
 let caughtSound = ['sounds/catch/creatureGrowl.wav', 'sounds/catch/groan.wav', 'sounds/catch/scaryRoar.wav'];
-let closeSound = ['sounds/close/roar.wav', 'sounds/close/close1.wav', 'sounds/close/close2.wav', 'sounds/close/close3.wav'];
-let loseSounds = ['sounds/gameOver/lose1.wav', 'sounds/gameOver/lose2.wav'];
+//let closeSound = ['sounds/close/roar.wav', 'sounds/close/close1.wav', 'sounds/close/close2.wav', 'sounds/close/close3.wav'];
+//let loseSounds = ['sounds/gameOver/lose1.wav', 'sounds/gameOver/lose2.wav'];
 let thunderNoises = ['sounds/thunder1.wav', 'sounds/thunder2.wav', 'sounds/thunder3.wav', 'sounds/thunder4.wav',];
 let heartbeatAudio = new Audio('sounds/heartbeat.wav');
 let winSounds = ['sounds/gameOver/win.mp3', 'sounds/gameOver/win2.wav'];
@@ -28,14 +29,14 @@ let gameState = 0;
 let starsCollected = 0;
 let lives = 3;
 let spotLightOn = false;
-let gameOverBool = false;
+//let gameOverBool = false;
 let x = 0;
 let y = 50;
 let scales;
 let timerThunder = 0;
 let maxThunder = 0;
-let timerFlicker=0;
-let maxFlicker = .5;
+//let timerFlicker=0;
+//let maxFlicker = .5;
 let lightness = 0;
 let k = .02;
 let jumpscare1;
@@ -43,7 +44,7 @@ let jumpscare2;
 let inJumpscare = false;
 let jumpscareLookAt;
 let jumpscarePositions = [];
-let playEndMusic = false;
+//let playEndMusic = false;
 
  // particles 
  let movementSpeeds = 40;
@@ -69,9 +70,9 @@ let playEndMusic = false;
  let delta;
 
  // used for the head bobbing effect
- let change = 0;
- let sinwave = 0;
- let displacement = 0;
+ //let change = 0;
+ //let sinwave = 0;
+ //let displacement = 0;
 
  // used for the cursor placement
  let toggle = 0;
@@ -126,7 +127,8 @@ let playEndMusic = false;
   let moonColor = [0xdde2e5];
   let skyColors = [0x000608, 0x072f41, 0x094f6d, 0x436e91, 0x5e88b8, 0x7998bb];
 
-  let spotLight, lightTarget;
+  let spotLight
+  //let lightTarget;
 
   let shibaCounter=0;
   let shiba;
