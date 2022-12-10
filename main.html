@@ -9,14 +9,12 @@
 </head>
 
 
+<!-- the screen that comes up during game start, pause, and end -->
 <div id="blocker">
 </div>
 
-
+<!-- the start screen with instructions -->
 <div id="instructions">
-    <!-- <p style="font-size:60">
-        Monster&nbsp;Bash
-    </p> -->
     <h1 style="font-size:60"> Monster&nbsp;Mash</h1>
     <p style="font-size:20px">
         Run&nbsp;from&nbsp;the&nbsp;monster and&nbsp;collect&nbsp;the&nbsp;star&nbsp;shards!<br />
@@ -26,10 +24,12 @@
         Move:&nbsp;WASD
         <br />
         Flashlight:&nbsp;F
+        <br />
+        Esc&nbsp;to&nbsp;pause
     </p>
 </div>
 
-
+<!-- the screen when you lose the game -->
 <div id="lost" , style="display:none">
     <p style="font-size:60">
         Lost&nbsp;Game
@@ -37,7 +37,7 @@
 </div>
 
 
-
+<!-- logic and styling for the level chooser and start button -->
 <div class="dropdown" , id="gameControls">
     <div id="selectbutton">
         <select class="greenText" name="difficulty" id="selectButton2"
@@ -50,9 +50,9 @@
     <div id="button">
         <button class="button">Start</button>
     </div>
-
 </div>
 
+<!-- styling for the unpause button -->
 <div id="unpause" , style="display:none">
     <button class="unPauseButton">Resume Game</button>
 </div>
@@ -60,8 +60,6 @@
 
 
 <body>
-
-
     <canvas id="myCanvas" width="800" height="800"></canvas>
     <script src="Perlin.js"></script>
     <script src="/declarations.js"></script>
@@ -73,40 +71,28 @@
         import { PointerLockControls } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/controls/PointerLockControls.js';
         import { LightningStrike } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/geometries/LightningStrike.js';
         import { LightningStorm } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/objects/LightningStorm.js';
-
-
-        //Variable Declaration
-        import { OutlinePass } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/OutlinePass.js'
-        import { RenderPass } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/RenderPass.js'
-        import { EffectComposer } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/EffectComposer.js'
+        import { OutlinePass } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/OutlinePass.js';
+        import { RenderPass } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/RenderPass.js';
+        import { EffectComposer } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/postprocessing/EffectComposer.js';
         import { GLTFLoader } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/loaders/GLTFLoader.js';
 
 
-
-
-
-
-
-
-        //Variable Declaration
-
+        // initializes the scene and camera
         let scene = new THREE.Scene();
         let windowWidth = window.innerWidth;
         let windowHeight = window.innerHeight;
         var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
         camera.lookAt(new THREE.Vector3(0.0, 0.0, 0.0));
         camera.position.set(0, 80, 10);
-
         scene.add(camera);
 
-
+        // initialized the secondary scene for the stamina bar, hearts, and star collection tracker
+        // this one uses an orthographic camera
         var hudCanvas = document.createElement('canvas');
-        // Again, set dimensions to fit the screen.
         hudCanvas.width = windowWidth;
         hudCanvas.height = windowHeight;
         var cameraHUD = new THREE.OrthographicCamera(-windowWidth / 2, windowWidth / 2, windowHeight / 2, -windowHeight / 2, 0, 30);
         cameraHUD.layers.enable(1);
-        // Create also a custom scene for HUD.
         let sceneHUD = new THREE.Scene();
         // Create texture from rendered graphics.
         var hudTexture = new THREE.Texture(hudCanvas)
@@ -120,43 +106,30 @@
         sceneHUD.add(plane);
 
 
-
+        // initialize variables dependent on threejs
         let perlin = new Perlin(); // used for terrain generation
         let loader = new THREE.TextureLoader(); //Texture loader
         let raycaster = new THREE.Raycaster();
-
         // used in terrain generation
         let peak = 30;
         let smoothing = 200;
-
         const GROUND_SIZE = 1000;
         const ground = new THREE.Mesh(new THREE.PlaneGeometry(GROUND_SIZE, GROUND_SIZE), new THREE.MeshLambertMaterial({ color: 0x072302 }));
         ground.rotation.x = - Math.PI * 0.5;
 
 
 
-
         let clock = new THREE.Clock();
         let controls = new PointerLockControls(camera, document.body); //Enables pointerlock controls
-
-
         let humanGroup = new THREE.Group(); // used for the body
         let monsterGroup = new THREE.Group(); // used for the body
-
         let previousPos = [];
         previousPos.push(new THREE.Vector3(0, -200, 0));
 
 
-        // let left = new THREE.Vector3(0, 50, 0);
-        // let right = new THREE.Vector3(50, 20, 0);
-
         // game logic
         let heartPositions = [windowWidth - (windowWidth * .78), windowWidth - (windowWidth * .81), windowWidth - (windowWidth * .84)];
-
-
-        let wood = new THREE.MeshPhongMaterial({ color: 0x80471C, map: loader.load("trees/oakwood.jpg") });
-
-
+        
         let renderer = new THREE.WebGLRenderer({ canvas: myCanvas, antialias: true });
         renderer.setClearColor(0xADD8E6);//Sets color of renderer
         renderer.setPixelRatio(document.getElementById('myCanvas').devicePixelRatio); //Sets renderer to the canvas
@@ -170,36 +143,41 @@
 
         let composer = new EffectComposer(renderer);
 
+        // materials 
 
-        //let fireColors = [0xff0000, 0xFFA500];
+        let wood = new THREE.MeshPhongMaterial({ color: 0x80471C, map: loader.load("trees/oakwood.jpg") });
 
         let fireMat1 = new THREE.MeshBasicMaterial({ color: 0xff0000, map: loader.load("star/testfire.jpg"), opacity: .5, transparent: true });
         let fireMat2 = new THREE.MeshBasicMaterial({ color: 0xFFA500, map: loader.load("star/testfire.jpg"), opacity: .5, transparent: true });
         let fireMaterials = [fireMat1, fireMat2];
 
 
-
+        // a function that creates particles for the campfire
         function Particle(pos) {
+            // create a size for the particle
             this.size = Math.random() * maxPSize + minPSize;
+            //create the geometry material and mesh
             this.geometry = new THREE.DodecahedronGeometry(this.size, 0);
             this.material = fireMaterials[Math.floor(Math.random() * fireMaterials.length)];
             //this.material = new THREE.MeshPhongMaterial({ color: fireColors[Math.floor(Math.random() * fireColors.length)], map: loader.load("star/testfire.jpg"), opacity: .5, transparent: true });
             this.mesh = new THREE.Mesh(this.geometry, this.material);
+            // turn on shadows, position the particles, and give them a direction
             this.mesh.castShadow = true;
             this.position = new THREE.Vector3(pos.x + newRandom(0, spawnSpread), pos.y, pos.z + newRandom(0, spawnSpread));
             this.mesh.position.set(this.position.x, this.position.y, this.position.z);
             this.direction = new THREE.Vector3(newRandom(0, sidewaysSpread), Math.random() / this.size * overallSpeed, newRandom(0, sidewaysSpread));
-
-            //console.log(this.mesh.position);
             scene.add(this.mesh);
         }
 
-
+        // a function that creates a log
         function Log(rotationSide, pos) {
+            // create the geometry, material, and mesh (turn on shadows)
             const geometry = new THREE.CylinderGeometry(5, 5, 30, 32);
             const material = new THREE.MeshPhongMaterial({ color: 0x964B00, map: loader.load("star/wood.jpg") }); //, map: loader.load("wood/wood.jpg") 
             const cylinder = new THREE.Mesh(geometry, material);
             cylinder.castShadow = true;
+
+            //position the cylinder and rotate accordingly
             cylinder.position.set(pos.x, pos.y, pos.z);
             if (rotationSide == 1) {
                 cylinder.rotation.z = 1.4;
@@ -211,20 +189,24 @@
             return cylinder;
         }
 
+        // a function that creates the campfire
         function CampFire(pos, heightLimit) {
-
+            // track the particles, height, position, and whether the fire should fade
             this.particles = [];
             this.height = heightLimit;
             this.position = new THREE.Vector3(pos.x, pos.y, pos.z);
             this.fade = false;
+            // add a light to the fire and position it
             this.light = new THREE.PointLight(0xffff00, 5, 100);
             this.light.position.set(this.position.x, this.position.y + 50, this.position.z);
             scene.add(this.light);
 
+            // create the particles for the capfire
             for (let i = 0; i < pCount; i++) {
                 let test = new Particle(pos);
                 this.particles.push(test);
             }
+            // create the logs
             this.log1 = Log(1, pos);
             this.log2 = Log(2, pos);
         }
@@ -232,12 +214,15 @@
 
 
 
-
+        // sets the logic for when the start button is clicked 
         document.getElementById("button").onclick = function () {
+            // unpause the game
             gamePaused = false;
+            // remove the html overlays
             instructions.style.display = 'none';
             blocker.style.display = 'none';
             gameControls.style.display = 'none';
+            // get the value in the select button to set the game difficulty
             var e = document.getElementById("selectButton2");
             console.log(e);
             function onChange() {
@@ -246,16 +231,15 @@
             }
             e.onchange = onChange;
             onChange();
-
+            // set the game parameters
             initParameters(level);
-
-
-            controls.lock(); //Locks pointerlock controls upon the user clicking
+            controls.lock(); //Locks pointerlock controls 
             animate();
         };
 
-
+        // sets the logic for when the unpause button is clicked
         document.getElementById("unpause").onclick = function () {
+            // unpause the game and remove the html overlays
             gamePaused = false;
             blocker.style.display = 'none';
             unpause.style.display = 'none';
@@ -263,7 +247,7 @@
             animate();
         };
 
-
+        // add they keylisteneer 
         document.addEventListener('keydown', onDocumentKeyDown, false); //Adds key handler to the document
 
         //If the user has not pressed any keys then the boolean determining whether the user is moving should be turned to false
@@ -271,26 +255,31 @@
             moving = false;
         });
 
-
+        // adds logic for when the controls are unlocked (on pause or win)
         controls.addEventListener('unlock', function () {
+            // pause the heartbeat auydio and pause the game
             heartbeatAudio.pause();
             heartbeatAudio.currentTime = 0;
             gamePaused = true;
+            // if the game is still playing or you won the game
             if (gameState == 0 || gameState == 1) {
+                // pull up the blocker and the unpause button after 1 second
                 blocker.style.display = 'block';
                 setTimeout(() => {
                     unpause.style.display = 'block';
 
                 }, 1000)
             }
+            // if the game was lost
             else if (gameState == 2) {
                 setTimeout(() => {
+                    // bring up the blocker and losing game html overlay and play the loss sound after 4 seconds
                     blocker.style.display = 'block';
                     lost.style.display = 'block';
                     play('sounds/gameOver/smash.mp3')
                 }, 4000)
             }
-
+            // unlock the controls
             controls.unlock();
         });
 
@@ -461,11 +450,12 @@
         }
 
 
-
+        //a function that creates lightning in the scene
         function initLightning() {
 
+            // call create storm
             createStormScene(camera, terrain, 450);
-
+            // set the scene userdata to be used for the lightning lightning color and outline
             scene.userData.timeRate = 4;
             scene.userData.lightningColorRGB = [
                 scene.userData.lightningColor.r * 255,
@@ -480,22 +470,25 @@
             ];
         }
 
+        // a function that creates the outline for the lightning
         function createOutline(scene, objectsArray, visibleColor) {
-
+            // create the outlinepass and set the parameters
             const outlinePass = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, scene.userData.camera, objectsArray);
             outlinePass.edgeStrength = 2.5;
             outlinePass.edgeGlow = 0.7;
             outlinePass.edgeThickness = 2.8;
             outlinePass.visibleEdgeColor = visibleColor;
             outlinePass.hiddenEdgeColor.set(0);
+            // add the outline pass to the composer
             composer.addPass(outlinePass);
             scene.userData.outlineEnabled = true;
 
             return outlinePass;
         }
 
+        // a function that creates a storm in the scene
         function createStormScene(camera, terrain, terrainSize) {
-
+            // set the user data for the lightning 
             scene.background = new THREE.Color(0x050505);
             scene.userData.canGoBackwardsInTime = false;
             scene.userData.camera = new THREE.PerspectiveCamera(27, window.innerWidth / window.innerHeight, 20, 10000);
@@ -503,12 +496,13 @@
             scene.userData.lightningColor = new THREE.Color(0xB0FFFF);
             scene.userData.outlineColor = new THREE.Color(0x00FFFF);
             scene.userData.lightningMaterial = new THREE.MeshBasicMaterial({ color: scene.userData.lightningColor });
-
+            // create some ray parameters to direct the lightning
             const rayDirection = new THREE.Vector3(0, - 1, 0);
             let rayLength = 0;
             const vec1 = new THREE.Vector3();
             const vec2 = new THREE.Vector3();
 
+            // set up the parameters for the storm such as speed, frequency, and recursion rate
             scene.userData.rayParams = {
                 radius0: 1,
                 radius1: 0.5,
@@ -529,6 +523,7 @@
                 roughness: 0.85,
                 straightness: 0.65,
 
+                // when a subarray is created... idk man
                 onSubrayCreation: function (segment, parentSubray, childSubray, lightningStrike) {
 
                     lightningStrike.subrayConePosition(segment, parentSubray, childSubray, 0.6, 0.6, 0.5);
@@ -544,6 +539,7 @@
                 }
             };
 
+            // make a new lightning storm with the given parameters
             storm = new LightningStorm({
                 size: GROUND_SIZE,
                 minHeight: 400,//Determine how low the lightning can generate at
@@ -556,13 +552,13 @@
                 lightningMaterial: scene.userData.lightningMaterial,
             });
 
-            // console.log(storm);
-
+          //add the storm to the scene, add the renderpass to the composer, and cal createoutline
             scene.add(storm);
             composer.passes = [];
             composer.addPass(new RenderPass(scene, scene.userData.camera));
             createOutline(scene, storm.lightningsMeshes, scene.userData.outlineColor);
 
+            // sender the scene with the outline
             scene.userData.render = function (time) {
                 storm.update(time);
                 if (scene.userData.outlineEnabled) {
@@ -834,10 +830,11 @@
 
 
 
-
+        // a function that initializes the parameters for the game
         function initParameters(level) {
+            // each mode sets the headstart, the speed and acceleration of the monster, 
+            //and the stamina for the player
             if (level == "easy") {
-
                 console.log("easy");
                 distance = 60; //60
                 monsterSpeed = .06;//.06
@@ -1830,15 +1827,17 @@
                 dotGeometry.vertices.push(new THREE.Vector3(0, 0, 0));
                 var dotMaterial = new THREE.PointsMaterial({ size: Math.random() * 3, sizeAttenuation: false });
                 var dot = new THREE.Points(dotGeometry, dotMaterial);
-                let x = Math.random() * 450;
-                let z = Math.random() * 450;
+                //let x = Math.random() * 450;
+                let x = newRandom(0, 450);
+                //let z = Math.random() * 450;
+                let z = newRandom(0, 450);
                 let y;
-                if (random() == true) {
-                    x *= -1;
-                }
-                if (random() == true) {
-                    z *= -1;
-                }
+                // if (random() == true) {
+                //     x *= -1;
+                // }
+                // if (random() == true) {
+                //     z *= -1;
+                // }
                 if (x > 350 || x < -350 || z > 350 || z < -350) {
                     y = Math.random() * 350 + 40;
                 }
@@ -1860,14 +1859,17 @@
 
         function addShootingStar() {
             for (let i = 0; i < shootingStars.length; i++) {
-                let x = Math.random() * 5 + 2;
-                let z = Math.random() * 5 + 2;
-                if (random() == true) {
-                    x *= -1;
-                }
-                if (random() == true) {
-                    z *= -1;
-                }
+
+                let x = newRandom(2, 5);
+                let z = newRandom(2, 5);
+                //let x = Math.random() * 5 + 2;
+                //let z = Math.random() * 5 + 2;
+                // if (random() == true) {
+                //     x *= -1;
+                // }
+                // if (random() == true) {
+                //     z *= -1;
+                // }
                 starXDirs.push(x);
                 starZDirs.push(z);
             }
