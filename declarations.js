@@ -44,6 +44,8 @@ let jumpscare2;
 let inJumpscare = false;
 let jumpscareLookAt;
 let jumpscarePositions = [];
+let previousPos = [];
+// let addShiba = false;
 //let playEndMusic = false;
 
  // particles 

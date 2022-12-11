@@ -3,17 +3,16 @@
 
 <head>
     <title>Final Project</title>
-    <link href="styling.css" rel="stylesheet">
+    <link href="styling.css" rel="stylesheet"> <!--Links our css styler to the html elements-->
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-    <!-- <link type="text/css" rel="stylesheet" href="main.css"> -->
 </head>
 
 
-<!-- the screen that comes up during game start, pause, and end -->
+<!-- The screen that comes up during game start, pause, and end -->
 <div id="blocker">
 </div>
 
-<!-- the start screen with instructions -->
+<!-- The start screen with instructions -->
 <div id="instructions">
     <h1 style="font-size:60"> Monster&nbsp;Mash</h1>
     <p style="font-size:20px">
@@ -29,20 +28,20 @@
     </p>
 </div>
 
-<!-- the screen when you lose the game -->
+<!-- The screen when you lose the game -->
 <div id="lost" , style="display:none">
     <p style="font-size:60">
-        Lost&nbsp;Game
+        YOU&nbsp;LOST!
     </p>
 </div>
 
-
-<!-- logic and styling for the level chooser and start button -->
+<!-- Logic and styling for the drop down button that lists levels and the start button -->
 <div class="dropdown" , id="gameControls">
     <div id="selectbutton">
         <select class="greenText" name="difficulty" id="selectButton2"
             onchange="this.className=this.options[this.selectedIndex].className" class="greenText">>
             <option value="easy" class="greenText" value="easy">Easy</option>
+            <!--What the drop down options will display -->
             <option value="medium" class="yellowText" value="medium">Medium</option>
             <option value="hard" class="redText" value="hard">Hard</option>
         </select>
@@ -52,7 +51,7 @@
     </div>
 </div>
 
-<!-- styling for the unpause button -->
+<!-- Styling for the pause button -->
 <div id="unpause" , style="display:none">
     <button class="unPauseButton">Resume Game</button>
 </div>
@@ -60,13 +59,14 @@
 
 
 <body>
-    <canvas id="myCanvas" width="800" height="800"></canvas>
+    <canvas id="myCanvas" width="800" height="800"></canvas> <!-- Creates canvas-->
+    <!-- Imports various javascript files and modules -->
     <script src="Perlin.js"></script>
     <script src="/declarations.js"></script>
     <script src="/functions.js"></script>
     <script type="module">
 
-        //Imports
+        //Imports from three.js
         import * as THREE from "http://cs.merrimack.edu/~stuetzlec/three.js-master/build/three.module.js";
         import { PointerLockControls } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/controls/PointerLockControls.js';
         import { LightningStrike } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/geometries/LightningStrike.js';
@@ -77,7 +77,7 @@
         import { GLTFLoader } from 'http://cs.merrimack.edu/~stuetzlec/three.js-master/examples/jsm/loaders/GLTFLoader.js';
 
 
-        // initializes the scene and camera
+        // Initializes the scene and camera
         let scene = new THREE.Scene();
         let windowWidth = window.innerWidth;
         let windowHeight = window.innerHeight;
@@ -86,8 +86,10 @@
         camera.position.set(0, 80, 10);
         scene.add(camera);
 
-        // initialized the secondary scene for the stamina bar, hearts, and star collection tracker
-        // this one uses an orthographic camera
+        // Initializes the secondary scene  (which will be layered on top of the first)
+        //for the stamina bar, hearts, and star collection tracker.
+        // This one uses an orthographic camera
+        //Src: https://www.evermade.fi/story/pure-three-js-hud/
         var hudCanvas = document.createElement('canvas');
         hudCanvas.width = windowWidth;
         hudCanvas.height = windowHeight;
@@ -105,31 +107,7 @@
         var plane = new THREE.Mesh(planeGeometry, material);
         sceneHUD.add(plane);
 
-
-        // initialize variables dependent on threejs
-        let perlin = new Perlin(); // used for terrain generation
-        let loader = new THREE.TextureLoader(); //Texture loader
-        let raycaster = new THREE.Raycaster();
-        // used in terrain generation
-        let peak = 30;
-        let smoothing = 200;
-        const GROUND_SIZE = 1000;
-        const ground = new THREE.Mesh(new THREE.PlaneGeometry(GROUND_SIZE, GROUND_SIZE), new THREE.MeshLambertMaterial({ color: 0x072302 }));
-        ground.rotation.x = - Math.PI * 0.5;
-
-
-
-        let clock = new THREE.Clock();
-        let controls = new PointerLockControls(camera, document.body); //Enables pointerlock controls
-        let humanGroup = new THREE.Group(); // used for the body
-        let monsterGroup = new THREE.Group(); // used for the body
-        let previousPos = [];
-        previousPos.push(new THREE.Vector3(0, -200, 0));
-
-
-        // game logic
-        let heartPositions = [windowWidth - (windowWidth * .78), windowWidth - (windowWidth * .81), windowWidth - (windowWidth * .84)];
-
+        //Initializes and customizes the renderer
         let renderer = new THREE.WebGLRenderer({ canvas: myCanvas, antialias: true });
         renderer.setClearColor(0xADD8E6);//Sets color of renderer
         renderer.setPixelRatio(document.getElementById('myCanvas').devicePixelRatio); //Sets renderer to the canvas
@@ -141,27 +119,112 @@
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 
+        // Initialize variables dependent on threejs
+        let perlin = new Perlin(); // used for terrain generation
+        let loader = new THREE.TextureLoader(); //Texture loader
+        let raycaster = new THREE.Raycaster();
+        // Below variables are used in terrain generation
+        let peak = 30;
+        let smoothing = 200;
+        const GROUND_SIZE = 1000;
+        const ground = new THREE.Mesh(new THREE.PlaneGeometry(GROUND_SIZE, GROUND_SIZE), new THREE.MeshLambertMaterial({ color: 0x072302 }));
+        ground.rotation.x = - Math.PI * 0.5;
+        let clock = new THREE.Clock();
+        let humanGroup = new THREE.Group(); // used for the body
+        let monsterGroup = new THREE.Group(); // used for the body
+        let heartPositions = [windowWidth - (windowWidth * .78), windowWidth - (windowWidth * .81), windowWidth - (windowWidth * .84)];
+
+        previousPos.push(new THREE.Vector3(0, -200, 0));
+        let controls = new PointerLockControls(camera, document.body); //Enables pointerlock controls
         let composer = new EffectComposer(renderer);
 
-        // materials 
-
+        //Below creates more materials with textures
         let wood = new THREE.MeshPhongMaterial({ color: 0x80471C, map: loader.load("trees/oakwood.jpg") });
-
         let fireMat1 = new THREE.MeshBasicMaterial({ color: 0xff0000, map: loader.load("star/testfire.jpg"), opacity: .5, transparent: true });
         let fireMat2 = new THREE.MeshBasicMaterial({ color: 0xFFA500, map: loader.load("star/testfire.jpg"), opacity: .5, transparent: true });
         let fireMaterials = [fireMat1, fireMat2];
 
 
-        // a function that creates particles for the campfire
+        // Creates the logic for when the start button is clicked 
+        document.getElementById("button").onclick = function () {
+            // Unpause the game
+            gamePaused = false;
+            // Remove the html elements
+            instructions.style.display = 'none';
+            blocker.style.display = 'none';
+            gameControls.style.display = 'none';
+            // Get the value from the drop down button to set the game difficulty
+            var e = document.getElementById("selectButton2");
+            console.log(e);
+            function onChange() { //Set the current level of the game to whatever the user selected
+                level = e.value;
+                console.log(level);
+            }
+            e.onchange = onChange;
+            onChange();
+            // Set the game parameters based on the level that was selected
+            initParameters(level);
+            controls.lock(); //Locks pointerlock controls 
+            animate(); //Start animating the game!
+        };
+
+        // Creates the logic for when the resume game button is clicked
+        document.getElementById("unpause").onclick = function () {
+            // Resume the game and remove the html overlays
+            gamePaused = false;
+            blocker.style.display = 'none';
+            unpause.style.display = 'none';
+            controls.lock(); //Locks pointerlock controls upon the user clicking
+            animate(); //Start the game!
+        };
+
+        document.addEventListener('keydown', onDocumentKeyDown, false); //Adds key handler to the document
+
+        //If the user has not pressed any keys then the boolean determining whether the user is moving should be turned to false
+        document.addEventListener('keyup', (event) => {
+            moving = false;
+        });
+
+        // Adds logic for when the controls are unlocked (applies for whether the user is simply pausing or has won)
+        controls.addEventListener('unlock', function () {
+            // Pause the heartbeat audio and pause the game
+            heartbeatAudio.pause();
+            heartbeatAudio.currentTime = 0;
+            gamePaused = true;
+            // Enter this if statement if the game is still playing or you have won the game
+            if (gameState == 0 || gameState == 1) {
+                // Bring up the blocker and the resume button after 1 second
+                blocker.style.display = 'block';
+                setTimeout(() => {
+                    unpause.style.display = 'block'; //To prevent users from running into an error where they click
+                    //"resume game" too quickly which results in teh contorls not properly working, make the button
+                    //not show up for 1 second
+                }, 1000)
+            }
+            // If the user lost the game
+            else if (gameState == 2) {
+                setTimeout(() => {
+                    // Bring up the blocker and losing game html overlay and play the loss sound after 4 seconds
+                    blocker.style.display = 'block';
+                    lost.style.display = 'block';
+                    play('sounds/gameOver/smash.mp3')
+                }, 4000)
+            }
+            // Unlocks the controls
+            controls.unlock();
+        });
+
+
+        // A function that creates particles for the campfire
         function Particle(pos) {
-            // create a size for the particle
+            // Create a size for the particle
             this.size = Math.random() * maxPSize + minPSize;
-            //create the geometry material and mesh
+            //Create the geometry, material, and mesh
             this.geometry = new THREE.DodecahedronGeometry(this.size, 0);
             this.material = fireMaterials[Math.floor(Math.random() * fireMaterials.length)];
             //this.material = new THREE.MeshPhongMaterial({ color: fireColors[Math.floor(Math.random() * fireColors.length)], map: loader.load("star/testfire.jpg"), opacity: .5, transparent: true });
             this.mesh = new THREE.Mesh(this.geometry, this.material);
-            // turn on shadows, position the particles, and give them a direction
+            // Turn on shadows, positions the particles, and give them a direction to go in
             this.mesh.castShadow = true;
             this.position = new THREE.Vector3(pos.x + newRandom(0, spawnSpread), pos.y, pos.z + newRandom(0, spawnSpread));
             this.mesh.position.set(this.position.x, this.position.y, this.position.z);
@@ -169,15 +232,15 @@
             scene.add(this.mesh);
         }
 
-        // a function that creates a log
+        // A function that creates a log
         function Log(rotationSide, pos) {
-            // create the geometry, material, and mesh (turn on shadows)
+            // Creates a geometry, material, and a mesh (turns on shadows)
             const geometry = new THREE.CylinderGeometry(5, 5, 30, 32);
             const material = new THREE.MeshPhongMaterial({ color: 0x964B00, map: loader.load("star/wood.jpg") }); //, map: loader.load("wood/wood.jpg") 
             const cylinder = new THREE.Mesh(geometry, material);
             cylinder.castShadow = true;
 
-            //position the cylinder and rotate accordingly
+            //Position the cylinder and rotate accordingly
             cylinder.position.set(pos.x, pos.y, pos.z);
             if (rotationSide == 1) {
                 cylinder.rotation.z = 1.4;
@@ -189,110 +252,37 @@
             return cylinder;
         }
 
-        // a function that creates the campfire
+        // A function that creates the campfire
         function CampFire(pos, heightLimit) {
-            // track the particles, height, position, and whether the fire should fade
+            // Tracks the particles, their height, their position, and whether the fire should fade
             this.particles = [];
             this.height = heightLimit;
             this.position = new THREE.Vector3(pos.x, pos.y, pos.z);
             this.fade = false;
-            // add a light to the fire and position it
+            // Adds a light to the fire and position it
             this.light = new THREE.PointLight(0xffff00, 5, 100);
             this.light.position.set(this.position.x, this.position.y + 50, this.position.z);
             scene.add(this.light);
-
-            // create the particles for the capfire
-            for (let i = 0; i < pCount; i++) {
+            for (let i = 0; i < pCount; i++) {//The for loop creates the particles for the campfire
                 let test = new Particle(pos);
                 this.particles.push(test);
             }
-            // create the logs
+            // Create the logs
             this.log1 = Log(1, pos);
             this.log2 = Log(2, pos);
         }
 
 
-
-
-        // sets the logic for when the start button is clicked 
-        document.getElementById("button").onclick = function () {
-            // unpause the game
-            gamePaused = false;
-            // remove the html overlays
-            instructions.style.display = 'none';
-            blocker.style.display = 'none';
-            gameControls.style.display = 'none';
-            // get the value in the select button to set the game difficulty
-            var e = document.getElementById("selectButton2");
-            console.log(e);
-            function onChange() {
-                level = e.value;
-                console.log(level);
-            }
-            e.onchange = onChange;
-            onChange();
-            // set the game parameters
-            initParameters(level);
-            controls.lock(); //Locks pointerlock controls 
-            animate();
-        };
-
-        // sets the logic for when the unpause button is clicked
-        document.getElementById("unpause").onclick = function () {
-            // unpause the game and remove the html overlays
-            gamePaused = false;
-            blocker.style.display = 'none';
-            unpause.style.display = 'none';
-            controls.lock(); //Locks pointerlock controls upon the user clicking
-            animate();
-        };
-
-        // add they keylisteneer 
-        document.addEventListener('keydown', onDocumentKeyDown, false); //Adds key handler to the document
-
-        //If the user has not pressed any keys then the boolean determining whether the user is moving should be turned to false
-        document.addEventListener('keyup', (event) => {
-            moving = false;
-        });
-
-        // adds logic for when the controls are unlocked (on pause or win)
-        controls.addEventListener('unlock', function () {
-            // pause the heartbeat auydio and pause the game
-            heartbeatAudio.pause();
-            heartbeatAudio.currentTime = 0;
-            gamePaused = true;
-            // if the game is still playing or you won the game
-            if (gameState == 0 || gameState == 1) {
-                // pull up the blocker and the unpause button after 1 second
-                blocker.style.display = 'block';
-                setTimeout(() => {
-                    unpause.style.display = 'block';
-
-                }, 1000)
-            }
-            // if the game was lost
-            else if (gameState == 2) {
-                setTimeout(() => {
-                    // bring up the blocker and losing game html overlay and play the loss sound after 4 seconds
-                    blocker.style.display = 'block';
-                    lost.style.display = 'block';
-                    play('sounds/gameOver/smash.mp3')
-                }, 4000)
-            }
-            // unlock the controls
-            controls.unlock();
-        });
-
-        let addShiba = false;
+        //Function which makes the ending model
         function makeShiba(position) {
 
-            //   Instantiate a loader
+            //Instantiate a loader
             const Mloader = new GLTFLoader();
             // Load a glTF resource
             Mloader.load(
                 // resource URL
                 'shibaModel/scene.gltf',
-                // called when the resource is loaded
+                // Called when the resource is loaded
                 function (gltf) {
                     dog = gltf.scene;
                     dog.scale.set(20, 20, 20);
@@ -304,6 +294,7 @@
                     gltf.cameras; // Array<THREE.Camera>
                     gltf.asset; // Object
                     gltf.scene.traverse(function (node) { if (node.isMesh) { node.castShadow = true; } });
+                    //Sets dogs position
                     dog.position.setX(position.x);
                     dog.position.setY(position.y);
                     dog.position.setZ(position.z);
@@ -312,7 +303,7 @@
         }
 
 
-        // a function that loads the models
+        // A function that loads the jumpscare models
         function makeModels() {
             //   Instantiate a loader
             const Gloader = new GLTFLoader();
@@ -323,16 +314,15 @@
                 // called when the resource is loaded
                 function (gltf) {
                     jumpscare1 = gltf.scene;
-                    //scale the model
+                    //Scales the model
                     jumpscare1.scale.set(150, 150, 150);
-                    //console.log(dog);
                     scene.add(jumpscare1);
                     gltf.animations; // Array<THREE.AnimationClip>
                     gltf.scene; // THREE.Group
                     gltf.scenes; // Array<THREE.Group>
                     gltf.cameras; // Array<THREE.Camera>
                     gltf.asset; // Object
-                    // positin the jumpscare model
+                    //Sets jumpscares position
                     jumpscare1.position.setX(0);
                     jumpscare1.position.setY(-500);
                     jumpscare1.position.setZ(0);
@@ -348,59 +338,54 @@
                 // called when the resource is loaded
                 function (gltf) {
                     jumpscare2 = gltf.scene;
-                    // scale the model
+                    // Scales the model
                     jumpscare2.scale.set(10, 10, 10);
-                    //console.log(dog);
                     scene.add(jumpscare2);
                     gltf.animations; // Array<THREE.AnimationClip>
                     gltf.scene; // THREE.Group
                     gltf.scenes; // Array<THREE.Group>
                     gltf.cameras; // Array<THREE.Camera>
                     gltf.asset; // Object
-                    // position the model
+                    //Sets jumpscares position
                     jumpscare2.position.setX(0);
                     jumpscare2.position.setY(-500);
                     jumpscare2.position.setZ(0);
                 }
             );
-
-
         }
 
-        // a function that places the jumpscares
+        // A function that places the jumpscares
         function placeJumpscares() {
-            // for the number of jumpscares you want
+            // For the number of jumpscares you want
             for (let i = 0; i < 8; i++) { //8
-                // set a position and then push that position to the array
+                // Gets a random position and then adds that position to the array
                 let position = randomizePositions(380, 40); //380
                 jumpscarePositions.push(new THREE.Vector3(position.x, position.y, position.z));
             }
         }
 
-        // a function that triggers, places, and removes the jumpscares
+        // A function that triggers, places, and removes then jumpscares
         function jumpscare(index) {
-            // update the game state trackers
+            // Update the game state trackers
             inJumpscare = true;
             spawningIn = true;
-
-            // turn on the light to ensure the jumpscares can be seen
+            // Turn on the light to ensure the jumpscares can be seen
             light.intensity = 6;
-            // set the scene fog to .003
+            // Set the scene fog to .003
             scene.fog.density = .003;
 
-
-            // set the initial values for the jumpscare positioning modifiers
+            // Initializes values for the jumpscare positioning modifiers
             let dist = 80;
             let lookAtHeight = 50;
             let monsterLookAtHeight = 1;
             let monsterHeight;
             let monster;
-            // if the index is -1 (the main monster)
+            // If the index is -1 (the main monster)
             if (index == -1) {
-                // choose and play a random cause sound
+                // Choose and play a random monster caught sound
                 let index = Math.floor(Math.random() * 3);
                 play(caughtSound[index]);
-                // manipulate the conditions so that the player will look towards the right 
+                // Manipulate the conditions so that the player will look towards the correct 
                 // part of the monster
                 dist = 80;
                 lookAtHeight = 50;
@@ -408,11 +393,11 @@
                 monsterHeight = 40;
                 monster = monsterGroup;
             }
-            // if the index is 0 (the clown mask)
+            // If the index is 0 (the clown mask)
             else if (index == 0) {
-                // play the clown sounds
+                // PLay the clown sounds
                 play('sounds/jumpscares/clown.mp3');
-                // manipulate the conditions so that the player will look towards the right 
+                // Manipulate the conditions so that the player will look towards the correct 
                 // part of the monster
                 dist = 30;
                 lookAtHeight = 20;
@@ -420,9 +405,9 @@
                 monsterHeight = 40;
                 monster = jumpscare1;
             }
-            // if the index is 1 (the creepy baby)
+            // If the index is 1 (the creepy baby)
             else if (index == 1) {
-                // manipulate the conditions so that the player will look towards the right 
+                // Manipulate the conditions so that the player will look towards the correct 
                 // part of the monster
                 play('sounds/jumpscares/childLaugh.mp3');
                 dist = 90;
@@ -431,55 +416,52 @@
                 monsterHeight = 100;
                 monster = jumpscare2;
             }
-            // set a timer to hide the monster when the jumpscare is done (4 seconds)
+            // Set a timer to hide the monster when the jumpscare is done (4 seconds)
             setTimeout(function () {
-                // update the gamestate tracker
+                // Update the gamestate tracker
                 inJumpscare = false;
-                // if the game is not over, move the monster back to the hiding spot
+                // If the game is not over, move the monster back to the hiding spot
                 if (gameState != 2) {
                     monster.position.set(0, -500, 0);
                 }
-                // reset the scene fog
+                // Reset the scene fog
                 scene.fog.density = 0;
             }, 4000);
 
-            // raycast at the position of the camera in order to consistently place the monster 50 units above
+            // Raycast at the position of the camera in order to consistently place the monster 50 units above
             //the ground (needed for lookat perspectives)
             let rayHeight = new THREE.Raycaster();
             let rayDirection = new THREE.Vector3(0, -1, 0);//Gives direction for raycaster
-
-            let intersectHeight = rayHeight.intersectObject(terrainShadow); //Finds where the ray intersects with the 
-
-            // set the monster to the camera position, shifted slightly in the x direction
+            let intersectHeight = rayHeight.intersectObject(terrainShadow); //Finds where the ray intersects with the terrain
+            
+            // Sets the monsters position to the camera position, shifted slightly in the x direction
             monster.position.set(camera.position.x + dist, camera.position.y, camera.position.z);
-            rayHeight.ray.set(monster.position, rayDirection.normalize()); //Has ray cast downwards from the treePos
+            rayHeight.ray.set(monster.position, rayDirection.normalize()); //Has ray cast downwards from the monster position
             let yPos;
             if (intersectHeight.length != 0) {
                 yPos = intersectHeight[0].point.y; //Sets the yPos to where the ray intersected with the terrain
             }
-            // rectify the height for consistency 
+            // Add the monsters height to the ypos for consistency 
             monster.position.y = yPos + monsterHeight;
-            //set the lookat for the player and the monster so they look at each other
+            //Sets the lookat for the player and the monster so they look at each other
             let camlookat = new THREE.Vector3(monster.position.x, monster.position.y + lookAtHeight, monster.position.z);
             camera.lookAt(camlookat);
             jumpscareLookAt = camlookat;
             monster.lookAt(camera.position.x, camera.position.y + monsterLookAtHeight, camera.position.z);
         }
 
-
-        //a function that creates lightning in the scene
+        //Src: https://threejs.org/examples/webgl_lightningstrike.html
+        //A function that creates lightning in the scene
         function initLightning() {
-
-            // call create storm
+            // Calls create storm with the camera and the terrain
             createStormScene(camera, terrain, 450);
-            // set the scene userdata to be used for the lightning lightning color and outline
+            // Sets the scene userdata to be used for the lightning lightning color and outline
             scene.userData.timeRate = 4;
             scene.userData.lightningColorRGB = [
                 scene.userData.lightningColor.r * 255,
                 scene.userData.lightningColor.g * 255,
                 scene.userData.lightningColor.b * 255
             ];
-
             scene.userData.outlineColorRGB = [
                 scene.userData.outlineColor.r * 255,
                 scene.userData.outlineColor.g * 255,
@@ -487,25 +469,25 @@
             ];
         }
 
-        // a function that creates the outline for the lightning
+        // A function that creates the outline for the lightning strikes
         function createOutline(scene, objectsArray, visibleColor) {
-            // create the outlinepass and set the parameters
+            // Creates the outlinepass and gives the appropriate parameters
             const outlinePass = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, scene.userData.camera, objectsArray);
+            //These all determine the appearance of the outline of the lightning strike
             outlinePass.edgeStrength = 2.5;
             outlinePass.edgeGlow = 0.7;
             outlinePass.edgeThickness = 2.8;
             outlinePass.visibleEdgeColor = visibleColor;
             outlinePass.hiddenEdgeColor.set(0);
-            // add the outline pass to the composer
+            // Adds the outline pass to the composer
             composer.addPass(outlinePass);
             scene.userData.outlineEnabled = true;
-
             return outlinePass;
         }
 
-        // a function that creates a storm in the scene
+        // A function that creates a storm in the scene
         function createStormScene(camera, terrain, terrainSize) {
-            // set the user data for the lightning 
+            // Sets the user data for the lightning 
             scene.background = new THREE.Color(0x050505);
             scene.userData.canGoBackwardsInTime = false;
             scene.userData.camera = new THREE.PerspectiveCamera(27, window.innerWidth / window.innerHeight, 20, 10000);
@@ -513,13 +495,13 @@
             scene.userData.lightningColor = new THREE.Color(0xB0FFFF);
             scene.userData.outlineColor = new THREE.Color(0x00FFFF);
             scene.userData.lightningMaterial = new THREE.MeshBasicMaterial({ color: scene.userData.lightningColor });
-            // create some ray parameters to direct the lightning
+            // Creates some ray parameters to direct the lightning
             const rayDirection = new THREE.Vector3(0, - 1, 0);
             let rayLength = 0;
             const vec1 = new THREE.Vector3();
             const vec2 = new THREE.Vector3();
 
-            // set up the parameters for the storm such as speed, frequency, and recursion rate
+            // Set up the parameters for the storm such as speed, frequency, and recursion rate
             scene.userData.rayParams = {
                 radius0: 1,
                 radius1: 0.5,
@@ -556,7 +538,7 @@
                 }
             };
 
-            // make a new lightning storm with the given parameters
+            // Make a new lightning storm with the given parameters
             storm = new LightningStorm({
                 size: GROUND_SIZE,
                 minHeight: 400,//Determine how low the lightning can generate at
@@ -569,13 +551,13 @@
                 lightningMaterial: scene.userData.lightningMaterial,
             });
 
-            //add the storm to the scene, add the renderpass to the composer, and cal createoutline
+            //Add the storm to the scene, add the renderpass to the composer, and cal createoutline
             scene.add(storm);
             composer.passes = [];
             composer.addPass(new RenderPass(scene, scene.userData.camera));
             createOutline(scene, storm.lightningsMeshes, scene.userData.outlineColor);
 
-            // sender the scene with the outline
+            // render the scene with the outline
             scene.userData.render = function (time) {
                 storm.update(time);
                 if (scene.userData.outlineEnabled) {
@@ -849,7 +831,8 @@
 
         // a function that initializes the parameters for the game
         function initParameters(level) {
-            // each mode sets the headstart, the speed and acceleration of the monster, 
+            // Each level determines the headstart the user gets, the stamina of the user, and
+            // the speed and acceleration of the monster. 
             // and the stamina for the player
             if (level == "easy") {
                 console.log("easy");
@@ -929,6 +912,7 @@
         }
 
         // a function to initialize the heart icons
+        //Src: https://threejs.org/docs/#api/en/extras/core/Shape
         function initHeartIcon(x) {
             // keep the y consistent for each heart icon but use preset x values to space them out
             // in the bottom left corner
@@ -1002,7 +986,7 @@
             light.position.set(camera.position.x, camera.position.y, camera.position.z + 10);
             scene.add(light);
             spotLightOn = true;
-            return(light);
+            return (light);
         }
 
         //Creates the sun/moon and their corresponding point lights
@@ -1056,23 +1040,21 @@
         }
 
         // A function that makes the trees for the scene. There are 3 types of wood and 3 grammars
-        function initTrees() {
+        function initTrees(start, end) {
             //Iterates for 30 times
-            for (let i = 0; i < 15; i++) {
+            for (let i = start; i < end; i++) {
                 let params;
                 let rules;
                 if (i < 10) {
                     params = new Params("F", 2, 22.5, 25, Math.round(Math.random() * 2));
                     rules = parseRules("F=F[+F]F[F>>][<F]\nF=F[+F]F[+<<F][F>]");
                 }
-                else if (i >= 20) {
+                else if (i <= 20) {
+                
                     params = new Params("F", 3, 15, 15, Math.round(Math.random() * 2));
                     rules = parseRules("F=F>[<+F]F[+F>]<F\nF=F>[+F^>^]F\nF=F[+F>]F>");
                 }
-                else {
-                    params = new Params("F", 2, 30, 20, Math.round(Math.random() * 2));
-                    rules = parseRules("F=F[+F]F[F>>][<F]\nF=F[+F]F[+<<F][F>]");
-                }
+             
                 let rewriter = new Rewriter(rules); //Choose which rule to use based on some probability out of the rules 
                 //written in the string
                 let string = rewriter.rewrite(params); //Returns which rules were selected
@@ -1157,7 +1139,6 @@
             leftLeg.rotateZ(-Math.PI / 6);
             leftLeg.position.set(-3.3, -12, 0);
             humanGroup.add(leftLeg);
-
 
             scene.add(humanGroup);
 
@@ -1279,7 +1260,7 @@
 
 
         // initialize the smoke for the monster 
-        function initSmoke() {
+        function initMonster() {
             // load the smoke texture
             smokeTexture = loader.load('skies/smoke1.png');
             // create the material, geometry, and mesh
@@ -1392,7 +1373,7 @@
                 for (let p = 0; p < campfire.particles.length; p++) {
                     // change the particle color to black to represent coals
                     campfire.particles[p].mesh.material.color.setHex(0x000000);
-                   
+
                 }
                 // set the fade to false and turn out the campfire light
                 campfire.fade = false;
@@ -1578,27 +1559,34 @@
             previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z));
         }
 
+        //A function which describes monster movement while the game is in play
         function monsterLogic() {
+            //If the user has moved a specific number of steps away from the spawning point and if the user is not
+            //currently hiding at a campfire, the moster can move
             if (previousPos.length > distance && campfire.fade == false) {
-                if (spawningIn == true) {
+                if (spawningIn == true) { //If the monster has not spawned in yet, spawn in the monster and play the music
                     play("sounds/close/spawn.mp3");
                     spawningIn = false;
                 }
                 timer += delta;
-                if (timer > monsterSpeed && inJumpscare == false) {
+                if (timer > monsterSpeed && inJumpscare == false) { //If the user is not currently in a jumpscare then move
+                    //the monster at a specified timer speed
                     timer = 0;
-                    monsterGroup.position.set(previousPos[0].x, previousPos[0].y, previousPos[0].z);
-                    previousPos.shift();
+                    monsterGroup.position.set(previousPos[0].x, previousPos[0].y, previousPos[0].z); //Set position of the monster
+                    //to one of the users previous positions
+                    previousPos.shift(); //removes the first element from previous pos array
                     distance -= 1;
+                    //If the user is within 15 units from the monster, the user is caught
                     if (calcPointDistance(monsterGroup.position, camera.position) < 15) { ///30
                         console.log("caught");
-
                         caught = true;
                     }
+                     //If the user is within 150 units from the monster, the user is close to being caught and their heartbeat should start pounding
                     else if (calcPointDistance(monsterGroup.position, camera.position) < 150) {
                         heartbeatAudio.play();
                         heartbeatAudio.volume = 1;
                     }
+                    //If the user is not within 150 units from the monster then they will not hear their heartbeat
                     else if (calcPointDistance(monsterGroup.position, camera.position) > 150) {
                         heartbeatAudio.pause();
                         heartbeatAudio.currentTime = 0;
@@ -1607,73 +1595,79 @@
             }
         }
 
-        function lostLogic() {
+        //Function that creates the losing logic
+        function loseLogic() {
+            //Increases fog density, makes it appear closer, and turns the color to black
             scene.fog.density = .005;
             scene.fog.near = 10;
             scene.fog.color.set(0x000000);
-            gameState = 2;
-            heartbeatAudio.pause();
+            gameState = 2;//The game state is now in "lost" mode
+            heartbeatAudio.pause(); //Disable the heart beat audio completely
             heartbeatAudio.currentTime = 0;
-            gamePaused = true;
+            gamePaused = true; //The user no longer has control to wander the map
             controls.unlock();
         }
 
+         //Function that creates the winning logic and immediate clean up logic as well
         function winAndCleanup() {
-            heartbeatAudio.pause();
+            heartbeatAudio.pause();//Disable the heart beat audio completely
             heartbeatAudio.currentTime = 0;
-            jumpscarePositions = [];
-            let length = previousPos.length;
-            //console.log(length);
+            jumpscarePositions = []; //Get rid of all jumpscares
+            let length = previousPos.length; //DONT KNOW WHAT IMMEDIATE BELOW OES
             if (length > 10) {
                 previousPos = previousPos.splice(10, previousPos.length - 10);
             }
-            scene.remove(monsterGroup);
+            scene.remove(monsterGroup); //Remove monster and dispose all of the group meshes
             monsterGroup.traverse(monsterGroup => monsterGroup.dispose?.());
-            scene.remove(storm);
-            scene.fog.density = 0;
-            makeShiba(previousPos);
-            shibaCounter += 1;
+            scene.remove(storm);//Remove storm
+            scene.fog.density = 0; //Get rid of fog
+            makeShiba(previousPos); //Make a shiba using one of your previous positions
+            shibaCounter += 1;//Increment shiba counter
             let index = Math.floor(Math.random() * 2);
-            play(winSounds[index]);
+            play(winSounds[index]); //Play random winning noise
         }
 
-
+        //Function that creates the animation for the end star that appears when a user wins
         function endStarAnimation() {
             let counter = 0;
-            if (prettyStars.length > 0) {
+            if (prettyStars.length > 0) { //If there are still flickering stars in the sky
                 for (let i = 0; i < prettyStars.length; i++) {
+                    //Using the spring formula, translate the stars to the moon light
                     prettyStars[i].translateX(k * (createRandomPosOrNeg(300, 0) - prettyStars[i].position.x));
                     prettyStars[i].translateY(k * (270 - prettyStars[i].position.y));
                     prettyStars[i].translateZ(k * (createRandomPosOrNeg(300, 0) - prettyStars[i].position.z));
                     prettyStars[i].scale.set(Math.random() * 30 + 10, Math.random() * 30 + 10);
+                    //If a flickering star is within a specified distance of the moon, increment the couunter
                     if (calcPointDistance(prettyStars[i].position, moon.bulbLight.position) <= 50) {
-                        counter++;
+                        counter++; 
                     }
                 }
             }
-            if (counter > prettyStars.length * .95) {
-                moon.bulbLight.intensity = 2;
-                moon.bulbMat.dispose();
+            if (counter > prettyStars.length * .95) { //If more than 95 percent of the flickering stars are within distance
+                //of the moon then enter this if statement
+                moon.bulbLight.intensity = 2; //Increase the moon lights intensity
+                //Get rid of moon material and geometry, and change the light color to yellow
+                moon.bulbMat.dispose(); 
                 moon.bulbGeometry.dispose();
                 moon.bulbLight.color.setHex(0xffff00);
                 moon.bulbMat.color.setHex(0xffff00);
-                if (number == 0) {
+                if (number == 0) { //If the end star hasnt been added to the scene, add it to the scene and position it 
                     endStar = initStarIcon(0xffff00, .5);
                     endStar.position.set(0, 280, 0);
-                    endStar.lookAt(camera.position);
+                    endStar.lookAt(camera.position); //Have it look at the camera
                     scene.add(endStar);
                     number += 1;
                 }
-                for (let i = 0; i < prettyStars.length; i++) {
+                for (let i = 0; i < prettyStars.length; i++) { //Go throughout all of the pretty stars array and dispose of them
                     scene.remove(prettyStars[i]);
                     prettyStars[i].material.dispose();
                     prettyStars[i].geometry.dispose();
                     prettyStars.splice(i, 1);
-                }
+                }//Change color of the world and its renderer
                 renderer.setClearColor(0xffffff);
                 world.material.color.setHex(0xffffff);
             }
-            else if (counter > prettyStars.length * .9) {
+            else if (counter > prettyStars.length * .9) { //Change the color of the moon to yellow
                 moon.bulbLight.color.setHex(0xffffff);
                 moon.bulbMat.color.setHex(0xffff00);
             }
@@ -1683,45 +1677,38 @@
         //The animate function is a function which is continuously called for every frame of the program
         function animate() {
 
+            //Increments all timers by delta
             delta = clock.getDelta();
             rain += delta;
             windTimer += delta;
             timerThunder += delta;
-
-
+            //Calls wind an campfire logic, two animations we constantly want to be playing
             windLogic();
             campFireLogic();
-
-            light.position.set(camera.position.x, camera.position.y, camera.position.z + 10);
-            //console.log(light);
-            monsterGroup.lookAt(camera.position.x, camera.position.y - 30, camera.position.z);
-            if (inJumpscare == true) {
+            light.position.set(camera.position.x, camera.position.y, camera.position.z + 10); //Move flashlight
+            //to users position no matter what
+            monsterGroup.lookAt(camera.position.x, camera.position.y - 30, camera.position.z);//Have monster look at
+            //user no matter what
+            if (inJumpscare == true) { //If the user is in a jumpscare then have the user constantly looking
+                //at the jumpscare
                 camera.lookAt(jumpscareLookAt);
             }
-
-            // console.log(scales, 'scales');
-            if (gamePaused == false) {
+            if (gamePaused == false) { //If the game is not paused
                 if (gameState != 1) {
-                    thunderAndRain();
+                    thunderAndRain(); //Play thunder and rain audio if the user has not yet won
                 }
-                if (jumpscarePositions.length != 0) {
-                    //console.log('IN JUMPSCAREPOSITIONS');
-                    for (let i = 0; i < jumpscarePositions.length; i++) {
-                        //let pos1 = new THREE.Vector3(jumpscarePositions[i].x, jumpscarePositions[i].y, jumpscarePositions[i].z);
-                        //console.log(jumpscarePositions[i], 'hsc');
+                if (jumpscarePositions.length != 0) {//If there are still jumpscares throughout the map
+                    for (let i = 0; i < jumpscarePositions.length; i++) { //Constantly check if the user is close enough to be jumpscared
                         if (calcPointDistance(camera.position, jumpscarePositions[i]) < 30 && calcPointDistance(camera.position, monsterGroup.position) > 15) {
-                            console.log("JUMPSCARE");
                             let index = Math.floor(Math.random() * 2);
-                            jumpscare(index);
-                            jumpscarePositions.splice(i, 1);
+                            jumpscare(index); //Randomize which jumpscare model is called
+                            jumpscarePositions.splice(i, 1); //Remove that jumpscare position from 
                         }
                     }
                 }
-
-
-
                 skyStars();
-                if (typeof endStar != 'undefined') {
+                if (typeof endStar != 'undefined') { //If the end scene star has been added to the scene, make it's look
+                //at the user
                     endStar.lookAt(camera.position);
                 }
 
@@ -1737,48 +1724,51 @@
                 //Creates a raycaster at the camera position that casts in the -y direction
                 cameraPositioning();
 
-
-                // if the camera is locked in 
+                // If the controls are locked in 
                 if (controls.isLocked === true) {
-                    // set yPos to the camera y minus 5 then set the group to the camera x z and yPos
+                    // Set yPos to the camera position minus 5 then set the group to the camera x z and yPos
                     let yPos = camera.position.y - 5;
                     humanGroup.position.y = (yPos);
                     humanGroup.position.z = (camera.position.z);
                     humanGroup.position.x = (camera.position.x);
-                    // make the group rotation match the camera rotation
+                    // Make the group rotation match the camera rotation
                     humanGroup.setRotationFromMatrix(camera.matrix);
                 }
 
-                if (gameState == 0) {
-                    gameTime += delta;
+                if (gameState == 0) { //If the game is still going
+                    //DONT KNOW WHAT BELOW IS DOING
                     if (gameTime > increment) {
                         monsterSpeed -= .01;
                         gameTime = 0;
                     }
-                    if (caught == false) {
-                        if (calcPointDistance(camera.position, previousPos[previousPos.length - 1]) != 0) {
+                    if (caught == false) {//If the user is not been caught currently
+                        if (calcPointDistance(camera.position, previousPos[previousPos.length - 1]) != 0) { //Calculate
+                           //if the user has moved from its last position. If they have then add their new position
+                           //to the previouspos array
                             previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z))
                         }
-                        monsterLogic();
+                        monsterLogic(); //Call monster movement logic
                     }
-                    else if (caught == true) {
-                        if (gameState == 0) {
+                    else if (caught == true) { //If the user was caught
+                        if (gameState == 0) { //If the game is still going then decrement the number of lives,
+                            //make a heart black, jumpscare the user with the monster, and reset all of the variables afterwards
                             lives -= 1;
                             heartArray[lives].material.color.set(0x000000);
                             jumpscare(-1);
                             caughtReset();
                             caught = false;
                         }
-                        if (lives == 0) {
-                            lostLogic();
+                        if (lives == 0) { //If the user has no more lives then commence losing logic
+                            loseLogic();
                         }
                     }
                 }
-                else if (gameState == 1) {
-                    if (shibaCounter == 0) {
+                else if (gameState == 1) { //If the user has won
+                    if (shibaCounter == 0) { //If the shiba hasnt been added to the scene yet, add it to the scene and do all winning animatioons
                         winAndCleanup();
                     }
-                    if (typeof dog != 'undefined') {
+                    if (typeof dog != 'undefined') { //If the shiba exists then make the shiba follow the camera and make it always 
+                        //watch the user
                         if (calcPointDistance(camera.position, previousPos[previousPos.length - 1]) != 0) {
                             previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z))
                         }
@@ -1858,7 +1848,7 @@
                     else if (keyCode == 65) movement = "left";
                     else if (keyCode == 68) movement = "right";
                     else if (keyCode == 83) movement = "backward";
-                    else if (keyCode == 70) {
+                    else if (keyCode == 70) { //If the user clicks F then toggle the light intensity on and off
                         play('sounds/click.mp3')
                         spotLightOn = !spotLightOn;
                         if (spotLightOn == false) {
@@ -1937,23 +1927,21 @@
         };
 
 
+        //Function which adds stars to the scene
         function addStars() {
-            for (let i = 0; i < 50; i++) {
+            for (let i = 0; i < 50; i++) { //For 50 iterations 
+                //Make a geometry, material, and mesh of a point
                 var dotGeometry = new THREE.Geometry();
                 dotGeometry.vertices.push(new THREE.Vector3(0, 0, 0));
                 var dotMaterial = new THREE.PointsMaterial({ size: Math.random() * 3, sizeAttenuation: false });
                 var dot = new THREE.Points(dotGeometry, dotMaterial);
-                //let x = Math.random() * 450;
+              
+                //Give the star a random x and z position
                 let x = newRandom(0, 450);
-                //let z = Math.random() * 450;
                 let z = newRandom(0, 450);
                 let y;
-                // if (random() == true) {
-                //     x *= -1;
-                // }
-                // if (random() == true) {
-                //     z *= -1;
-                // }
+                
+                //Determine the y position for the point
                 if (x > 350 || x < -350 || z > 350 || z < -350) {
                     y = Math.random() * 350 + 40;
                 }
@@ -1961,6 +1949,7 @@
                     y = 350;
                 }
                 dot.position.set(x, y, z);
+                //Randomly add the point geometry to either the shooting stars array or the pretty stars array
                 if (Math.random() > .8) {
                     shootingStars.push(dot);
                 }
@@ -1969,45 +1958,38 @@
                 }
                 scene.add(dot);
             }
-            addShootingStar();
+            addShootingStar(); //Calls shooting star function on any points that may have been added to the shooting star array
         }
 
-
+        //Function which moves points in the shooting stars array in a random direction 
         function addShootingStar() {
-            for (let i = 0; i < shootingStars.length; i++) {
+            for (let i = 0; i < shootingStars.length; i++) { //For the length of the shooting stars array
 
+                //Give the x and z a random position between two limits
                 let x = newRandom(2, 5);
                 let z = newRandom(2, 5);
-                //let x = Math.random() * 5 + 2;
-                //let z = Math.random() * 5 + 2;
-                // if (random() == true) {
-                //     x *= -1;
-                // }
-                // if (random() == true) {
-                //     z *= -1;
-                // }
+              
+                //Add the new x and z positions to both of the star direction arrays
                 starXDirs.push(x);
                 starZDirs.push(z);
             }
         }
 
 
-        function initMonster() {
-            initSmoke();
-        }
-
+        //Function which creates stamina bar
         function initStaminaBar() {
+            //Creates a geometry, a material, and am esh for the variable
             const geometry = new THREE.PlaneGeometry(100, 5);
             const hmaterial = new THREE.MeshBasicMaterial({ color: 0x5CFF5C, side: THREE.DoubleSide });
             const mesh = new THREE.Mesh(geometry, hmaterial);
             mesh.position.set(windowWidth - (windowWidth * .65), windowHeight - (windowHeight * 1.42), 0);
-            mesh.scale.set(2.015 * (stamina - 5) * .01, 4);
-            sceneHUD.add(mesh);
+            mesh.scale.set(2.015 * (stamina - 5) * .01, 4); //Scales the mesh based on the stamina of the user
+            sceneHUD.add(mesh);//Adds stamina bar to the mesh and returns it
             return mesh;
         }
 
 
-        // function calls
+        // Function calls
         let staminaBar = initStaminaBar();
         let monster = initMonster();
         // initCursor();
@@ -2017,33 +1999,22 @@
         initFog();
         initTerrain();
         initMoon();
-        initTrees();
+        initTrees(0, 15);
         initStarShards(5);
         initBody();
         let light = initFlashLight();
-
-
-
-
         let firePosition = randomizePositions(300, 50);
         let campfire = new CampFire(firePosition, heightLimit);
 
-
-
-
-
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 3; i++) { //Creates three hearts and adds them to the scene
             initHeartIcon(heartPositions[i]);
         }
 
         let starBorderGroup = initStarIcon(0x000000, .6);
         let starGroup = initStarIcon(0x000000, .5);
-        sceneHUD.add(starGroup);
-        sceneHUD.add(starBorderGroup)
-
-
-        placeJumpscares();
-
+        sceneHUD.add(starGroup); //Adds star icon to the hud scene
+        sceneHUD.add(starBorderGroup)//Adds black outline of a star to the hud scene
+        placeJumpscares(); //Places jumpscares around map
 
         animate();
         render();
