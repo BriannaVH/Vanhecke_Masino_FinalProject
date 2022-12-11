@@ -383,6 +383,8 @@
             inJumpscare = true;
             spawningIn = true;
 
+            light.intensity = 6;
+
             scene.fog.density = .003;
 
 
@@ -1690,23 +1692,23 @@
             }
             scene.userData.render(currentTime);
             // raycast from the camera position in the direction of the camera lookat
-            raycaster.set(camera.getWorldPosition(new THREE.Vector3), camera.getWorldDirection(new THREE.Vector3));
-            // record the intersection point of the raycaster with any world item
-            const intersections = raycaster.intersectObjects(worldItems, true);
-            // record the intersection point of the raycaster with any tree
-            // set intersections to the first item in itself if it is not null
-            intersection = (intersections.length) > 0 ? intersections[0] : null;
-            // if toggle is greater than .001 and intersections is not null 
-            // toggle detects when the cursor has moved too far from the mouse
-            if (toggle > 0.001 && intersection !== null) {
-                // update the position of the sphere to be at the point of the raycaster intersection
-                spheres[0].position.copy(intersection.point);
-                // scale the sphere so that the size is consistant 
-                cursor.scale.set(.0001);
-                toggle = 0;
-            }
-            //increase toggle by delta
-            toggle += clock.getDelta();
+            // raycaster.set(camera.getWorldPosition(new THREE.Vector3), camera.getWorldDirection(new THREE.Vector3));
+            // // record the intersection point of the raycaster with any world item
+            // const intersections = raycaster.intersectObjects(worldItems, true);
+            // // record the intersection point of the raycaster with any tree
+            // // set intersections to the first item in itself if it is not null
+            // intersection = (intersections.length) > 0 ? intersections[0] : null;
+            // // if toggle is greater than .001 and intersections is not null 
+            // // toggle detects when the cursor has moved too far from the mouse
+            // if (toggle > 0.001 && intersection !== null) {
+            //     // update the position of the sphere to be at the point of the raycaster intersection
+            //     spheres[0].position.copy(intersection.point);
+            //     // scale the sphere so that the size is consistant 
+            //     cursor.scale.set(.0001);
+            //     toggle = 0;
+            // }
+            // //increase toggle by delta
+            // toggle += clock.getDelta();
             // update the size of the window if needed
             updateSize();
             requestAnimationFrame(render);
@@ -1894,7 +1896,7 @@
         // function calls
         let staminaBar = initStaminaBar();
         let monster = initMonster();
-        initCursor();
+       // initCursor();
         makeModels();
         initLightning();
         initWorld();
