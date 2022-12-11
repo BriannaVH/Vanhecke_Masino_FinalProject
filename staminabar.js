@@ -19,9 +19,9 @@ staminaBar = makeStaminaBar();
 
 
 if (moving == true) {
-    staminaBar.scale.x= scales-.05;
-    scales=scales-.01;
-staminaBar.scale.y= 2;
+    staminaBar.scale.x = scales - .05;
+    scales = scales - .01;
+    staminaBar.scale.y = 2;
     stamina -= fitness;
     //console.log("losing stamina ", stamina);
     scene.fog.density += .00003;

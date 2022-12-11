@@ -1,3 +1,6 @@
+/* css styling for our html elements */
+
+/* the styling for our screen that dims out the screen during the start, end, and pause  */
 #blocker {
     position: fixed;
     width: 100%;
@@ -7,13 +10,9 @@
     font-family: "Serif", "Georgia", monospace;
 }
 
+/* styling used for our start screen instructions  */
 #instructions {
     position: fixed;
-    /* width: 1000px; */
-    /* height: 1000px;
-    margin: auto;
-    width: 50%;
-    padding: 10px; */
     width: 100px;
     height: 100px;
     position: absolute;
@@ -27,22 +26,15 @@
     align-items: center;
 
     text-align: center;
-    /* top: -80%; */
     font-size: 25px;
     color: white;
     font-family: "Serif", "Georgia", monospace;
     cursor: pointer;
-    
 }
 
-
+/* styling for the screen when you lose */
 #lost {
     position: fixed;
-    /* width: 1000px; */
-    /* height: 1000px;
-    margin: auto;
-    width: 50%;
-    padding: 10px; */
     width: 100px;
     height: 100px;
     position: absolute;
@@ -56,17 +48,15 @@
     align-items: center;
 
     text-align: center;
-    /* top: -80%; */
     font-size: 25px;
     color: white;
     font-family: "Serif", "Georgia", monospace;
     cursor: pointer;
-    
 }
 
 
 
-
+/* styling for the level selection button  */
 .dropbtn {
     min-width: 160px;
     background-color: #F3DEFF;
@@ -82,6 +72,7 @@
     text-align: center;
 }
 
+/* styling for the start button  */
 .button {
     min-width: 160px;
     background-color: #F3DEFF;
@@ -96,6 +87,7 @@
     font-family: "Serif", "Georgia", monospace;
 }
 
+/* styling for the resume button  */
 .unPauseButton {
     min-width: 160px;
     background-color: #F3DEFF;
@@ -112,7 +104,7 @@
 
 
 
-
+/* styling for the easy level selection  */
 .greenText {
     min-width: 160px;
     color: black;
@@ -128,9 +120,9 @@
     text-align: center;
 }
 
-.blueText {
+/* styling for the medium level selection  */
+.yellowText {
     min-width: 160px;
-
     color: black;
     padding: 16px;
     font-size: 25px;
@@ -144,6 +136,7 @@
     text-align: center;
 }
 
+/* styling for the hard level selection  */
 .redText {
     min-width: 160px;
     color: black;
@@ -158,18 +151,4 @@
     background-color: red;
     text-align: center;
 }
-
-/* .greyText {
-    min-width: 160px;
-    color: black;
-    padding: 16px;
-    font-size: 25px;
-    border: none;
-    cursor: pointer;
-    position: fixed;
-    left: 10%;
-    top: 60%;
-    font-family: "Serif", "Georgia", monospace;
-    background-color: rgba(97, 89, 89, 0.637);
-} */
 

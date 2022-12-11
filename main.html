@@ -43,7 +43,7 @@
         <select class="greenText" name="difficulty" id="selectButton2"
             onchange="this.className=this.options[this.selectedIndex].className" class="greenText">>
             <option value="easy" class="greenText" value="easy">Easy</option>
-            <option value="medium" class="blueText" value="medium">Medium</option>
+            <option value="medium" class="yellowText" value="medium">Medium</option>
             <option value="hard" class="redText" value="hard">Hard</option>
         </select>
     </div>
@@ -1209,17 +1209,21 @@
             scene.updateMatrixWorld(true);
             let treePos = new THREE.Vector3();
             //Gives x and z a random position within the bounds of the terrain
-            let xPos = Math.random() * (limit - bounds) + bounds;
-            let zPos = Math.random() * (limit - bounds) + bounds;
+            //let xPos = Math.random() * (limit - bounds) + bounds;
+            //let zPos = Math.random() * (limit - bounds) + bounds;
+
+            let xPos = newRandom(bounds, (limit-bounds));
+            let zPos = newRandom(bounds, (limit-bounds));
+
             let yPos = 100;//Gives the y pos a set point above the terrain
 
             //Randomizes whether the x and z position were negative
-            if (random() == true) {
-                xPos *= -1;
-            }
-            if (random() == true) {
-                zPos *= -1;
-            }
+            // if (random() == true) {
+            //     xPos *= -1;
+            // }
+            // if (random() == true) {
+            //     zPos *= -1;
+            // }
 
             treePos.set(xPos, yPos, zPos);//Sets treePosition to the randomized x,y and z coordinates
             rayHeight.ray.set(treePos, rayDirection.normalize()); //Has ray cast downwards from the treePos
@@ -1255,21 +1259,25 @@
 
             smokeParticles = [];
             for (let p = 0; p < 40; p++) {
-                x = Math.random() * 40;
-                y = Math.random() * 50;
-                if (random() == true) {
-                    x *= -1;
-                }
-                if (random() == true) {
-                    y *= -1;
-                }
+               // x = Math.random() * 40;
+                //y = Math.random() * 50;
+                x = newRandom(0, 40);
+                y = newRandom(0, 50);
+                // if (random() == true) {
+                //     x *= -1;
+                // }
+                // if (random() == true) {
+                //     y *= -1;
+                // }
                 y = y + 50;
 
                 var particle = new THREE.Mesh(smokeGeo, smokeMaterial);
-                let rotation = Math.random() * 1000;
-                if (random() == true) {
-                    rotation *= -1;
-                }
+                let rotation = newRandom(0, 1000);
+                // Math.random() * 1000;
+                // if (random() == true) {
+                //     rotation *= -1;
+                // }
+
 
                 particle.position.set(x, y, 0);
                 particle.rotation.z = rotation;
