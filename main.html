@@ -129,7 +129,7 @@
 
         // game logic
         let heartPositions = [windowWidth - (windowWidth * .78), windowWidth - (windowWidth * .81), windowWidth - (windowWidth * .84)];
-        
+
         let renderer = new THREE.WebGLRenderer({ canvas: myCanvas, antialias: true });
         renderer.setClearColor(0xADD8E6);//Sets color of renderer
         renderer.setPixelRatio(document.getElementById('myCanvas').devicePixelRatio); //Sets renderer to the canvas
@@ -303,7 +303,7 @@
                     gltf.scenes; // Array<THREE.Group>
                     gltf.cameras; // Array<THREE.Camera>
                     gltf.asset; // Object
-                    gltf.scene.traverse(function(node){ if (node.isMesh) {node.castShadow = true;}});
+                    gltf.scene.traverse(function (node) { if (node.isMesh) { node.castShadow = true; } });
                     dog.position.setX(position.x);
                     dog.position.setY(position.y);
                     dog.position.setZ(position.z);
@@ -312,8 +312,8 @@
         }
 
 
+        // a function that loads the models
         function makeModels() {
-
             //   Instantiate a loader
             const Gloader = new GLTFLoader();
             // Load a glTF resource
@@ -323,6 +323,7 @@
                 // called when the resource is loaded
                 function (gltf) {
                     jumpscare1 = gltf.scene;
+                    //scale the model
                     jumpscare1.scale.set(150, 150, 150);
                     //console.log(dog);
                     scene.add(jumpscare1);
@@ -331,13 +332,12 @@
                     gltf.scenes; // Array<THREE.Group>
                     gltf.cameras; // Array<THREE.Camera>
                     gltf.asset; // Object
+                    // positin the jumpscare model
                     jumpscare1.position.setX(0);
                     jumpscare1.position.setY(-500);
                     jumpscare1.position.setZ(0);
                 }
             );
-
-
 
             //SKULL WITH EYES FALLING OUT
             const Sloader = new GLTFLoader();
@@ -348,6 +348,7 @@
                 // called when the resource is loaded
                 function (gltf) {
                     jumpscare2 = gltf.scene;
+                    // scale the model
                     jumpscare2.scale.set(10, 10, 10);
                     //console.log(dog);
                     scene.add(jumpscare2);
@@ -356,6 +357,7 @@
                     gltf.scenes; // Array<THREE.Group>
                     gltf.cameras; // Array<THREE.Camera>
                     gltf.asset; // Object
+                    // position the model
                     jumpscare2.position.setX(0);
                     jumpscare2.position.setY(-500);
                     jumpscare2.position.setZ(0);
@@ -365,53 +367,63 @@
 
         }
 
+        // a function that places the jumpscares
         function placeJumpscares() {
+            // for the number of jumpscares you want
             for (let i = 0; i < 8; i++) { //8
+                // set a position and then push that position to the array
                 let position = randomizePositions(380, 40); //380
                 jumpscarePositions.push(new THREE.Vector3(position.x, position.y, position.z));
-                // const geometry = new THREE.SphereGeometry(30, 32, 32);
-                // const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
-                // const sphere = new THREE.Mesh(geometry, material);
-                // scene.add(sphere);
-                // sphere.position.set(position.x, position.y, position.z);
             }
         }
 
-
+        // a function that triggers, places, and removes the jumpscares
         function jumpscare(index) {
-
+            // update the game state trackers
             inJumpscare = true;
             spawningIn = true;
 
+            // turn on the light to ensure the jumpscares can be seen
             light.intensity = 6;
-
+            // set the scene fog to .003
             scene.fog.density = .003;
 
 
-
+            // set the initial values for the jumpscare positioning modifiers
             let dist = 80;
             let lookAtHeight = 50;
             let monsterLookAtHeight = 1;
             let monsterHeight;
             let monster;
+            // if the index is -1 (the main monster)
             if (index == -1) {
+                // choose and play a random cause sound
                 let index = Math.floor(Math.random() * 3);
                 play(caughtSound[index]);
+                // manipulate the conditions so that the player will look towards the right 
+                // part of the monster
                 dist = 80;
                 lookAtHeight = 50;
                 monsterLookAtHeight = 1;
                 monsterHeight = 40;
                 monster = monsterGroup;
             }
+            // if the index is 0 (the clown mask)
             else if (index == 0) {
+                // play the clown sounds
                 play('sounds/jumpscares/clown.mp3');
+                // manipulate the conditions so that the player will look towards the right 
+                // part of the monster
                 dist = 30;
                 lookAtHeight = 20;
                 monsterLookAtHeight = -10;
                 monsterHeight = 40;
                 monster = jumpscare1;
             }
+            // if the index is 1 (the creepy baby)
             else if (index == 1) {
+                // manipulate the conditions so that the player will look towards the right 
+                // part of the monster
                 play('sounds/jumpscares/childLaugh.mp3');
                 dist = 90;
                 lookAtHeight = 0;
@@ -419,36 +431,39 @@
                 monsterHeight = 100;
                 monster = jumpscare2;
             }
-
+            // set a timer to hide the monster when the jumpscare is done (4 seconds)
             setTimeout(function () {
+                // update the gamestate tracker
                 inJumpscare = false;
+                // if the game is not over, move the monster back to the hiding spot
                 if (gameState != 2) {
                     monster.position.set(0, -500, 0);
                 }
-
+                // reset the scene fog
                 scene.fog.density = 0;
             }, 4000);
 
+            // raycast at the position of the camera in order to consistently place the monster 50 units above
+            //the ground (needed for lookat perspectives)
             let rayHeight = new THREE.Raycaster();
             let rayDirection = new THREE.Vector3(0, -1, 0);//Gives direction for raycaster
 
             let intersectHeight = rayHeight.intersectObject(terrainShadow); //Finds where the ray intersects with the 
 
+            // set the monster to the camera position, shifted slightly in the x direction
             monster.position.set(camera.position.x + dist, camera.position.y, camera.position.z);
             rayHeight.ray.set(monster.position, rayDirection.normalize()); //Has ray cast downwards from the treePos
             let yPos;
             if (intersectHeight.length != 0) {
                 yPos = intersectHeight[0].point.y; //Sets the yPos to where the ray intersected with the terrain
             }
-
+            // rectify the height for consistency 
             monster.position.y = yPos + monsterHeight;
-            //console.log(monster.position, ',monster pos');
-            //jumpscare1.lookAt(camera.position);
+            //set the lookat for the player and the monster so they look at each other
             let camlookat = new THREE.Vector3(monster.position.x, monster.position.y + lookAtHeight, monster.position.z);
             camera.lookAt(camlookat);
             jumpscareLookAt = camlookat;
             monster.lookAt(camera.position.x, camera.position.y + monsterLookAtHeight, camera.position.z);
-
         }
 
 
@@ -554,7 +569,7 @@
                 lightningMaterial: scene.userData.lightningMaterial,
             });
 
-          //add the storm to the scene, add the renderpass to the composer, and cal createoutline
+            //add the storm to the scene, add the renderpass to the composer, and cal createoutline
             scene.add(storm);
             composer.passes = [];
             composer.addPass(new RenderPass(scene, scene.userData.camera));
@@ -835,7 +850,7 @@
         // a function that initializes the parameters for the game
         function initParameters(level) {
             // each mode sets the headstart, the speed and acceleration of the monster, 
-            //and the stamina for the player
+            // and the stamina for the player
             if (level == "easy") {
                 console.log("easy");
                 distance = 60; //60
@@ -859,17 +874,21 @@
             }
         }
 
+        // initializes the star icon in the top right of the HUD scene
         function initStarIcon(color, scale) {
+            // create the star icon group and the geometry, material, and mesh for the center of it
             let starGroup = new THREE.Group();
             var geometry = new THREE.CircleGeometry(25, 5)
             var material = new THREE.MeshBasicMaterial({
                 color: color, side: THREE.DoubleSide
             })
-
             var circle = new THREE.Mesh(geometry, material)
             starGroup.add(circle);
 
+            // store the vertices of the center (a pentagon)
+            // these are used to create 2 points of each arm of the star
             let known = circle.geometry.vertices;
+            // these vector3 represent the point sof each arm of the star
             let additionalPoints = [
                 (new THREE.Vector3(44, 32, 0)),
                 (new THREE.Vector3(-15, 52, 0)),
@@ -877,36 +896,46 @@
                 (new THREE.Vector3(-15, -52, 0)),
                 (new THREE.Vector3(44, -30, 0))
             ];
-
+            // for the length of the known points
             for (let i = 1; i < known.length; i++) {
+                // create a new shape
                 const shape = new THREE.Shape();
+                // if the index is less than 5 (if it is not the last arm of the star)
                 if (i < 5) {
+                    // create the triangle for that arm
                     shape.moveTo(known[i].x, known[i].y);
                     shape.lineTo(known[i + 1].x, known[i + 1].y);
                     shape.lineTo(additionalPoints[i - 1].x, additionalPoints[i - 1].y);
                 }
+                // for the last arm of the star it is modified because you need to loop
+                // around to the first value in the array
                 else {
                     shape.moveTo(known[i].x, known[i].y);
                     shape.lineTo(known[1].x, known[1].y);
                     shape.lineTo(additionalPoints[i - 1].x, additionalPoints[i - 1].y);
                 }
-
+                // create the geometry, material, and mesh for the arms
                 const tgeometry = new THREE.ShapeGeometry(shape);
                 const tmaterial = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide });
                 const tmesh = new THREE.Mesh(tgeometry, tmaterial);
                 starGroup.add(tmesh);
             }
+            // set the rotation in order to make the star upright
+            // scale and position the stargroup to fit in the top right of the screen
             starGroup.rotation.z = .94;
             starGroup.scale.set(scale, scale);
             starGroup.position.set(windowWidth - (windowWidth * .60), windowHeight - (windowHeight * .65), 0);
-
             return starGroup;
         }
 
+        // a function to initialize the heart icons
         function initHeartIcon(x) {
+            // keep the y consistent for each heart icon but use preset x values to space them out
+            // in the bottom left corner
             const y = windowHeight - (windowHeight * .8);
             const heartShape = new THREE.Shape();
 
+            // create the vertices and curves to form the heart shape
             heartShape.moveTo(x + 5, y + 5);
             heartShape.bezierCurveTo(x + 5, y + 5, x + 4, y, x, y);
             heartShape.bezierCurveTo(x - 6, y, x - 6, y + 7, x - 6, y + 7);
@@ -915,27 +944,30 @@
             heartShape.bezierCurveTo(x + 16, y + 7, x + 16, y, x + 10, y);
             heartShape.bezierCurveTo(x + 7, y, x + 5, y + 5, x + 5, y + 5);
 
+            // create the geometry, mesh, and material for the heart
             const geometry = new THREE.ShapeGeometry(heartShape);
             const hmaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, side: THREE.DoubleSide });
             const mesh = new THREE.Mesh(geometry, hmaterial);
 
+            // set the rotation and scale then turn on mesh layers
             mesh.rotation.z = -3.15;
             mesh.scale.set(2, 2);
             mesh.layers.enable(1);
+            // add it to the hud scene and heart array
             sceneHUD.add(mesh);
             heartArray.push(mesh);
         }
 
 
-        //Initializes Cursor
-        function initCursor() {
-            cursorGeom = new THREE.SphereGeometry(0.02, 16, 16); //Creates a cursor geom
-            cursorMat = new THREE.MeshBasicMaterial({ transparent: true }); //Cursor material with color
-            cursorMat.opacity = 0;
-            cursor = new THREE.Mesh(cursorGeom, cursorMat); //Creates mesh
-            scene.add(cursor); //Adds cursor to the scene
-            spheres.push(cursor); //Adds cursor to the spheres array
-        }
+        // //Initializes Cursor
+        // function initCursor() {
+        //     cursorGeom = new THREE.SphereGeometry(0.02, 16, 16); //Creates a cursor geom
+        //     cursorMat = new THREE.MeshBasicMaterial({ transparent: true }); //Cursor material with color
+        //     cursorMat.opacity = 0;
+        //     cursor = new THREE.Mesh(cursorGeom, cursorMat); //Creates mesh
+        //     scene.add(cursor); //Adds cursor to the scene
+        //     spheres.push(cursor); //Adds cursor to the spheres array
+        // }
 
         //Initializes the sphere surrounding our "world"
         function initWorld() {
@@ -956,14 +988,21 @@
 
         }
 
+        // a function that creates the flashlight
         function initFlashLight() {
-            spotLight = new THREE.SpotLight(0xffff00, 2, 0, Math.PI * .1, 0, 1);
-            spotLight.castShadow = true;
-            spotLight.target = cursor;
-            spotLight.shadow.camera.near = 500;
-            spotLight.shadow.camera.far = 4000;
+            //create the pointlight and set the shadow parameters
+            let light = new THREE.PointLight(0xffff00, 6, 500, 4);
+            light.castShadow = true;
+            light.shadow.bias = .0005;
+            light.shadow.radius = 100;
+            light.shadow.mapSize.width = 2048;
+            light.shadow.mapSize.height = 2048;
+
+            // position the flashlight next to the side of the player and set the light boolean to on
+            light.position.set(camera.position.x, camera.position.y, camera.position.z + 10);
+            scene.add(light);
             spotLightOn = true;
-            camera.add(spotLight);
+            return(light);
         }
 
         //Creates the sun/moon and their corresponding point lights
@@ -991,19 +1030,23 @@
         }
 
 
+        // the material used for all the starshards (shiny)
         const starMaterial = new THREE.MeshPhysicalMaterial({
             color: 0xffff00,
             metalness: .75,
             roughness: 0
         });
 
+        // initialized the star shards
         function initStarShards(numStars) {
             for (let i = 0; i < numStars; i++) {
+                // make a new random position
                 let position = randomizePositions(380, 5); //380
+                // create the geometry, material, and mesh
                 const geometry = new THREE.ConeGeometry(10, 30, 3);
                 const material = starMaterial;
-
                 const sphere = new THREE.Mesh(geometry, material);
+                // turn on shadows anhd position the shard, add it to the starshards array
                 sphere.castShadows = true;
                 sphere.position.set(position.x, position.y, position.z);
                 starShards.push(sphere);
@@ -1018,17 +1061,14 @@
             for (let i = 0; i < 15; i++) {
                 let params;
                 let rules;
-                //Make oak trees for 10 iterations
                 if (i < 10) {
                     params = new Params("F", 2, 22.5, 25, Math.round(Math.random() * 2));
                     rules = parseRules("F=F[+F]F[F>>][<F]\nF=F[+F]F[+<<F][F>]");
                 }
-                //Make red wood trees for the next 10 iterations
                 else if (i >= 20) {
                     params = new Params("F", 3, 15, 15, Math.round(Math.random() * 2));
                     rules = parseRules("F=F>[<+F]F[+F>]<F\nF=F>[+F^>^]F\nF=F[+F>]F>");
                 }
-                //Make birch trees for the last 10 iterations
                 else {
                     params = new Params("F", 2, 30, 20, Math.round(Math.random() * 2));
                     rules = parseRules("F=F[+F]F[F>>][<F]\nF=F[+F]F[+<<F][F>]");
@@ -1124,6 +1164,7 @@
         }
 
 
+        // a function to initialize the fog for the scene
         function initFog() {
             const near = 30;
             const far = 100;
@@ -1212,8 +1253,8 @@
             //let xPos = Math.random() * (limit - bounds) + bounds;
             //let zPos = Math.random() * (limit - bounds) + bounds;
 
-            let xPos = newRandom(bounds, (limit-bounds));
-            let zPos = newRandom(bounds, (limit-bounds));
+            let xPos = newRandom(bounds, (limit - bounds));
+            let zPos = newRandom(bounds, (limit - bounds));
 
             let yPos = 100;//Gives the y pos a set point above the terrain
 
@@ -1237,116 +1278,136 @@
         }
 
 
+        // initialize the smoke for the monster 
         function initSmoke() {
+            // load the smoke texture
             smokeTexture = loader.load('skies/smoke1.png');
+            // create the material, geometry, and mesh
             smokeMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, map: smokeTexture, transparent: true, side: THREE.DoubleSide });
             smokeGeo = new THREE.DodecahedronGeometry(30, 0);
-            smokeParticles = [];
 
+            // load the texture for the eyes
             let eyesTexture = loader.load('skies/eyestra.png');
+            // create the geometry, material, and mesh for the eyes
             let eyesGeom = new THREE.PlaneGeometry(40, 40);
             let eyesMat = new THREE.MeshBasicMaterial({ transparent: true, map: eyesTexture, side: THREE.DoubleSide });
             let eyes = new THREE.Mesh(eyesGeom, eyesMat);
+            // position the eyes and add them to the monster group
             eyes.position.set(0, 70, 30);
             monsterGroup.add(eyes);
 
+            // load the texture for the smile
             let smileTexture = loader.load('skies/download.png');
+            // create the geometry, material, and mesh for the smile
             let smileGeo = new THREE.PlaneGeometry(40, 40);
             let smileMat = new THREE.MeshBasicMaterial({ transparent: true, map: smileTexture, side: THREE.DoubleSide });
             let smile = new THREE.Mesh(smileGeo, smileMat);
+            // position the mouth and add it to the monster group
             smile.position.set(0, 35, 30);
             monsterGroup.add(smile);
 
+            // create an array to store the smoke particles 
             smokeParticles = [];
+            // make 40 particles for the monster
             for (let p = 0; p < 40; p++) {
-               // x = Math.random() * 40;
-                //y = Math.random() * 50;
+                // create a random number within the given bounds
                 x = newRandom(0, 40);
                 y = newRandom(0, 50);
-                // if (random() == true) {
-                //     x *= -1;
-                // }
-                // if (random() == true) {
-                //     y *= -1;
-                // }
-                y = y + 50;
+                y = y + 50
 
+                // make a new mesh for that particle and randomize the rotation
                 var particle = new THREE.Mesh(smokeGeo, smokeMaterial);
                 let rotation = newRandom(0, 1000);
-                // Math.random() * 1000;
-                // if (random() == true) {
-                //     rotation *= -1;
-                // }
 
-
+                // set the position of the particle and rotate it to the former rotation
                 particle.position.set(x, y, 0);
                 particle.rotation.z = rotation;
+                // add it to the scene, the smokeparticles array, and the monster group
                 scene.add(particle);
                 smokeParticles.push(particle);
                 monsterGroup.add(particle);
             }
-            scene.add(monsterGroup);
 
+            // add the monstergroup to the scene and position the monster at the
+            // first footstep 
+            scene.add(monsterGroup);
             monsterGroup.position.set(previousPos[0].x, previousPos[0].y, previousPos[0].z);
         }
 
 
-
+        // a function that roates the smoke particles in the monster
         function evolveSmoke() {
+            // get the length of the particles array
             var sp = smokeParticles.length;
             while (sp--) {
+                // rotate the particle in the z axis by delta times 10
                 smokeParticles[sp].rotation.z += (delta * 10);
             }
         }
 
+        // a function that executes all the logic for the campfire
         function campFireLogic() {
+            // if the user is within 100 units of the cmapfire and the campfire is not out:
             if (calcPointDistance(camera.position, campfire.position) < 100 && campfire.height > 0) {
+                // set the campfire fade value to true
                 campfire.fade = true;
                 console.log("fading");
             }
+            // otherwise if the player is out of range
             else {
+                // set the campfire fade value to false
                 campfire.fade = false;
                 console.log("steady flame");
             }
-            //   for (let c = 0; c < campFires.length; c++) {
+            // for each particle in the campfire
             for (let p = 0; p < campfire.particles.length; p++) {
+                // store the campfire particle for ease of use later
                 let cfp = campfire.particles[p];
+                // translate the particle on the y axis using the particles unique direction
                 cfp.mesh.translateY(campfire.particles[p].direction.y);
-
+                // translate the particles on the x and z axis according to the wind value and their mass
                 cfp.mesh.translateX(wind / cfp.size);
                 cfp.mesh.translateZ(wind / cfp.size);
+                // if the particle is over the height limit assigned to the fire, modified by the particle size
+                // and the assigned fade rate (prevents large particles from going all the way to the top)
+                // OR the particle strays too far in the x or z direction
                 if (cfp.mesh.position.y > campfire.position.y + campfire.height - cfp.size * verticalFade
                     || cfp.mesh.position.x > campfire.position.x + 10
                     || cfp.mesh.position.x < campfire.position.x - 10
                     || cfp.mesh.position.z > campfire.position.z + 10
                     || cfp.mesh.position.z < campfire.position.z - 10
                 ) {
+                    // set the particle back to its starting position
                     cfp.mesh.position.set(cfp.position.x, cfp.position.y, cfp.position.z);
                 }
             }
-            if (campfire.height > 0 && campfire.fade == true) { //timeStep > .2 &&
+            // if the campfire height is over 0 and the fade is on
+            if (campfire.height > 0 && campfire.fade == true) {
+                // reduce the height of the campfire by the overall fade value
                 campfire.height -= overallFade;
-                //timeStep = 0;
             }
+            // if the campfire height is less than or equal to 0
             if (campfire.height <= 0) {
+                // for each particle
                 for (let p = 0; p < campfire.particles.length; p++) {
-                    //console.log(campFires[c].particles[p]);
+                    // change the particle color to black to represent coals
                     campfire.particles[p].mesh.material.color.setHex(0x000000);
-                    campfire.fade = false;
+                   
                 }
+                // set the fade to false and turn out the campfire light
+                campfire.fade = false;
                 console.log("fire out");
                 campfire.light.intensity = 0;
             }
 
         }
 
-        // }
 
-
-
-
+        // a function that changes the wind as the program runs
         function windLogic() {
+            // if the wind timer is over 3
             if (windTimer > 3) {
+                // create a new direction for the wind and reset the wind timer
                 console.log("wind changes");
                 wind = newRandom(0, .5);
                 windTimer = 0;
@@ -1354,70 +1415,107 @@
 
         }
 
+        // plays thunder and rain sounds throughout the game
         function thunderAndRain() {
+            // if the thunder timer is greater than the max thunder interval
             if (timerThunder >= maxThunder) {
+                // play a random audio from the thunder array
                 //console.log("thunder playing");
                 let index = Math.floor(Math.random() * 4);
                 play(thunderNoises[index]);
+                // reset the thunder timer and randomize the new max thunder value
                 timerThunder = 0;
                 maxThunder = Math.random() * 5 + 2;
             }
+            // if the rain timer is greater than 4
             if (rain >= 4) {
+                // play the main rain and thunder audio and reset the rain timer
                 play(thunderNoises[1]);
                 rain = 0;
             }
         }
 
+        // a function that sets the stamina bar and fog
         function staminaLogic() {
+            // if the stamina is greater than 50% of the max stamina
             if (stamina > maxStamina * .5) {
+                // make the stamina bar green
                 staminaBar.material.color.set(0x5CFF5C);
             }
+            // if the stamina is less than 20% of the max stamina
             else if (stamina < maxStamina * .2) {
+                // make the stamina bar red
                 staminaBar.material.color.set(0xDF362D);
             }
+            // otherwise (the middle 30%)
             else {
+                // make the stamina bar yellow
                 staminaBar.material.color.set(0xFFC55C);
             }
-
+            // scale the rate at which the stamina bar shrinks and grows based on the stamina
             scales = 2.015 * (stamina - 5) * .01;
+            // if the player is moving and the stamina is over 0
             if (moving == true && stamina > 0) {
+                // if the stamina is over 10% of the max stamina
                 if (stamina > maxStamina * .1) {
+                    // scale the stamina bar by scales
                     staminaBar.scale.x = scales;
                 }
+                // decrease stmaina by the fitness value (how quickly the stamina bar shrinks)
                 stamina -= fitness;
+                // if the game is still ongoing
                 if (gameState == 0) {
+                    // increase the fog in the game
                     scene.fog.density += .00003;
                 }
             }
+            // otherwise if the player is not moving and the stamina is less that the max stamina and the 
+            // stamina is over 0
             else if (moving == false && stamina < maxStamina && stamina >= 0) {
+                // scale the stamina bay by the scale and increase the stamina by the fitness times 5
+                // (done to make recovery faster than losing stamina)
                 staminaBar.scale.x = scales;
                 stamina += fitness * 5;
+                // if the game is still ongoing
                 if (gameState == 0) {
+                    // decrease the fog in the game
                     scene.fog.density -= .00003 * 5;
                 }
             }
         }
 
 
+        // a function that handles the star shards after you collect them
         function movingStarShardLogic() {
+            // if there is something in the starshards array
             if (movingStarShard.length != 0) {
+                // for each shard
                 for (let i = 0; i < movingStarShard.length; i++) {
+                    // if the shard y position is less than 450
                     if (movingStarShard[i].position.y <= 450) {
+                        // move the shard up 
                         movingStarShard[i].translateY(5);
                     }
+                    // otherwise (if it is over 450 y)
                     else {
+                        // call addstars to update the star icon 
                         addStars();
+                        // create an explostion at the position of the starshard
                         parts.push(new ExplodeAnimation(movingStarShard[i].position.x, movingStarShard[i].position.y, movingStarShard[i].position.z));
+                        // remove and dispose of the shard from the scene
                         scene.remove(movingStarShard[i]);
                         movingStarShard[i].material.dispose();
                         movingStarShard[i].geometry.dispose();
+                        // remove the shard from the array
                         movingStarShard.splice(i, 1);
                     }
                 }
             }
         }
 
+        // a function that handles the positioning for the camera during movement
         function cameraPositioning() {
+            // raycast from the camera position
             let ray = new THREE.Raycaster();
             var rayPos = new THREE.Vector3();
             rayPos.set(camera.position.x, camera.position.y, camera.position.z);
@@ -1427,18 +1525,22 @@
             let intersect = ray.intersectObject(terrain);
             // if the raycaster is intersecting the terrain
             if (intersect.length != 0) {
+                // place the camera 20 units above the ground
                 camera.position.y = (intersect[0].point.y + 20)
             }
             // in an edge case where the camera cannot find the terrain during loading, set the camera height to 50
+            // this ensures that the camera is above the max height for the terrain
             else {
                 camera.position.y = 50;
             }
         }
 
+        // a function that handles the logic for the stars in the sky
         function skyStars() {
+            // if the sky stars array is not empty
             if (prettyStars.length != 0) {
+                // for each star idk
                 for (let i = 0; i < prettyStars.length; i++) {
-                    //  console.log("INININININ");
                     lightness > 80 ? lightness = 50 : lightness++;
                     if (Math.random() > .5) {
                         prettyStars[i].material.color = new THREE.Color("hsl(255, 100%, " + lightness + "%)");
@@ -1446,13 +1548,17 @@
                 }
             }
 
+            // for each star in the shooting star array
             for (let i = 0; i < shootingStars.length; i++) {
+                // move the star in the direction at the same index in the star directions array
                 shootingStars[i].translateX(starXDirs[i]);
                 shootingStars[i].translateZ(starZDirs[i]);
             }
         }
 
+        // a function that resets the monster and game values when the player is caught
         function caughtReset() {
+            // for each level, reset the distance and the monsterspeed
             if (level == 'hard') {
                 distance = 50;
                 monsterSpeed = .03;
@@ -1465,12 +1571,12 @@
                 distance = 60;
                 monsterSpeed = .06;
             }
+            // clear the previous position array and reduce the headstart to 80% of its original value
             previousPos = [];
             distance = distance * .8;
+            // push the camera position the the previous pos array
             previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z));
-
         }
-
 
         function monsterLogic() {
             if (previousPos.length > distance && campfire.fade == false) {
@@ -1904,7 +2010,7 @@
         // function calls
         let staminaBar = initStaminaBar();
         let monster = initMonster();
-       // initCursor();
+        // initCursor();
         makeModels();
         initLightning();
         initWorld();
@@ -1914,7 +2020,7 @@
         initTrees();
         initStarShards(5);
         initBody();
-        //initFlashLight();
+        let light = initFlashLight();
 
 
 
@@ -1922,16 +2028,7 @@
         let firePosition = randomizePositions(300, 50);
         let campfire = new CampFire(firePosition, heightLimit);
 
-        const light = new THREE.PointLight(0xffff00, 6, 500, 4);
-        light.castShadow = true;
-        light.shadow.bias = .0005;
-        light.shadow.radius = 100;
-        light.shadow.mapSize.width = 2048;
-        light.shadow.mapSize.height = 2048;
-        
-        light.position.set(camera.position.x, camera.position.y, camera.position.z + 10);
-        scene.add(light);
-        spotLightOn = true;
+
 
 
 
