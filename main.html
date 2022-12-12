@@ -260,7 +260,7 @@
             this.position = new THREE.Vector3(pos.x, pos.y, pos.z);
             this.fade = false;
             // Adds a light to the fire and position it
-            this.light = new THREE.PointLight(0xffff00, 5, 100);
+            this.light = new THREE.PointLight(0xffff00, 2.5, 100);
             this.light.position.set(this.position.x, this.position.y + 50, this.position.z);
             scene.add(this.light);
             for (let i = 0; i < pCount; i++) {//The for loop creates the particles for the campfire
@@ -976,7 +976,7 @@
         // a function that creates the flashlight
         function initFlashLight() {
             //create the pointlight and set the shadow parameters
-            let light = new THREE.PointLight(0xffff00, 6, 500, 4);
+            let light = new THREE.PointLight(0xffff00, 6, 350, 8);
             light.castShadow = true;
             light.shadow.bias = .0005;
             light.shadow.radius = 100;
@@ -1289,6 +1289,7 @@
             monsterGroup.add(smile);
 
             // create an array to store the smoke particles 
+            //src: https://en.threejs-university.com/2021/08/04/creating-a-smoke-effect-in-three-js/
             smokeParticles = [];
             // make 40 particles for the monster
             for (let p = 0; p < 40; p++) {
@@ -1522,6 +1523,7 @@
             // if the sky stars array is not empty
             if (prettyStars.length != 0) {
                 // for each star idk
+                //src: https://kellylougheed.medium.com/3d-starry-night-with-three-js-7f9191bbcb84
                 for (let i = 0; i < prettyStars.length; i++) {
                     lightness > 80 ? lightness = 50 : lightness++;
                     if (Math.random() > .5) {
