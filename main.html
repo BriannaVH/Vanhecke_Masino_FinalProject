@@ -357,9 +357,9 @@
         // A function that places the jumpscares
         function placeJumpscares() {
             // For the number of jumpscares you want
-            for (let i = 0; i < 8; i++) { //8
+            for (let i = 0; i < 50; i++) { //8
                 // Gets a random position and then adds that position to the array
-                let position = randomizePositions(380, 40); //380
+                let position = randomizePositions(380, 50); //380 //40
                 jumpscarePositions.push(new THREE.Vector3(position.x, position.y, position.z));
             }
         }
@@ -368,7 +368,7 @@
         function jumpscare(index) {
             // Update the game state trackers
             inJumpscare = true;
-            spawningIn = true;
+           
             // Turn on the light to ensure the jumpscares can be seen
             light.intensity = 6;
             // Set the scene fog to .003
@@ -382,6 +382,7 @@
             let monster;
             // If the index is -1 (the main monster)
             if (index == -1) {
+                spawningIn = true;
                 // Choose and play a random monster caught sound
                 let index = Math.floor(Math.random() * 3);
                 play(caughtSound[index]);
@@ -1215,9 +1216,9 @@
 
         //Creates sun and moon bulblights
         function initMoon() {
-            moon = new initLights(moonColor[0], 0, 280, 0, .1);
-            renderer.setClearColor(skyColors[2]);
-            world.material.color.setHex(skyColors[2]);
+            moon = new initLights(0xdde2e5, 0, 280, 0, .1);
+            renderer.setClearColor(0x094f6d);
+            world.material.color.setHex(0x094f6d);
             //worldItems.push(moon.bulbLight);
         }
 
@@ -1795,24 +1796,6 @@
                 currentTime = 0;
             }
             scene.userData.render(currentTime);
-            // raycast from the camera position in the direction of the camera lookat
-            // raycaster.set(camera.getWorldPosition(new THREE.Vector3), camera.getWorldDirection(new THREE.Vector3));
-            // // record the intersection point of the raycaster with any world item
-            // const intersections = raycaster.intersectObjects(worldItems, true);
-            // // record the intersection point of the raycaster with any tree
-            // // set intersections to the first item in itself if it is not null
-            // intersection = (intersections.length) > 0 ? intersections[0] : null;
-            // // if toggle is greater than .001 and intersections is not null 
-            // // toggle detects when the cursor has moved too far from the mouse
-            // if (toggle > 0.001 && intersection !== null) {
-            //     // update the position of the sphere to be at the point of the raycaster intersection
-            //     spheres[0].position.copy(intersection.point);
-            //     // scale the sphere so that the size is consistant 
-            //     cursor.scale.set(.0001);
-            //     toggle = 0;
-            // }
-            // //increase toggle by delta
-            // toggle += clock.getDelta();
             // update the size of the window if needed
             updateSize();
             requestAnimationFrame(render);
@@ -1933,7 +1916,7 @@
                 //Make a geometry, material, and mesh of a point
                 var dotGeometry = new THREE.Geometry();
                 dotGeometry.vertices.push(new THREE.Vector3(0, 0, 0));
-                var dotMaterial = new THREE.PointsMaterial({ size: Math.random() * 3, sizeAttenuation: false });
+                var dotMaterial = new THREE.PointsMaterial({ size: Math.random() * 6, sizeAttenuation: false });
                 var dot = new THREE.Points(dotGeometry, dotMaterial);
               
                 //Give the star a random x and z position
@@ -1998,6 +1981,7 @@
         initWorld();
         initFog();
         initTerrain();
+        placeJumpscares(); //Places jumpscares around map
         initMoon();
         initTrees(0, 15);
         initStarShards(5);
@@ -2014,7 +1998,7 @@
         let starGroup = initStarIcon(0x000000, .5);
         sceneHUD.add(starGroup); //Adds star icon to the hud scene
         sceneHUD.add(starBorderGroup)//Adds black outline of a star to the hud scene
-        placeJumpscares(); //Places jumpscares around map
+  
 
         animate();
         render();
