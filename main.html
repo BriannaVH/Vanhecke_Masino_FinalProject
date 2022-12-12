@@ -140,8 +140,8 @@
 
         //Below creates more materials with textures
         let wood = new THREE.MeshPhongMaterial({ color: 0x80471C, map: loader.load("trees/oakwood.jpg") });
-        let fireMat1 = new THREE.MeshBasicMaterial({ color: 0xff0000, map: loader.load("star/testfire.jpg"), opacity: .5, transparent: true });
-        let fireMat2 = new THREE.MeshBasicMaterial({ color: 0xFFA500, map: loader.load("star/testfire.jpg"), opacity: .5, transparent: true });
+        let fireMat1 = new THREE.MeshBasicMaterial({ color: 0xff0000, map: loader.load("campfire/fire.jpg"), opacity: .5, transparent: true });
+        let fireMat2 = new THREE.MeshBasicMaterial({ color: 0xFFA500, map: loader.load("campfire/fire.jpg"), opacity: .5, transparent: true });
         let fireMaterials = [fireMat1, fireMat2];
 
 
@@ -236,7 +236,7 @@
         function Log(rotationSide, pos) {
             // Creates a geometry, material, and a mesh (turns on shadows)
             const geometry = new THREE.CylinderGeometry(5, 5, 30, 32);
-            const material = new THREE.MeshPhongMaterial({ color: 0x964B00, map: loader.load("star/wood.jpg") }); //, map: loader.load("wood/wood.jpg") 
+            const material = new THREE.MeshPhongMaterial({ color: 0x964B00, map: loader.load("campfire/wood.jpg") }); //, map: loader.load("wood/wood.jpg") 
             const cylinder = new THREE.Mesh(geometry, material);
             cylinder.castShadow = true;
 
@@ -357,7 +357,7 @@
         // A function that places the jumpscares
         function placeJumpscares() {
             // For the number of jumpscares you want
-            for (let i = 0; i < 50; i++) { //8
+            for (let i = 0; i < 8; i++) { //8
                 // Gets a random position and then adds that position to the array
                 let position = randomizePositions(380, 50); //380 //40
                 jumpscarePositions.push(new THREE.Vector3(position.x, position.y, position.z));
@@ -384,7 +384,7 @@
             if (index == -1) {
                 spawningIn = true;
                 // Choose and play a random monster caught sound
-                let index = Math.floor(Math.random() * 3);
+                let index = Math.floor(Math.random() * 4);
                 play(caughtSound[index]);
                 // Manipulate the conditions so that the player will look towards the correct 
                 // part of the monster
@@ -1263,13 +1263,13 @@
         // initialize the smoke for the monster 
         function initMonster() {
             // load the smoke texture
-            smokeTexture = loader.load('skies/smoke1.png');
+            smokeTexture = loader.load('monster/smoke1.png');
             // create the material, geometry, and mesh
             smokeMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, map: smokeTexture, transparent: true, side: THREE.DoubleSide });
             smokeGeo = new THREE.DodecahedronGeometry(30, 0);
 
             // load the texture for the eyes
-            let eyesTexture = loader.load('skies/eyestra.png');
+            let eyesTexture = loader.load('monster/eyes.png');
             // create the geometry, material, and mesh for the eyes
             let eyesGeom = new THREE.PlaneGeometry(40, 40);
             let eyesMat = new THREE.MeshBasicMaterial({ transparent: true, map: eyesTexture, side: THREE.DoubleSide });
@@ -1279,7 +1279,7 @@
             monsterGroup.add(eyes);
 
             // load the texture for the smile
-            let smileTexture = loader.load('skies/download.png');
+            let smileTexture = loader.load('monster/smile.png');
             // create the geometry, material, and mesh for the smile
             let smileGeo = new THREE.PlaneGeometry(40, 40);
             let smileMat = new THREE.MeshBasicMaterial({ transparent: true, map: smileTexture, side: THREE.DoubleSide });
@@ -1522,7 +1522,7 @@
         function skyStars() {
             // if the sky stars array is not empty
             if (prettyStars.length != 0) {
-                // for each star idk
+                // Randomly choose whether each star from the prettystar array has their color changed
                 //src: https://kellylougheed.medium.com/3d-starry-night-with-three-js-7f9191bbcb84
                 for (let i = 0; i < prettyStars.length; i++) {
                     lightness > 80 ? lightness = 50 : lightness++;

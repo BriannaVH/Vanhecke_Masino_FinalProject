@@ -1,7 +1,7 @@
 // a file to hold our declaration of global variable in order to reduce clutter in our main file
 
 // variables relating to the sounds
-let caughtSound = ['sounds/catch/creatureGrowl.wav', 'sounds/catch/groan.wav', 'sounds/catch/scaryRoar.wav'];
+let caughtSound = ['sounds/catch/creatureGrowl.wav', 'sounds/catch/groan.wav', 'sounds/catch/scaryRoar.wav', 'sounds/catch/close3.wav'];
 let thunderNoises = ['sounds/thunder1.wav', 'sounds/thunder2.wav', 'sounds/thunder3.wav', 'sounds/thunder4.wav',];
 let heartbeatAudio = new Audio('sounds/heartbeat.wav');
 let winSounds = ['sounds/gameOver/win.mp3', 'sounds/gameOver/win2.wav'];
