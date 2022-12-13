@@ -836,19 +836,19 @@
                 distance = 60; //60
                 monsterSpeed = .06;//.06
                 stamina = 100;
-                increment = 2;
+                increment = .5;
             }
             else if (level == "medium") {
-                distance = 50;
-                monsterSpeed = .06;
+                distance = 30;
+                monsterSpeed = .04;
                 stamina = 100;
-                increment = 2;
+                increment = .40;
             }
             else if (level == "hard") {
                 distance = 60;
-                monsterSpeed = .05;
-                stamina = 70;
-                increment = 1;
+                monsterSpeed = .03;
+                stamina = 100;
+                increment = .35;
             }
         }
 
@@ -1298,7 +1298,7 @@
         // a function that executes all the logic for the campfire
         function campFireLogic() {
             // if the user is within 100 units of the cmapfire and the campfire is not out:
-            if (calcPointDistance(camera.position, campfire.position) < 100 && campfire.height > 0) {
+            if (calcPointDistance(camera.position, campfire.position) < 50 && campfire.height > 0) {
                 // set the campfire fade value to true
                 campfire.fade = true;
             }
@@ -1503,12 +1503,12 @@
         function caughtReset() {
             // for each level, reset the distance and the monsterspeed
             if (level == 'hard') {
-                distance = 50;
+                distance = 30;
                 monsterSpeed = .03;
             }
             else if (level == 'medium') {
-                distance = 50;
-                monsterSpeed = .06;
+                distance = 30;
+                monsterSpeed = .04;
             }
             else {
                 distance = 60;
@@ -1539,7 +1539,7 @@
                     previousPos.shift(); //removes the first element from previous pos array
                     distance -= 1;
                     //If the user is within 15 units from the monster, the user is caught
-                    if (calcPointDistance(monsterGroup.position, camera.position) < 15) { ///30
+                    if (calcPointDistance(monsterGroup.position, camera.position) < 30) { ///30
                         caught = true;
                     }
                      //If the user is within 150 units from the monster, the user is close to being caught and their heartbeat should start pounding
@@ -1730,7 +1730,7 @@
                     }
                     if (typeof dog != 'undefined') { //If the shiba exists then make the shiba follow the camera and make it always 
                         //watch the user
-                        if (calcPointDistance(camera.position, previousPos[previousPos.length - 1]) != 0) {
+                        if (calcPointDistance(camera.position, previousPos[previousPos.length - 1]) != 0 && campfire.fade == false) {
                             previousPos.push(new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z))
                         }
                         if (previousPos.length > 10) {
