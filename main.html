@@ -1545,7 +1545,7 @@
                      //If the user is within 150 units from the monster, the user is close to being caught and their heartbeat should start pounding
                     else if (calcPointDistance(monsterGroup.position, camera.position) < 200) {
                         heartbeatAudio.play();
-                        heartbeatAudio.volume = 0
+                        heartbeatAudio.volume = 1;
                     }
                     //If the user is not within 150 units from the monster then they will not hear their heartbeat
                     else if (calcPointDistance(monsterGroup.position, camera.position) > 220) {
