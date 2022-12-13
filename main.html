@@ -207,7 +207,7 @@
                     // Bring up the blocker and losing game html overlay and play the loss sound after 4 seconds
                     blocker.style.display = 'block';
                     lost.style.display = 'block';
-                    play('sounds/gameOver/smash.mp3')
+                    play('sounds/gameOver/smash.mp3', .5)
                 }, 4000)
             }
             // Unlocks the controls
@@ -385,7 +385,7 @@
                 spawningIn = true;
                 // Choose and play a random monster caught sound
                 let index = Math.floor(Math.random() * 4);
-                play(caughtSound[index]);
+                play(caughtSound[index], .1);
                 // Manipulate the conditions so that the player will look towards the correct 
                 // part of the monster
                 dist = 80;
@@ -397,7 +397,7 @@
             // If the index is 0 (the clown mask)
             else if (index == 0) {
                 // PLay the clown sounds
-                play('sounds/jumpscares/clown.mp3');
+                play('sounds/jumpscares/clown.mp3', .5);
                 // Manipulate the conditions so that the player will look towards the correct 
                 // part of the monster
                 dist = 30;
@@ -410,7 +410,7 @@
             else if (index == 1) {
                 // Manipulate the conditions so that the player will look towards the correct 
                 // part of the monster
-                play('sounds/jumpscares/childLaugh.mp3');
+                play('sounds/jumpscares/childLaugh.mp3', .5);
                 dist = 90;
                 lookAtHeight = 0;
                 monsterLookAtHeight = 60;
@@ -523,7 +523,7 @@
                 roughness: 0.85,
                 straightness: 0.65,
 
-                // when a subarray is created... idk man
+                // This handles the subarray recursion and positioning 
                 onSubrayCreation: function (segment, parentSubray, childSubray, lightningStrike) {
 
                     lightningStrike.subrayConePosition(segment, parentSubray, childSubray, 0.6, 0.6, 0.5);
@@ -944,16 +944,6 @@
         }
 
 
-        // //Initializes Cursor
-        // function initCursor() {
-        //     cursorGeom = new THREE.SphereGeometry(0.02, 16, 16); //Creates a cursor geom
-        //     cursorMat = new THREE.MeshBasicMaterial({ transparent: true }); //Cursor material with color
-        //     cursorMat.opacity = 0;
-        //     cursor = new THREE.Mesh(cursorGeom, cursorMat); //Creates mesh
-        //     scene.add(cursor); //Adds cursor to the scene
-        //     spheres.push(cursor); //Adds cursor to the spheres array
-        // }
-
         //Initializes the sphere surrounding our "world"
         function initWorld() {
             worldGeom = new THREE.SphereGeometry(550, 32, 32); //Creates world Geometry (is a sphere)
@@ -1231,22 +1221,10 @@
             terrain.updateMatrixWorld(true);
             scene.updateMatrixWorld(true);
             let treePos = new THREE.Vector3();
-            //Gives x and z a random position within the bounds of the terrain
-            //let xPos = Math.random() * (limit - bounds) + bounds;
-            //let zPos = Math.random() * (limit - bounds) + bounds;
-
             let xPos = newRandom(bounds, (limit - bounds));
             let zPos = newRandom(bounds, (limit - bounds));
 
             let yPos = 100;//Gives the y pos a set point above the terrain
-
-            //Randomizes whether the x and z position were negative
-            // if (random() == true) {
-            //     xPos *= -1;
-            // }
-            // if (random() == true) {
-            //     zPos *= -1;
-            // }
 
             treePos.set(xPos, yPos, zPos);//Sets treePosition to the randomized x,y and z coordinates
             rayHeight.ray.set(treePos, rayDirection.normalize()); //Has ray cast downwards from the treePos
@@ -1334,13 +1312,13 @@
             if (calcPointDistance(camera.position, campfire.position) < 100 && campfire.height > 0) {
                 // set the campfire fade value to true
                 campfire.fade = true;
-                console.log("fading");
+                //console.log("fading");
             }
             // otherwise if the player is out of range
             else {
                 // set the campfire fade value to false
                 campfire.fade = false;
-                console.log("steady flame");
+                //console.log("steady flame");
             }
             // for each particle in the campfire
             for (let p = 0; p < campfire.particles.length; p++) {
@@ -1375,11 +1353,10 @@
                 for (let p = 0; p < campfire.particles.length; p++) {
                     // change the particle color to black to represent coals
                     campfire.particles[p].mesh.material.color.setHex(0x000000);
-
                 }
                 // set the fade to false and turn out the campfire light
                 campfire.fade = false;
-                console.log("fire out");
+                //console.log("fire out");
                 campfire.light.intensity = 0;
             }
 
@@ -1391,11 +1368,10 @@
             // if the wind timer is over 3
             if (windTimer > 3) {
                 // create a new direction for the wind and reset the wind timer
-                console.log("wind changes");
+                //console.log("wind changes");
                 wind = newRandom(0, .5);
                 windTimer = 0;
             }
-
         }
 
         // plays thunder and rain sounds throughout the game
@@ -1405,7 +1381,7 @@
                 // play a random audio from the thunder array
                 //console.log("thunder playing");
                 let index = Math.floor(Math.random() * 4);
-                play(thunderNoises[index]);
+                play(thunderNoises[index], .1);
                 // reset the thunder timer and randomize the new max thunder value
                 timerThunder = 0;
                 maxThunder = Math.random() * 5 + 2;
@@ -1413,7 +1389,7 @@
             // if the rain timer is greater than 4
             if (rain >= 4) {
                 // play the main rain and thunder audio and reset the rain timer
-                play(thunderNoises[1]);
+                play(thunderNoises[1], .1);
                 rain = 0;
             }
         }
@@ -1531,7 +1507,6 @@
                     }
                 }
             }
-
             // for each star in the shooting star array
             for (let i = 0; i < shootingStars.length; i++) {
                 // move the star in the direction at the same index in the star directions array
@@ -1568,7 +1543,7 @@
             //currently hiding at a campfire, the moster can move
             if (previousPos.length > distance && campfire.fade == false) {
                 if (spawningIn == true) { //If the monster has not spawned in yet, spawn in the monster and play the music
-                    play("sounds/close/spawn.mp3");
+                    play("sounds/close/spawn.mp3", .2);
                     spawningIn = false;
                 }
                 timer += delta;
@@ -1585,12 +1560,14 @@
                         caught = true;
                     }
                      //If the user is within 150 units from the monster, the user is close to being caught and their heartbeat should start pounding
-                    else if (calcPointDistance(monsterGroup.position, camera.position) < 150) {
+                    else if (calcPointDistance(monsterGroup.position, camera.position) < 200) {
+                        console.log("play heartbeat");
                         heartbeatAudio.play();
-                        heartbeatAudio.volume = 1;
+                        heartbeatAudio.volume = 0
                     }
                     //If the user is not within 150 units from the monster then they will not hear their heartbeat
-                    else if (calcPointDistance(monsterGroup.position, camera.position) > 150) {
+                    else if (calcPointDistance(monsterGroup.position, camera.position) > 220) {
+                        console.log("stop heartbeart");
                         heartbeatAudio.pause();
                         heartbeatAudio.currentTime = 0;
                     }
@@ -1616,7 +1593,7 @@
             heartbeatAudio.pause();//Disable the heart beat audio completely
             heartbeatAudio.currentTime = 0;
             jumpscarePositions = []; //Get rid of all jumpscares
-            let length = previousPos.length; //DONT KNOW WHAT IMMEDIATE BELOW OES
+            let length = previousPos.length; //this keep the previous position length at or around 10
             if (length > 10) {
                 previousPos = previousPos.splice(10, previousPos.length - 10);
             }
@@ -1627,7 +1604,7 @@
             makeShiba(previousPos); //Make a shiba using one of your previous positions
             shibaCounter += 1;//Increment shiba counter
             let index = Math.floor(Math.random() * 2);
-            play(winSounds[index]); //Play random winning noise
+            play(winSounds[index], .5); //Play random winning noise
         }
 
         //Function that creates the animation for the end star that appears when a user wins
@@ -1679,7 +1656,6 @@
 
         //The animate function is a function which is continuously called for every frame of the program
         function animate() {
-
             //Increments all timers by delta
             delta = clock.getDelta();
             rain += delta;
@@ -1702,7 +1678,7 @@
                 }
                 if (jumpscarePositions.length != 0) {//If there are still jumpscares throughout the map
                     for (let i = 0; i < jumpscarePositions.length; i++) { //Constantly check if the user is close enough to be jumpscared
-                        if (calcPointDistance(camera.position, jumpscarePositions[i]) < 30 && calcPointDistance(camera.position, monsterGroup.position) > 15) {
+                        if (calcPointDistance(camera.position, jumpscarePositions[i]) < 30 && calcPointDistance(camera.position, monsterGroup.position) > 50) {
                             let index = Math.floor(Math.random() * 2);
                             jumpscare(index); //Randomize which jumpscare model is called
                             jumpscarePositions.splice(i, 1); //Remove that jumpscare position from 
@@ -1726,7 +1702,6 @@
 
                 //Creates a raycaster at the camera position that casts in the -y direction
                 cameraPositioning();
-
                 // If the controls are locked in 
                 if (controls.isLocked === true) {
                     // Set yPos to the camera position minus 5 then set the group to the camera x z and yPos
@@ -1737,9 +1712,8 @@
                     // Make the group rotation match the camera rotation
                     humanGroup.setRotationFromMatrix(camera.matrix);
                 }
-
                 if (gameState == 0) { //If the game is still going
-                    //DONT KNOW WHAT BELOW IS DOING
+                    // handles the acceleration for the monster over the course of the game
                     if (gameTime > increment) {
                         monsterSpeed -= .01;
                         gameTime = 0;
@@ -1801,8 +1775,6 @@
             // update the size of the window if needed
             updateSize();
             requestAnimationFrame(render);
-            // Rotate the sun and moon around the world 
-
             hudTexture.needsUpdate = true;
             // Render HUD on top of the scene.
             renderer.render(scene, camera);
@@ -1834,7 +1806,7 @@
                     else if (keyCode == 68) movement = "right";
                     else if (keyCode == 83) movement = "backward";
                     else if (keyCode == 70) { //If the user clicks F then toggle the light intensity on and off
-                        play('sounds/click.mp3')
+                        play('sounds/click.mp3', .5)
                         spotLightOn = !spotLightOn;
                         if (spotLightOn == false) {
                             light.intensity = 0;
@@ -1847,7 +1819,6 @@
                     }
                     if (movement != 0) moveAround(); //If the user is moving then call the moveAround function
                 }
-
             }
         }
 
@@ -1888,18 +1859,19 @@
                 hit = false; //Sets the "hit" boolean to false
             }
             //Src: https://github.com/TovAqulic/threejs_collision_issue
+            // when the a star icon is collected
             if (starHit != -1) {
-                play('sounds/starAscension.wav');
+                // play the sound and move the shard
+                play('sounds/starAscension.wav', .1);
                 movingStarShard.push(starShards[starHit]);
                 starShards.splice(starHit, 1);
                 starHit = -1; //Sets the "hit" boolean to false
                 starsCollected += 1;
+                // change the color of the star icon and checks if that is the last starshard 
                 starGroup.children[starsCollected].material.color.setHex(0xffff00);
                 if (starsCollected == 5) {
                     starGroup.children[0].material.color.setHex(0xffff00);
-                    //  gameOver(1);
                     gameState = 1;
-
                 }
             }
             //If the user is out of bounds then move them in the opposite direction of the way they are trying to walk
@@ -1918,7 +1890,7 @@
                 //Make a geometry, material, and mesh of a point
                 var dotGeometry = new THREE.Geometry();
                 dotGeometry.vertices.push(new THREE.Vector3(0, 0, 0));
-                var dotMaterial = new THREE.PointsMaterial({ size: Math.random() * 6, sizeAttenuation: false });
+                var dotMaterial = new THREE.PointsMaterial({ size: Math.random() * 3.5, sizeAttenuation: false });
                 var dot = new THREE.Points(dotGeometry, dotMaterial);
               
                 //Give the star a random x and z position
@@ -1949,11 +1921,9 @@
         //Function which moves points in the shooting stars array in a random direction 
         function addShootingStar() {
             for (let i = 0; i < shootingStars.length; i++) { //For the length of the shooting stars array
-
                 //Give the x and z a random position between two limits
                 let x = newRandom(2, 5);
                 let z = newRandom(2, 5);
-              
                 //Add the new x and z positions to both of the star direction arrays
                 starXDirs.push(x);
                 starZDirs.push(z);
@@ -1977,7 +1947,6 @@
         // Function calls
         let staminaBar = initStaminaBar();
         let monster = initMonster();
-        // initCursor();
         makeModels();
         initLightning();
         initWorld();
@@ -1991,11 +1960,11 @@
         let light = initFlashLight();
         let firePosition = randomizePositions(300, 50);
         let campfire = new CampFire(firePosition, heightLimit);
-
+        // creates the heart icons
         for (let i = 0; i < 3; i++) { //Creates three hearts and adds them to the scene
             initHeartIcon(heartPositions[i]);
         }
-
+        //creates the star collection icon
         let starBorderGroup = initStarIcon(0x000000, .6);
         let starGroup = initStarIcon(0x000000, .5);
         sceneHUD.add(starGroup); //Adds star icon to the hud scene

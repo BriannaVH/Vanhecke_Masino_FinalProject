@@ -12,9 +12,9 @@ function createRandomPosOrNeg(max, min) {
 }
 
 // a function that plays an audio clip
-function play(path) {
+function play(path, volume) {
     audio = new Audio(path);
-    audio.volume = 1;
+    audio.volume = volume;
     audio.play();
 }
 
