@@ -1019,7 +1019,6 @@
                 sphere.castShadows = true;
                 sphere.position.set(position.x, position.y, position.z);
                 starShards.push(sphere);
-                //worldItems.push(sphere);
                 scene.add(sphere);
             }
         }
@@ -1050,8 +1049,7 @@
                 //Enables shadows for tree
                 newTree.castShadow = true;
                 newTree.receiveShadow = true;
-                //Pushes tree created onto the worldItems array and trees array
-                //worldItems.push(newTree);
+                //Pushes tree created onto the trees array
                 trees.push(newTree);
 
                 scene.add(newTree);
@@ -1157,7 +1155,6 @@
             //how hilly a certain part is
             water.receiveShadow = true; //Water can receive shadows
             scene.add(water); //Adds water to scene
-            // worldItems.push(water); //Adds water to worldItems so that the cursor will recognize the water and not disappear
 
             terrainGeom = new THREE.PlaneBufferGeometry(800, 800, 256, 256); //Creates terrain geometry
             terrainMat = new THREE.MeshPhysicalMaterial({
@@ -1195,7 +1192,6 @@
 
 
             terrain.castShadow = true;
-            //worldItems.push(terrain);
         }
 
         //Creates sun and moon bulblights
@@ -1203,7 +1199,6 @@
             moon = new initLights(0xdde2e5, 0, 280, 0, .1);
             renderer.setClearColor(0x094f6d);
             world.material.color.setHex(0x094f6d);
-            //worldItems.push(moon.bulbLight);
         }
 
 
