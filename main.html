@@ -1221,8 +1221,8 @@
             terrain.updateMatrixWorld(true);
             scene.updateMatrixWorld(true);
             let treePos = new THREE.Vector3();
-            let xPos = newRandom(bounds, (limit - bounds));
-            let zPos = newRandom(bounds, (limit - bounds));
+            let xPos = newRandom(bounds, limit);
+            let zPos = newRandom(bounds, limit);
 
             let yPos = 100;//Gives the y pos a set point above the terrain
 
@@ -1605,6 +1605,9 @@
             shibaCounter += 1;//Increment shiba counter
             let index = Math.floor(Math.random() * 2);
             play(winSounds[index], .5); //Play random winning noise
+            setTimeout(() => {
+                play('sounds/gameOver/reginald.mp3', .5);
+                }, 4000)
         }
 
         //Function that creates the animation for the end star that appears when a user wins
@@ -1629,7 +1632,7 @@
                 //Get rid of moon material and geometry, and change the light color to yellow
                 moon.bulbMat.dispose(); 
                 moon.bulbGeometry.dispose();
-                moon.bulbLight.color.setHex(0xffff00);
+                moon.bulbLight.color.setHex(0xffffff);
                 moon.bulbMat.color.setHex(0xffff00);
                 if (number == 0) { //If the end star hasnt been added to the scene, add it to the scene and position it 
                     endStar = initStarIcon(0xffff00, .5);

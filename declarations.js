@@ -4,7 +4,7 @@
 let caughtSound = ['sounds/catch/creatureGrowl.wav', 'sounds/catch/groan.wav', 'sounds/catch/scaryRoar.wav', 'sounds/catch/close3.wav'];
 let thunderNoises = ['sounds/thunder1.wav', 'sounds/thunder2.wav', 'sounds/thunder3.wav', 'sounds/thunder4.wav',];
 let heartbeatAudio = new Audio('sounds/heartbeat.wav');
-let winSounds = ['sounds/gameOver/win.mp3', 'sounds/gameOver/win2.wav'];
+let winSounds = ['sounds/gameOver/win3.wav', 'sounds/gameOver/win2.wav'];
 
 
 // variables used for the rain sound and the wind affecting the campfire
