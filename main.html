@@ -155,10 +155,8 @@
             gameControls.style.display = 'none';
             // Get the value from the drop down button to set the game difficulty
             var e = document.getElementById("selectButton2");
-            console.log(e);
             function onChange() { //Set the current level of the game to whatever the user selected
                 level = e.value;
-                console.log(level);
             }
             e.onchange = onChange;
             onChange();
@@ -286,7 +284,6 @@
                 function (gltf) {
                     dog = gltf.scene;
                     dog.scale.set(20, 20, 20);
-                    //console.log(dog);
                     scene.add(dog);
                     gltf.animations; // Array<THREE.AnimationClip>
                     gltf.scene; // THREE.Group
@@ -836,21 +833,18 @@
             // the speed and acceleration of the monster. 
             // and the stamina for the player
             if (level == "easy") {
-                console.log("easy");
                 distance = 60; //60
                 monsterSpeed = .06;//.06
                 stamina = 100;
                 increment = 2;
             }
             else if (level == "medium") {
-                console.log("medium");
                 distance = 50;
                 monsterSpeed = .06;
                 stamina = 100;
                 increment = 2;
             }
             else if (level == "hard") {
-                console.log("hard");
                 distance = 60;
                 monsterSpeed = .05;
                 stamina = 70;
@@ -1312,13 +1306,11 @@
             if (calcPointDistance(camera.position, campfire.position) < 100 && campfire.height > 0) {
                 // set the campfire fade value to true
                 campfire.fade = true;
-                //console.log("fading");
             }
             // otherwise if the player is out of range
             else {
                 // set the campfire fade value to false
                 campfire.fade = false;
-                //console.log("steady flame");
             }
             // for each particle in the campfire
             for (let p = 0; p < campfire.particles.length; p++) {
@@ -1356,7 +1348,6 @@
                 }
                 // set the fade to false and turn out the campfire light
                 campfire.fade = false;
-                //console.log("fire out");
                 campfire.light.intensity = 0;
             }
 
@@ -1368,7 +1359,6 @@
             // if the wind timer is over 3
             if (windTimer > 3) {
                 // create a new direction for the wind and reset the wind timer
-                //console.log("wind changes");
                 wind = newRandom(0, .5);
                 windTimer = 0;
             }
@@ -1379,7 +1369,6 @@
             // if the thunder timer is greater than the max thunder interval
             if (timerThunder >= maxThunder) {
                 // play a random audio from the thunder array
-                //console.log("thunder playing");
                 let index = Math.floor(Math.random() * 4);
                 play(thunderNoises[index], .1);
                 // reset the thunder timer and randomize the new max thunder value
@@ -1556,18 +1545,15 @@
                     distance -= 1;
                     //If the user is within 15 units from the monster, the user is caught
                     if (calcPointDistance(monsterGroup.position, camera.position) < 15) { ///30
-                        console.log("caught");
                         caught = true;
                     }
                      //If the user is within 150 units from the monster, the user is close to being caught and their heartbeat should start pounding
                     else if (calcPointDistance(monsterGroup.position, camera.position) < 200) {
-                        console.log("play heartbeat");
                         heartbeatAudio.play();
                         heartbeatAudio.volume = 0
                     }
                     //If the user is not within 150 units from the monster then they will not hear their heartbeat
                     else if (calcPointDistance(monsterGroup.position, camera.position) > 220) {
-                        console.log("stop heartbeart");
                         heartbeatAudio.pause();
                         heartbeatAudio.currentTime = 0;
                     }
